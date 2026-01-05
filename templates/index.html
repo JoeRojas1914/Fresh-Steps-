@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="dashboard-header">
+    <div class="dashboard-title">
+        <img src="{{ url_for('static', filename='logo.png') }}" 
+             alt="Fresh Steps" 
+             class="dashboard-logo">
+
+        <div>
+            <h1>Fresh Steps 👟</h1>
+            <p>Sistema de control de ventas y limpieza de calzado</p>
+        </div>
+    </div>
+</section>
+
+<section class="dashboard-cards">
+    <div class="card">
+        <h3>💰 Ventas Mes Actual</h3>
+        <p class="card-number">$0.00</p>
+    </div>
+
+    <div class="card">
+        <h3>👥 Clientes</h3>
+        <p class="card-number">0</p>
+    </div>
+
+    <div class="card">
+        <h3>🧼 Servicios</h3>
+        <p class="card-number">0</p>
+    </div>
+
+    <div class="card">
+        <h3>👟 Entregas pendientes</h3>
+        <p class="card-number">0</p>
+    </div>
+</section>
+
+<section class="dashboard-actions">
+    <a href="/ventas" class="action-btn">➕ Nueva venta</a>
+    <a href="/clientes" class="action-btn">👤 Nuevo cliente</a>
+    <a href="/servicios" class="action-btn">🧼 Nuevo servicio</a>
+</section>
+
+{% endblock %}

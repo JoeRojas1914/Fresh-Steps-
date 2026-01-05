@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Nueva venta</h1>
+
+<label>Buscar cliente</label>
+<input type="text" id="buscarCliente" placeholder="Nombre del cliente">
+<ul id="listaClientes"></ul>
+
+<input type="hidden" name="id_cliente" id="id_cliente">
+<p id="clienteSeleccionado"></p>
+
+<form method="POST" action="/ventas/guardar">
+
+<div id="zapatosContainer"></div>
+
+<button type="button" onclick="agregarZapato()">➕ Agregar zapato</button>
+
+<br><br>
+
+<label>Tipo de pago</label>
+<select name="tipo_pago">
+  <option>Efectivo</option>
+  <option>Tarjeta</option>
+</select>
+
+<button type="submit">Crear recibo</button>
+</form>
+
+<script>
+let contadorZapatos = 0;
+
+function agregarZapato() {
+  const div = document.createElement("div");
+  div.innerHTML = `
+    <hr>
+    <h4>Zapato</h4>
+
+    <select name="zapatos[${contadorZapatos}][id_zapato]">
+      {% for z in zapatos %}
+      <option value="{{ z.id_zapato }}">
+        {{ z.color_base }} - {{ z.material }}
+      </option>
+      {% endfor %}
+    </select>
+
+    <select name="zapatos[${contadorZapatos}][id_servicio]">
+      {% for s in servicios %}
+      <option value="{{ s.id_servicio }}">
+        {{ s.nombre }} (${{ s.precio }})
+      </option>
+      {% endfor %}
+    </select>
+  `;
+  document.getElementById("zapatosContainer").appendChild(div);
+  contadorZapatos++;
+}
+
+// uno por default
+window.onload = agregarZapato;
+</script>
+
+<script>
+document.getElementById("buscarCliente").addEventListener("input", async function () {
+  const q = this.value;
+  const lista = document.getElementById("listaClientes");
+  lista.innerHTML = "";
+
+  if (q.length < 2) return;
+
+  const res = await fetch(`/api/clientes?q=${q}`);
+  const clientes = await res.json();
+
+  clientes.forEach(c => {
+    const li = document.createElement("li");
+    li.textContent = `${c.nombre} ${c.apellido}`;
+    li.onclick = () => seleccionarCliente(c);
+    lista.appendChild(li);
+  });
+});
+
+function seleccionarCliente(cliente) {
+  document.getElementById("id_cliente").value = cliente.id_cliente;
+  document.getElementById("clienteSeleccionado").innerText =
+    `Cliente: ${cliente.nombre} ${cliente.apellido}`;
+
+  document.getElementById("listaClientes").innerHTML = "";
+  document.getElementById("buscarCliente").value = "";
+}
+</script>
+
+
+
+
+{% endblock %}

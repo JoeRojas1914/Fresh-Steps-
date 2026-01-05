@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Fresh Steps</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-logo">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Fresh Steps">
+    </div>
+
+    <div class="nav-links">
+        <a href="/">Inicio</a>
+        <a href="/clientes">Clientes</a>
+        <a href="/servicios">Servicios</a>
+        <a href="/zapatos">Zapatos</a>
+        <a href="/ventas">Venta</a>
+    </div>
+</nav>
+
+
+<hr>
+
+{% block content %}{% endblock %}
+
+</body>
+</html>

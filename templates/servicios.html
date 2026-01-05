@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Servicios</h1>
+
+<button onclick="abrirModal()">➕ Agregar servicio</button>
+
+<!-- MODAL -->
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="cerrarModal()">&times;</span>
+
+        <h2 id="tituloModal">Agregar servicio</h2>
+
+        <form method="POST" action="/servicios/guardar">
+            <input type="hidden" name="id_servicio" id="id_servicio">
+
+            <input type="text" name="nombre" placeholder="Nombre" required>
+            <textarea name="descripcion" placeholder="Descripción"></textarea>
+            <input type="number" step="0.01" name="precio" placeholder="Precio" required>
+
+            <button type="submit">Guardar</button>
+        </form>
+    </div>
+</div>
+
+<hr>
+
+<table border="1">
+    <thead>
+        <tr>
+            <th>Servicio</th>
+            <th>Precio</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for s in servicios %}
+        <tr>
+            <td>{{ s.nombre }}</td>
+            <td>${{ s.precio }}</td>
+            <td>
+                <button onclick="editarServicio(
+                    {{ s.id_servicio }},
+                    '{{ s.nombre }}',
+                    '{{ s.descripcion }}',
+                    {{ s.precio }}
+                )">✏️</button>
+
+                <a href="/servicios/eliminar/{{ s.id_servicio }}"
+                   onclick="return confirm('¿Eliminar servicio?')">🗑️</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+function abrirModal() {
+    document.getElementById("modal").style.display = "block";
+    document.getElementById("tituloModal").innerText = "Agregar servicio";
+    document.getElementById("id_servicio").value = "";
+}
+
+function cerrarModal() {
+    document.getElementById("modal").style.display = "none";
+}
+
+function editarServicio(id, nombre, descripcion, precio) {
+    abrirModal();
+    document.getElementById("tituloModal").innerText = "Editar servicio";
+
+    document.getElementById("id_servicio").value = id;
+    document.querySelector("[name=nombre]").value = nombre;
+    document.querySelector("[name=descripcion]").value = descripcion;
+    document.querySelector("[name=precio]").value = precio;
+}
+</script>
+
+
+{% endblock %}

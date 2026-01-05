@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Buscar cliente</h1>
+
+<form method="GET">
+    <input type="text" name="q" placeholder="Nombre del cliente" value="{{ q }}">
+    <button type="submit">Buscar</button>
+</form>
+
+<ul>
+{% for c in clientes %}
+    <li>
+        {{ c.nombre }} {{ c.apellido }}
+        <a href="/zapatos/{{ c.id_cliente }}">Ver zapatos</a>
+    </li>
+{% endfor %}
+</ul>
+
+{% endblock %}

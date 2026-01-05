@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Clientes</h2>
+
+<button onclick="abrirModal()">➕ Agregar cliente</button>
+
+<!-- MODAL -->
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="cerrarModal()">&times;</span>
+
+        <h2 id="modalTitulo">Agregar cliente</h2>
+
+        <form method="POST" action="/clientes/guardar">
+            <input type="hidden" name="id_cliente" id="id_cliente">
+
+            <input type="text" name="nombre" placeholder="Nombre" required>
+            <input type="text" name="apellido" placeholder="Apellido" required>
+            <input type="email" name="correo" placeholder="Correo">
+            <input type="text" name="telefono" placeholder="Teléfono">
+            <input type="text" name="direccion" placeholder="Dirección">
+
+            <button type="submit">Guardar</button>
+        </form>
+    </div>
+</div>
+
+<hr>
+
+<!-- TABLA -->
+<table border="1">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Teléfono</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for c in clientes %}
+        <tr>
+            <td>{{ c.nombre }} {{ c.apellido }}</td>
+            <td>{{ c.correo }}</td>
+            <td>{{ c.telefono }}</td>
+            <td>
+                <button onclick="editarCliente({{ c.id_cliente }}, '{{ c.nombre }}', '{{ c.apellido }}', '{{ c.correo }}', '{{ c.telefono }}', '{{ c.direccion }}')">
+                    ✏️
+                </button>
+                <a href="/clientes/eliminar/{{ c.id_cliente }}" onclick="return confirm('¿Eliminar cliente?')">
+                    🗑️
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+function abrirModal() {
+    document.getElementById("modal").style.display = "block";
+    document.getElementById("modalTitulo").innerText = "Agregar cliente";
+    document.getElementById("id_cliente").value = "";
+}
+
+function cerrarModal() {
+    document.getElementById("modal").style.display = "none";
+}
+
+function editarCliente(id, nombre, apellido, correo, telefono, direccion) {
+    abrirModal();
+    document.getElementById("modalTitulo").innerText = "Editar cliente";
+
+    document.getElementById("id_cliente").value = id;
+    document.querySelector("[name=nombre]").value = nombre;
+    document.querySelector("[name=apellido]").value = apellido;
+    document.querySelector("[name=correo]").value = correo;
+    document.querySelector("[name=telefono]").value = telefono;
+    document.querySelector("[name=direccion]").value = direccion;
+}
+</script>
+{% endblock %}

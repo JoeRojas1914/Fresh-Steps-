@@ -24,28 +24,32 @@
 
 <table border="1">
 <tr>
-    <th>Color</th>
-    <th>Material</th>
-    <th>Acciones</th>
-</tr>
+    <thead>
+      <th>Color</th>
+      <th>Material</th>
+      <th>Acciones</th>
+    </thead>
+  </tr>
 
-{% for z in zapatos %}
-<tr>
-    <td>{{ z.color_base }} / {{ z.color_secundario }}</td>
-    <td>{{ z.material }}</td>
-    <td>
-        <button onclick="editarZapato(
-            {{ z.id_zapato }},
-            '{{ z.color_base }}',
-            '{{ z.color_secundario }}',
-            '{{ z.material }}'
-            )">✏️
-        </button>
+  <tbody></tbody>
+    {% for z in zapatos %}
+    <tr>
+        <td>{{ z.color_base }} / {{ z.color_secundario }}</td>
+        <td>{{ z.material }}</td>
+        <td>
+            <button class="btn-edit" onclick="editarZapato(
+                {{ z.id_zapato }},
+                '{{ z.color_base }}',
+                '{{ z.color_secundario }}',
+                '{{ z.material }}'
+                )">Edit
+            </button>
 
-        <a href="/zapatos/eliminar/{{ z.id_zapato }}/{{ cliente.id_cliente }}" onclick="return confirm('¿Eliminar zapato?')">🗑️</a>
-    </td>
-</tr>
-{% endfor %}
+            <a href="/zapatos/eliminar/{{ z.id_zapato }}/{{ cliente.id_cliente }}" class="btn-delete" onclick="return confirm('¿Eliminar zapato?')">Delete</a>
+        </td>
+    </tr>
+    {% endfor %}
+  </tbody>
 </table>
 
 <script>

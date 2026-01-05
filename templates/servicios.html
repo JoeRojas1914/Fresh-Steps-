@@ -40,14 +40,14 @@
             <td>{{ s.nombre }}</td>
             <td>${{ s.precio }}</td>
             <td>
-                <button onclick="editarServicio(
+                <button class="btn-edit" onclick="editarServicio(
                     {{ s.id_servicio }},
                     '{{ s.nombre }}',
                     '{{ s.descripcion }}',
                     {{ s.precio }}
                 )">Editar</button>
 
-                <a href="/servicios/eliminar/{{ s.id_servicio }}"
+                <a href="/servicios/eliminar/{{ s.id_servicio }}" class="btn-delete"
                    onclick="return confirm('¿Seguro que desea eliminar el servicio?')">Delete</a>
             </td>
         </tr>

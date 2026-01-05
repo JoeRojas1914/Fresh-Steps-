@@ -70,3 +70,16 @@ def obtener_servicio_por_id(id_servicio):
     conn.close()
     return servicio
 
+
+
+def contar_servicios():
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT COUNT(*) FROM servicio")
+    total = cursor.fetchone()[0]
+
+    cursor.close()
+    conn.close()
+
+    return total

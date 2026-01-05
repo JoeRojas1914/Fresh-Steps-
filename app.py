@@ -1,6 +1,6 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 from clientes import *
-from servicios import (obtener_servicios, crear_servicio, actualizar_servicio, eliminar_servicio, obtener_servicio_por_id)
+from servicios import (obtener_servicios, crear_servicio, actualizar_servicio, eliminar_servicio, obtener_servicio_por_id, contar_servicios)
 from zapatos import (obtener_zapatos_cliente, crear_zapato, actualizar_zapato, eliminar_zapato)
 from ventas import (crear_venta, obtener_ventas_pendientes, marcar_entregada, agregar_zapato_a_venta, actualizar_total_venta)
 from clientes import (obtener_clientes)
@@ -9,9 +9,12 @@ from clientes import (obtener_clientes)
 
 app = Flask(__name__)
 
+
 @app.route("/")
 def index():
-    return render_template("index.html")
+    total_clientes = contar_clientes()
+    total_servicios = contar_servicios()
+    return render_template("index.html", total_clientes=total_clientes, total_servicios=total_servicios)
 
 
 # /////////////////////////////////CLIENTES/////////////////////////////////////
@@ -29,9 +32,9 @@ def guardar_cliente():
     telefono = request.form["telefono"]
     direccion = request.form["direccion"]
 
-    if id_cliente:  # EDITAR
+    if id_cliente:  
         actualizar_cliente(id_cliente, nombre, apellido, correo, telefono, direccion)
-    else:           # NUEVO
+    else:           
         crear_cliente(nombre, apellido, correo, telefono, direccion)
 
     return redirect("/clientes")

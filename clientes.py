@@ -57,3 +57,15 @@ def actualizar_cliente(id_cliente, nombre, apellido, correo, telefono, direccion
     cursor.close()
     conn.close()
 
+
+def contar_clientes():
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT COUNT(*) FROM cliente")
+    total = cursor.fetchone()[0]
+
+    cursor.close()
+    conn.close()
+
+    return total

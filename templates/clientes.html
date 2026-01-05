@@ -1,11 +1,22 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Clientes</h2>
+<h1>Clientes</h1>
+
+<form method="GET" action="/clientes" class="search-bar">
+    <input 
+        type="text" 
+        name="q" 
+        placeholder="Buscar cliente por nombre o apellido"
+        value="{{ q or '' }}"
+    >
+    <button type="submit">Buscar</button>
+</form>
+
 
 <button onclick="abrirModal()">➕ Agregar cliente</button>
 
-<!-- MODAL -->
+
 <div id="modal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="cerrarModal()">&times;</span>
@@ -28,7 +39,7 @@
 
 <hr>
 
-<!-- TABLA -->
+
 <table border="1">
     <thead>
         <tr>

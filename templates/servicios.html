@@ -3,9 +3,20 @@
 {% block content %}
 <h1>Servicios</h1>
 
+<form method="GET" action="/servicios" class="search-bar">
+    <input 
+        type="text" 
+        name="q" 
+        placeholder="Buscar servicio por nombre"
+        value="{{ q or '' }}"
+    >
+    <button type="submit">Buscar</button>
+</form>
+
+
 <button onclick="abrirModal()">➕ Agregar servicio</button>
 
-<!-- MODAL -->
+
 <div id="modal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="cerrarModal()">&times;</span>

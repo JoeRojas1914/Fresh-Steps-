@@ -448,3 +448,21 @@ td .btn-delete {
     font-weight: 600;
 }
 
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.search-bar input {
+    padding: 8px;
+    width: 260px;
+}
+
+.search-bar button {
+    padding: 8px 14px;
+    cursor: pointer;
+}
+

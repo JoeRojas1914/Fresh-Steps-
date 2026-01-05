@@ -15,22 +15,30 @@ def crear_cliente(nombre, apellido, correo, telefono, direccion):
     cursor.close()
     conn.close()
 
-def obtener_clientes():
+def obtener_clientes(q=None):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-
-    cursor.execute("""
-        SELECT id_cliente, nombre, apellido, correo, telefono, direccion
-        FROM cliente
-    """)
+    if q:
+        cursor.execute("""
+            SELECT id_cliente, nombre, apellido, correo, telefono, direccion
+            FROM cliente
+            WHERE nombre LIKE %s OR apellido LIKE %s
+            ORDER BY nombre ASC, apellido ASC
+        """, (f"%{q}%", f"%{q}%"))
+    else:
+        cursor.execute("""
+            SELECT id_cliente, nombre, apellido, correo, telefono, direccion
+            FROM cliente
+            ORDER BY nombre ASC, apellido ASC
+        """)
 
     clientes = cursor.fetchall()
-
     cursor.close()
     conn.close()
 
     return clientes
+
 
 def eliminar_cliente(id_cliente):
     conn = get_connection()

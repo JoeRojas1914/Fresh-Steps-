@@ -15,14 +15,23 @@ def crear_servicio(nombre, descripcion, precio):
     cursor.close()
     conn.close()
 
-def obtener_servicios():
+def obtener_servicios(q=None):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("""
-        SELECT id_servicio, nombre, descripcion, precio
-        FROM servicio
-    """)
+    if q:
+        cursor.execute("""
+            SELECT id_servicio, nombre, descripcion, precio
+            FROM servicio
+            WHERE nombre LIKE %s
+            ORDER BY nombre ASC
+        """, (f"%{q}%",))
+    else:
+        cursor.execute("""
+            SELECT id_servicio, nombre, descripcion, precio
+            FROM servicio
+            ORDER BY nombre ASC
+        """)
 
     servicios = cursor.fetchall()
 

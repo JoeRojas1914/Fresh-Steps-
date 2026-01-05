@@ -20,8 +20,9 @@ def index():
 # /////////////////////////////////CLIENTES/////////////////////////////////////
 @app.route("/clientes")
 def clientes():
-    lista = obtener_clientes()
-    return render_template("clientes.html", clientes=lista)
+    q = request.args.get("q")
+    clientes = obtener_clientes(q)
+    return render_template("clientes.html", clientes=clientes, q=q)
 
 @app.route("/clientes/guardar", methods=["POST"])
 def guardar_cliente():
@@ -48,9 +49,10 @@ def eliminar(id_cliente):
 
 # /////////////////////////////////SERVICIOS/////////////////////////////////////
 @app.route("/servicios")
-def servicios():
-    lista = obtener_servicios()
-    return render_template("servicios.html", servicios=lista)
+def servicios_page():
+    q = request.args.get("q")
+    servicios = obtener_servicios(q)
+    return render_template("servicios.html", servicios=servicios, q=q)
 
 @app.route("/servicios/guardar", methods=["POST"])
 def guardar_servicio():

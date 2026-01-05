@@ -47,7 +47,7 @@ function agregarZapato() {
     <select name="zapatos[${contadorZapatos}][id_servicio]">
       {% for s in servicios %}
       <option value="{{ s.id_servicio }}">
-        {{ s.nombre }} (${{ s.precio }})
+        {{ s.nombre }} (\${{ s.precio }})
       </option>
       {% endfor %}
     </select>

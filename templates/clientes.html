@@ -45,9 +45,11 @@
             <td>{{ c.correo }}</td>
             <td>{{ c.telefono }}</td>
             <td>
-                <button class="btn-edit" onclick="editarCliente({{ c.id_cliente }}, '{{ c.nombre }}', '{{ c.apellido }}', '{{ c.correo }}', '{{ c.telefono }}', '{{ c.direccion }}')">
+                <button class="btn-edit"
+                    onclick='editarCliente({{ c.id_cliente }},{{ c.nombre|tojson }}, {{ c.apellido|tojson }}, {{ c.correo|tojson }}, {{ c.telefono|tojson }}, {{ c.direccion|tojson }})'>
                     Edit
                 </button>
+
                 <a href="/clientes/eliminar/{{ c.id_cliente }}" class="btn-delete" onclick="return confirm('¿Seguro que desea eliminar al cliente?')">
                     Delete
                 </a>

@@ -20,7 +20,7 @@ def obtener_servicios():
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute("""
-        SELECT nombre, descripcion, precio
+        SELECT id_servicio, nombre, descripcion, precio
         FROM servicio
     """)
 

@@ -21,7 +21,7 @@ def obtener_clientes():
 
 
     cursor.execute("""
-        SELECT nombre, apellido, correo, telefono, direccion
+        SELECT id_cliente, nombre, apellido, correo, telefono, direccion
         FROM cliente
     """)
 

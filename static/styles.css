@@ -131,7 +131,7 @@ nav {
 }
 
 .dashboard-logo {
-    height: 70px;   
+    height: 150px;   
     width: auto;
     object-fit: contain;
 }
@@ -343,10 +343,10 @@ td .btn-delete {
     border-top: 1px solid #dbeafe;
 }
 
-/* Contenedor interno */
+
 .footer-container {
     max-width: 1200px;
-    margin: 0 auto;          /* Centra el contenido */
+    margin: 0 auto;         
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -362,7 +362,7 @@ td .btn-delete {
 }
 
 .footer-brand img {
-    height: 80px;            /* LOGO MÁS GRANDE */
+    height: 80px;           
     width: auto;
     object-fit: contain;
 }
@@ -384,7 +384,7 @@ td .btn-delete {
 .footer-social a {
     text-decoration: none;
     font-weight: 500;
-    font-size: 13px;         /* TEXTO MÁS PEQUEÑO */
+    font-size: 13px;       
     color: #1e7fd6;
     transition: color 0.2s ease;
 }

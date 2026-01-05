@@ -3,18 +3,22 @@
 {% block content %}
 <h1>Buscar cliente</h1>
 
-<form method="GET">
+<form method="GET" class="search-form">
     <input type="text" name="q" placeholder="Nombre del cliente" value="{{ q }}">
     <button type="submit">Buscar</button>
 </form>
 
-<ul>
+<div class="results-list">
 {% for c in clientes %}
-    <li>
-        {{ c.nombre }} {{ c.apellido }}
-        <a href="/zapatos/{{ c.id_cliente }}">Ver zapatos</a>
-    </li>
+    <a href="/zapatos/{{ c.id_cliente }}" class="result-item">
+        <div class="result-name">
+            {{ c.nombre }} {{ c.apellido }}
+        </div>
+        <div class="result-action">
+            Ver zapatos →
+        </div>
+    </a>
 {% endfor %}
-</ul>
+</div>
 
 {% endblock %}

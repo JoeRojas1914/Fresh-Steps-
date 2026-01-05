@@ -354,7 +354,7 @@ td .btn-delete {
     gap: 30px;
 }
 
-/* Marca */
+
 .footer-brand {
     display: flex;
     align-items: center;
@@ -373,14 +373,14 @@ td .btn-delete {
     color: #0b3c5d;
 }
 
-/* Información */
+
 .footer-info p {
     margin: 6px 0;
     font-size: 14px;
     color: #374151;
 }
 
-/* Social */
+
 .footer-social a {
     text-decoration: none;
     font-weight: 500;
@@ -391,5 +391,60 @@ td .btn-delete {
 
 .footer-social a:hover {
     color: #155fa0;
+}
+
+.search-form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.search-form input {
+    max-width: 300px;
+}
+
+.search-form button {
+    margin-top: 0; 
+}
+
+.results-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 600px;
+}
+
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 14px 18px;
+    background: white;
+    border-radius: 12px;
+    text-decoration: none;
+
+    color: #1f2933;
+    font-weight: 500;
+
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+}
+
+.result-item:hover {
+    background: #e6f3ff;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
+}
+
+.result-name {
+    font-size: 15px;
+}
+
+.result-action {
+    font-size: 13px;
+    color: #1e7fd6;
+    font-weight: 600;
 }
 

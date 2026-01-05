@@ -1,12 +1,23 @@
 body {
     font-family: 'Segoe UI', Arial, sans-serif;
     margin: 0;
-    padding: 40px;
+    padding: 0;
     min-height: 100vh;
+
+    display: flex;
+    flex-direction: column;
 
     background: linear-gradient(to bottom, #e6f3ff 0%, #ffffff 60%);
     color: #1f2933;
 }
+
+
+.page-content {
+    flex: 1;        
+    padding: 40px;
+}
+
+
 
 /* ====== NAVBAR ====== */
 nav {
@@ -320,5 +331,65 @@ tbody tr:hover {
 td .btn-edit,
 td .btn-delete {
     margin-right: 6px;
+}
+
+
+/* ====== FOOTER ====== */
+.footer {
+    width: 100%;
+    margin-top: auto;
+    padding: 40px 60px;
+    background: linear-gradient(to right, #e6f3ff, #dbeafe);
+    border-top: 1px solid #dbeafe;
+}
+
+/* Contenedor interno */
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;          /* Centra el contenido */
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+}
+
+/* Marca */
+.footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.footer-brand img {
+    height: 80px;            /* LOGO MÁS GRANDE */
+    width: auto;
+    object-fit: contain;
+}
+
+.footer-brand p {
+    font-size: 18px;
+    font-weight: 600;
+    color: #0b3c5d;
+}
+
+/* Información */
+.footer-info p {
+    margin: 6px 0;
+    font-size: 14px;
+    color: #374151;
+}
+
+/* Social */
+.footer-social a {
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 13px;         /* TEXTO MÁS PEQUEÑO */
+    color: #1e7fd6;
+    transition: color 0.2s ease;
+}
+
+.footer-social a:hover {
+    color: #155fa0;
 }
 

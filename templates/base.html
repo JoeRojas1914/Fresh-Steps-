@@ -6,25 +6,51 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
+    <div class="page-content">
+        <nav class="navbar">
+            <div class="nav-logo">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Fresh Steps">
+            </div>
 
-<nav class="navbar">
-    <div class="nav-logo">
-        <img src="{{ url_for('static', filename='logo.png') }}" alt="Fresh Steps">
+            <div class="nav-links">
+                <a href="/">Inicio</a>
+                <a href="/clientes">Clientes</a>
+                <a href="/servicios">Servicios</a>
+                <a href="/zapatos">Zapatos</a>
+                <a href="/ventas">Venta</a>
+            </div>
+        </nav>
+
+
+        <hr>
+        {% block content %}{% endblock %}
     </div>
 
-    <div class="nav-links">
-        <a href="/">Inicio</a>
-        <a href="/clientes">Clientes</a>
-        <a href="/servicios">Servicios</a>
-        <a href="/zapatos">Zapatos</a>
-        <a href="/ventas">Venta</a>
+
+
+
+<footer class="footer">
+    <div class="footer-container">
+
+        <div class="footer-brand">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Fresh Steps">
+            <p>Fresh Steps</p>
+        </div>
+
+        <div class="footer-info">
+            <p><strong>Dirección:</strong> Alfredo M. Terrazas #935 A</p>
+            <p><strong>Teléfono:</strong> 555-123-4567</p>
+            <p><strong>Correo:</strong> contacto@freshsteps.com</p>
+        </div>
+
+        <div class="footer-social">
+            <a href="https://www.instagram.com/freshsteps.slp/" target="_blank">
+                Instagram
+            </a>
+        </div>
+
     </div>
-</nav>
-
-
-<hr>
-
-{% block content %}{% endblock %}
+</footer>
 
 </body>
 </html>

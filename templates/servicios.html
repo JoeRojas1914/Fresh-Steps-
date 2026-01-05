@@ -45,10 +45,10 @@
                     '{{ s.nombre }}',
                     '{{ s.descripcion }}',
                     {{ s.precio }}
-                )">✏️</button>
+                )">Editar</button>
 
                 <a href="/servicios/eliminar/{{ s.id_servicio }}"
-                   onclick="return confirm('¿Eliminar servicio?')">🗑️</a>
+                   onclick="return confirm('¿Seguro que desea eliminar el servicio?')">Delete</a>
             </td>
         </tr>
         {% endfor %}

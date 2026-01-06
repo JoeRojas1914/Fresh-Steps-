@@ -1,3 +1,8 @@
+html, body {
+    width: 100%;
+    overflow-x: hidden;
+}
+
 body {
     font-family: 'Segoe UI', Arial, sans-serif;
     margin: 0;
@@ -593,7 +598,7 @@ td .btn-delete {
 }
 
 
-/* Formulario de fechas bien alineado */
+
 .date-form {
     display: flex;
     align-items: flex-end;
@@ -601,7 +606,7 @@ td .btn-delete {
     margin-bottom: 20px;
 }
 
-/* Cada campo de fecha */
+
 .date-group {
     display: flex;
     flex-direction: column;
@@ -612,7 +617,7 @@ td .btn-delete {
     width: 160px;
 }
 
-/* Botón alineado */
+
 .date-form button {
     margin-top: 0;
     height: 38px;
@@ -632,4 +637,39 @@ td .btn-delete {
     text-align: center;
     color: #6b7280;
     font-weight: 500;
+}
+
+
+.card-link {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    display: block;
+}
+
+
+.card-gradient {
+    background: linear-gradient(
+        135deg,
+        #f8fbff 0%,
+        #e6f3ff 100%
+    );
+    border: 1px solid #dbeafe;
+}
+
+
+.card-gradient:hover {
+    background: linear-gradient(
+        135deg,
+        #e6f3ff 0%,
+        #dbeafe 100%
+    );
+}
+
+.dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(220px, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+    justify-content: center;
 }

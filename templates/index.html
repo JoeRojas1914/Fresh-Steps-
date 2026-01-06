@@ -4,8 +4,8 @@
 
 <section class="dashboard-header">
     <div class="dashboard-title">
-        <img src="{{ url_for('static', filename='logo.png') }}" 
-             alt="Fresh Steps" 
+        <img src="{{ url_for('static', filename='logo.png') }}"
+             alt="Fresh Steps"
              class="dashboard-logo">
 
         <div>
@@ -16,31 +16,42 @@
 </section>
 
 <section class="dashboard-cards">
-    <div class="card">
-        <h3>💰 Ventas Mes Actual</h3>
-        <p class="card-number">$0.00</p>
-    </div>
 
-    <div class="card">
+    <a href="/estadisticas" class="card card-link card-gradient">
+        <h3>📊 Estadísticas</h3>
+        <p class="card-number">Ver reportes</p>
+    </a>
+
+    <a href="/clientes" class="card card-link card-gradient">
         <h3>👥 Clientes</h3>
-        <p class="card-number">{{ total_clientes }}</p>
-    </div>
+        <p class="card-number">Gestión de Clientes</p>
+    </a>
 
-    <div class="card">
+    <a href="/servicios" class="card card-link card-gradient">
         <h3>🧼 Servicios</h3>
-        <p class="card-number">{{ total_servicios }}</p>
-    </div>
+        <p class="card-number">Servicios Disponibles</p>
+    </a>
 
-    <div class="card">
+    <a href="/zapatos" class="card card-link card-gradient">
+        <h3>👞 Calzado</h3>
+        <p class="card-number">Inventario</p>
+    </a>
+
+    <a href="/ventas" class="card card-link card-gradient">
+        <h3>🧾 Venta</h3>
+        <p class="card-number">Registrar Venta</p>
+    </a>
+
+    <a href="/gastos" class="card card-link card-gradient">
+        <h3>💸 Gastos</h3>
+        <p class="card-number">Registrar Gasto</p>
+    </a>
+
+    <a href="/entregas" class="card card-link card-gradient">
         <h3>👟 Entregas pendientes</h3>
         <p class="card-number">0</p>
-    </div>
-</section>
+    </a>
 
-<section class="dashboard-actions">
-    <a href="/ventas" class="action-btn">➕ Nueva venta</a>
-    <a href="/clientes" class="action-btn">👤 Nuevo cliente</a>
-    <a href="/servicios" class="action-btn">🧼 Nuevo servicio</a>
 </section>
 
 {% endblock %}

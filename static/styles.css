@@ -519,11 +519,25 @@ td .btn-delete {
 
 
 .cliente-seleccionado {
-    font-size: 16px;       
-    font-weight: 600;     
-    color: #1e3a8a;        
-    margin-top: 8px;       
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e3a8a;
+    margin-top: 8px;
+
+ 
+    background-color: #ccd0dd;
+    padding: 16px;            
+    border-radius: 12px;    
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s; 
 }
+
+.cliente-seleccionado:hover {
+    transform: translateY(-2px); 
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); 
+    cursor: pointer;
+}
+
 
 
 .zapato-item {

@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Gastos</h1>
+
+
+<button onclick="abrirModal()">➕ Agregar gasto</button>
+
+
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="cerrarModal()">&times;</span>
+
+        <h2 id="modalTitulo">Agregar gasto</h2>
+
+        <form method="POST" action="/gastos/guardar">
+            <input type="hidden" name="id_gasto" id="id_gasto">
+
+            <input type="text" name="descripcion" placeholder="Descripción" required>
+            <input type="text" name="proveedor" placeholder="Proveedor" required>
+            <input type="number" name="total" placeholder="Total" required>
+            <input type="date" name="fecha_registro" placeholder="Fecha de registro">
+
+            <button type="submit">Guardar</button>
+        </form>
+    </div>
+</div>
+
+<hr>
+
+
+<table border="1">
+    <thead>
+        <tr>
+            <th>Descripción</th>
+            <th>Proveedor</th>
+            <th>Total</th>
+            <th>Fecha de registro</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for g in gastos %}
+        <tr>
+            <td>{{ g.descripcion }}</td>
+            <td>{{ g.proveedor }}</td>
+            <td>{{ g.total }}</td>
+            <td>{{ g.fecha_registro }}</td>
+            <td>
+                <button class="btn-edit"
+                        onclick='editarGasto({{ g.id_gasto }}, {{ g.descripcion|tojson }}, {{ g.proveedor|tojson }}, {{ g.total|tojson }}, "{{ g.fecha_registro.strftime("%Y-%m-%d") if g.fecha_registro else "" }}")'>
+                    Edit
+                </button>
+
+                <a href="/gastos/eliminar/{{ g.id_gasto }}" class="btn-delete" onclick="return confirm('¿Seguro que desea eliminar el gasto?')">
+                    Delete
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+    function abrirModal() {
+        document.getElementById("modal").style.display = "block";
+        document.getElementById("modalTitulo").innerText = "Agregar Gasto";
+        document.getElementById("id_gasto").value = "";
+    }
+
+    function cerrarModal() {
+        document.getElementById("modal").style.display = "none";
+    }
+
+    function editarGasto(id, descripcion, proveedor, total, fecha_registro) {
+        abrirModal();
+        document.getElementById("modalTitulo").innerText = "Editar gasto";
+
+        document.getElementById("id_gasto").value = id;
+        document.querySelector("[name=descripcion]").value = descripcion;
+        document.querySelector("[name=proveedor]").value = proveedor;
+        document.querySelector("[name=total]").value = total;
+        document.querySelector("[name=fecha_registro]").value = fecha_registro;
+    }
+    </script>
+    
+{% endblock %}

@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from clientes import *
+from gastos import crear_gasto, actualizar_gasto, eliminar_gasto,obtener_gastos
 from servicios import (obtener_servicios, crear_servicio, actualizar_servicio, eliminar_servicio, obtener_servicio_por_id, contar_servicios)
 from zapatos import (obtener_zapatos_cliente, crear_zapato, actualizar_zapato, eliminar_zapato)
 from ventas import (crear_venta, obtener_ventas_pendientes, marcar_entregada, agregar_zapato_a_venta, actualizar_total_venta)
@@ -202,6 +203,29 @@ def guardar_venta():
 
     return redirect("/ventas/pendientes")
 
+
+
+# /////////////////////////////////GASTOS/////////////////////////////////////      
+@app.route("/gastos")
+def gastos():
+    q = request.args.get("q")
+    gastos = obtener_gastos(q)
+    return render_template("gastos.html", gastos=gastos, q=q)
+
+@app.route("/gastos/guardar", methods=["POST"])
+def guardar_gasto():
+    id_gasto = request.form.get("id_gasto")
+    descripcion = request.form["descripcion"]
+    proveedor = request.form["proveedor"]
+    total = request.form["total"]
+    fecha_registro = request.form["fecha_registro"]
+
+    if id_gasto:
+        actualizar_gasto(id_gasto, descripcion, proveedor, total, fecha_registro)
+    else:
+        crear_gasto(descripcion, proveedor, total, fecha_registro)
+
+    return redirect("/gastos")
 
 
 

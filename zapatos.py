@@ -54,3 +54,19 @@ def eliminar_zapato(id_zapato):
     cursor.close()
     conn.close()
 
+
+def cliente_tiene_zapatos(id_cliente):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT COUNT(*) FROM zapato
+        WHERE id_cliente = %s
+    """, (id_cliente,))
+
+    cantidad = cursor.fetchone()[0]
+
+    cursor.close()
+    conn.close()
+
+    return cantidad > 0

@@ -673,3 +673,21 @@ td .btn-delete {
     margin-top: 30px;
     justify-content: center;
 }
+
+.alert {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.alert.error {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.alert.success {
+    background-color: #dcfce7;
+    color: #166534;
+}
+

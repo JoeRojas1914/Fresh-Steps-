@@ -2,15 +2,17 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from clientes import *
 from gastos import crear_gasto, actualizar_gasto, eliminar_gasto,obtener_gastos, obtener_gastos_por_proveedor
 from servicios import (obtener_servicios, crear_servicio, actualizar_servicio, eliminar_servicio, obtener_servicio_por_id, contar_servicios)
-from zapatos import (obtener_zapatos_cliente, crear_zapato, actualizar_zapato, eliminar_zapato)
+from zapatos import (obtener_zapatos_cliente, crear_zapato, actualizar_zapato, eliminar_zapato, cliente_tiene_zapatos)
 from ventas import (crear_venta, obtener_ventas_pendientes, marcar_entregada, agregar_zapato_a_venta, actualizar_total_venta)
 from clientes import (obtener_clientes)
 from datetime import date
 from calendar import monthrange
+import os
+from dotenv import load_dotenv
 
-
-
+load_dotenv() 
 app = Flask(__name__)
+app.secret_key = os.environ.get("SECRET_KEY")
 
 
 @app.route("/")
@@ -44,10 +46,27 @@ def guardar_cliente():
     return redirect("/clientes")
 
 
+
 @app.route("/clientes/eliminar/<int:id_cliente>")
-def eliminar(id_cliente):
-    eliminar_cliente(id_cliente)
-    return redirect("/clientes")
+def eliminar_cliente(id_cliente):
+
+
+    if cliente_tiene_zapatos(id_cliente):
+        flash("❌ No se puede eliminar el cliente porque tiene zapatos registrados.", "error")
+        return redirect(url_for("clientes"))
+
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM cliente WHERE id_cliente = %s", (id_cliente,))
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+
+    flash("✅ Cliente eliminado correctamente.", "success")
+    return redirect(url_for("clientes"))
 
 
 # /////////////////////////////////SERVICIOS/////////////////////////////////////

@@ -773,3 +773,16 @@ select:focus {
 }
 
 
+button:disabled {
+    background: #cbd5e1 !important;   
+    color: #64748b;
+    cursor: not-allowed;
+    box-shadow: none;
+    opacity: 0.75;
+}
+
+button:disabled:hover {
+    transform: none;
+    box-shadow: none;
+    background: #cbd5e1;
+}

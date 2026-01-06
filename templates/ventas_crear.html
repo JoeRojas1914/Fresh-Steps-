@@ -215,11 +215,16 @@ function validarFormulario() {
     const monto = document.getElementById("monto_prepago")?.value;
 
     let zapatosOK = contadorZapatos > 0;
+
     document.querySelectorAll("#zapatosContainer select").forEach(s => {
         if (!s.value) zapatosOK = false;
     });
 
-    let valido = cliente && tipoPago && zapatosOK;
+    let valido =
+        cliente &&
+        tipoPago &&
+        prepago &&        
+        zapatosOK;
 
     if (prepago === "si") {
         valido = valido && monto && parseFloat(monto) > 0;
@@ -227,6 +232,7 @@ function validarFormulario() {
 
     document.getElementById("btnCrear").disabled = !valido;
 }
+
 
 document.getElementById("formNuevoCliente").addEventListener("submit", async function (e) {
     e.preventDefault();

@@ -691,3 +691,85 @@ td .btn-delete {
     color: #166534;
 }
 
+
+#clienteBox {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+
+    padding: 14px 18px;
+    margin-bottom: 20px;
+
+    background: linear-gradient(135deg, #e6f3ff, #f8fbff);
+    border: 2px solid #2fa4ff;
+    border-radius: 14px;
+
+    box-shadow: 0 6px 16px rgba(47, 164, 255, 0.25);
+}
+
+#clienteSeleccionado {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0b3c5d;
+}
+
+#btnCambiarCliente {
+    margin-top: 0;
+    padding: 8px 14px;
+    font-size: 13px;
+}
+
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e3a8a;
+}
+
+select {
+    width: 100%;
+    max-width: 320px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #cfd8e3;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+
+    transition: border 0.3s ease, box-shadow 0.3s ease;
+}
+
+select:focus {
+    outline: none;
+    border-color: #2fa4ff;
+    box-shadow: 0 0 0 3px rgba(47, 164, 255, 0.2);
+}
+
+
+.prepago-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 18px;
+}
+
+.prepago-row select {
+    max-width: 200px;
+}
+
+#montoPrepagoContainer {
+    display: none;
+}
+
+#montoPrepagoContainer input {
+    max-width: 160px;
+}
+
+

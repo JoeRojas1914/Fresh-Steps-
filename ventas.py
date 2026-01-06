@@ -11,10 +11,11 @@ def crear_venta(id_cliente, tipo_pago, prepago, monto_prepago):
 
     venta_id = cursor.lastrowid
     conn.commit()
-
     cursor.close()
     conn.close()
+
     return venta_id
+
 
 
 
@@ -27,27 +28,26 @@ def agregar_zapato_a_venta(id_venta, id_zapato):
         VALUES (%s, %s)
     """, (id_venta, id_zapato))
 
-    venta_zapato_id = cursor.lastrowid
-
     conn.commit()
     cursor.close()
     conn.close()
 
-    return venta_zapato_id
 
 
-def asignar_servicio_a_venta_zapato(id_venta_zapato, id_servicio):
+def asignar_servicio_a_venta_zapato(id_venta_zapato, id_servicio, precio):
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
-        INSERT INTO venta_zapato_servicio (id_venta_zapato, id_servicio)
-        VALUES (%s, %s)
-    """, (id_venta_zapato, id_servicio))
+        INSERT INTO zapato_servicio (id_venta_zapato, id_servicio, precio_aplicado)
+        VALUES (%s, %s, %s)
+    """, (id_venta_zapato, id_servicio, precio))
 
     conn.commit()
     cursor.close()
     conn.close()
+
+
 
 
 
@@ -56,9 +56,10 @@ def calcular_total_venta(id_venta):
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT SUM(zs.precio_aplicado)
-        FROM zapato_servicio zs
-        JOIN venta_zapato vz ON zs.id_venta_zapato = vz.id_venta_zapato
+        SELECT SUM(s.precio)
+        FROM venta_zapato vz
+        JOIN zapato_servicio zs ON vz.id_zapato = zs.id_zapato
+        JOIN servicio s ON zs.id_servicio = s.id_servicio
         WHERE vz.id_venta = %s
     """, (id_venta,))
 
@@ -74,6 +75,7 @@ def calcular_total_venta(id_venta):
     conn.close()
 
     return total
+
 
 def obtener_ventas_pendientes():
     conn = get_connection()
@@ -107,10 +109,6 @@ def marcar_entregada(id_venta):
     conn.commit()
     cursor.close()
     conn.close()
-
-
-
-
 
 
 def actualizar_total_venta(id_venta, total):

@@ -2,32 +2,36 @@
 
 {% block content %}
 
-<h1>Ventas pendientes</h1>
+<h1>🧾Entregas pendientes</h1>
 
-<table border="1">
-    <tr>
-        <th>Recibo</th>
-        <th>Cliente</th>
-        <th>Fecha</th>
-        <th>Total</th>
-        <th>Acción</th>
-    </tr>
-
-{% for v in ventas %}
-    <tr>
-        <td>#{{ v.id_venta }}</td>
-        <td>{{ v.nombre }} {{ v.apellido }}</td>
-        <td>{{ v.fecha_recibo }}</td>
-        <td>${{ v.total }}</td>
-        <td>
-            <a href="/ventas/entregar/{{ v.id_venta }}"
-            onclick="return confirm('¿Marcar como entregada?')">
-            ✅ Entregar
-            </a>
-        </td>
-    </tr>
-{% endfor %}
+<table>
+    <thead>
+        <tr>
+            <th>Recibo</th>
+            <th>Cliente</th>
+            <th>Fecha</th>
+            <th>Total</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for v in ventas %}
+        <tr>
+            <td>#{{ v.id_venta }}</td>
+            <td>{{ v.nombre }} {{ v.apellido }}</td>
+            <td>{{ v.fecha_recibo }}</td>
+            <td>${{ v.total }}</td>
+            <td>
+                <a href="/ventas/entregar/{{ v.id_venta }}"
+                   onclick="return confirm('¿Marcar como entregada?')"
+                   class="btn-edit"
+                >
+                   ✅ Entregar
+                </a>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
 </table>
-
 
 {% endblock %}

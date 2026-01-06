@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1 id="tituloNuevaVenta">Nueva venta</h1>
+<h1 id="tituloNuevaVenta">🧾 Nueva venta</h1>
 
 <div id="busquedaCliente">
     <form class="search-form" onsubmit="return false;">
@@ -45,6 +45,7 @@
     </div>
 
     <hr>
+
 
     <div id="zapatosContainer"></div>
     <button type="button" onclick="agregarZapato()">➕ Agregar Articulo</button>
@@ -94,8 +95,29 @@
 
 <script>
 let contadorZapatos = 0;
+let serviciosGlobales = [];
+let zapatosCliente = [];
 
-document.getElementById("buscarCliente").addEventListener("input", async function () {
+document.addEventListener("DOMContentLoaded", async () => {
+    await cargarServicios();
+
+    document.getElementById("buscarCliente")
+        .addEventListener("input", buscarClientes);
+
+    document.getElementById("btnCambiarCliente")
+        .addEventListener("click", () => location.reload());
+
+    document.getElementById("btnNuevoCliente")
+        .addEventListener("click", () => {
+            document.getElementById("modalCliente").style.display = "block";
+        });
+
+    document.getElementById("formNuevoCliente")
+        .addEventListener("submit", crearCliente);
+});
+
+
+async function buscarClientes() {
     const q = this.value.trim();
     const lista = document.getElementById("listaClientes");
     lista.innerHTML = "";
@@ -108,22 +130,15 @@ document.getElementById("buscarCliente").addEventListener("input", async functio
     clientes.forEach(c => {
         const item = document.createElement("div");
         item.className = "result-item";
-        item.style.cursor = "pointer";
-
         item.innerHTML = `
-            <div class="result-name">
-                ${c.nombre} ${c.apellido}
-            </div>
-            <div class="result-action">
-                Seleccionar →
-            </div>
+            <div class="result-name">${c.nombre} ${c.apellido}</div>
+            <div class="result-action">Seleccionar →</div>
         `;
-
         item.onclick = () => seleccionarCliente(c);
         lista.appendChild(item);
     });
+}
 
-});
 
 function seleccionarCliente(cliente) {
     document.getElementById("id_cliente").value = cliente.id_cliente;
@@ -135,109 +150,19 @@ function seleccionarCliente(cliente) {
     document.getElementById("listaClientes").innerHTML = "";
     document.getElementById("formVenta").style.display = "block";
 
+    cargarZapatosCliente(cliente.id_cliente);
     validarFormulario();
 }
 
-document.getElementById("btnCambiarCliente").addEventListener("click", () => {
-    location.reload();
-});
-
-document.getElementById("btnNuevoCliente").addEventListener("click", () => {
-    document.getElementById("modalCliente").style.display = "block";
-});
 function cerrarModalCliente() {
     document.getElementById("modalCliente").style.display = "none";
 }
 
-function agregarZapato() {
-    const index = contadorZapatos;
 
-    const div = document.createElement("div");
-    div.className = "zapato-item";
-    div.dataset.index = index;
-
-    div.innerHTML = `
-        <div class="zapato-header">
-            <div class="zapato-titulo">🧾 Artículo ${index + 1}</div>
-            <button type="button" class="btn-eliminar-zapato" onclick="eliminarZapato(this)">✕</button>
-        </div>
-
-        <select name="zapatos[${index}][id_zapato]" onchange="validarFormulario()">
-            <option value="">Selecciona zapato</option>
-            {% for z in zapatos %}
-            <option value="{{ z.id_zapato }}">{{ z.color_base }} - {{ z.material }}</option>
-            {% endfor %}
-        </select>
-
-        <select name="zapatos[${index}][id_servicio]" onchange="validarFormulario()">
-            <option value="">Selecciona servicio</option>
-            {% for s in servicios %}
-            <option value="{{ s.id_servicio }}">{{ s.nombre }} (${{ s.precio }})</option>
-            {% endfor %}
-        </select>
-    `;
-
-    document.getElementById("zapatosContainer").appendChild(div);
-    contadorZapatos++;
-
-    validarFormulario();
-}
-
-function eliminarZapato(btn) {
-    btn.closest(".zapato-item").remove();
-    renumerarArticulos();
-    validarFormulario();
-}
-
-function renumerarArticulos() {
-    const items = document.querySelectorAll(".zapato-item");
-
-    items.forEach((item, i) => {
-        item.querySelector(".zapato-titulo").innerText = `🧾 Artículo ${i + 1}`;
-    });
-
-    contadorZapatos = items.length;
-}
-
-
-
-function togglePrepago() {
-    const val = document.getElementById("prepago").value;
-    document.getElementById("montoPrepagoContainer").style.display =
-        val === "si" ? "block" : "none";
-    validarFormulario();
-}
-
-function validarFormulario() {
-    const cliente = document.getElementById("id_cliente").value;
-    const tipoPago = document.getElementById("tipo_pago").value;
-    const prepago = document.getElementById("prepago").value;
-    const monto = document.getElementById("monto_prepago")?.value;
-
-    let zapatosOK = contadorZapatos > 0;
-
-    document.querySelectorAll("#zapatosContainer select").forEach(s => {
-        if (!s.value) zapatosOK = false;
-    });
-
-    let valido =
-        cliente &&
-        tipoPago &&
-        prepago &&        
-        zapatosOK;
-
-    if (prepago === "si") {
-        valido = valido && monto && parseFloat(monto) > 0;
-    }
-
-    document.getElementById("btnCrear").disabled = !valido;
-}
-
-
-document.getElementById("formNuevoCliente").addEventListener("submit", async function (e) {
+async function crearCliente(e) {
     e.preventDefault();
 
-    const formData = new FormData(this);
+    const formData = new FormData(e.target);
 
     const res = await fetch("/api/clientes/crear", {
         method: "POST",
@@ -248,12 +173,115 @@ document.getElementById("formNuevoCliente").addEventListener("submit", async fun
 
     cerrarModalCliente();
     seleccionarCliente(cliente);
-});
+}
 
+
+async function cargarServicios() {
+    const res = await fetch("/api/servicios");
+    serviciosGlobales = await res.json();
+}
+
+async function cargarZapatosCliente(idCliente) {
+    const res = await fetch(`/api/clientes/${idCliente}/zapatos`);
+    zapatosCliente = await res.json();
+}
+
+
+function agregarZapato() {
+    const index = contadorZapatos;
+
+    const div = document.createElement("div");
+    div.className = "zapato-item";
+    div.innerHTML = `
+        <div class="zapato-header">
+            <div class="zapato-titulo">🧾 Artículo ${index + 1}</div>
+            <button type="button" class="btn-eliminar-zapato"
+                onclick="eliminarZapato(this)">✕</button>
+        </div>
+
+        ${crearSelectZapatos(index)}
+        ${crearSelectServicios(index)}
+    `;
+
+    document.getElementById("zapatosContainer").appendChild(div);
+    contadorZapatos++;
+    validarFormulario();
+}
+
+function eliminarZapato(btn) {
+    btn.closest(".zapato-item").remove();
+    renumerarArticulos();
+    validarFormulario();
+}
+
+function renumerarArticulos() {
+    document.querySelectorAll(".zapato-item").forEach((item, i) => {
+        item.querySelector(".zapato-titulo").innerText = `🧾 Artículo ${i + 1}`;
+    });
+    contadorZapatos = document.querySelectorAll(".zapato-item").length;
+}
+
+
+function crearSelectZapatos(index) {
+    let opciones = `<option value="">Selecciona zapato</option>`;
+    zapatosCliente.forEach(z => {
+        opciones += `
+            <option value="${z.id_zapato}">
+                ${z.marca} / ${z.tipo} / ${z.material} / ${z.color_base}-${z.color_secundario}
+            </option>`;
+    });
+
+    return `
+        <select name="zapatos[${index}][id_zapato]" onchange="validarFormulario()">
+            ${opciones}
+        </select>`;
+}
+
+function crearSelectServicios(index) {
+    let opciones = `<option value="">Selecciona servicio</option>`;
+    serviciosGlobales.forEach(s => {
+        opciones += `
+            <option value="${s.id_servicio}">
+                ${s.nombre} ($${s.precio})
+            </option>`;
+    });
+
+    return `
+        <select name="zapatos[${index}][id_servicio]" onchange="validarFormulario()">
+            ${opciones}
+        </select>`;
+}
+
+
+function togglePrepago() {
+    const val = document.getElementById("prepago").value;
+    document.getElementById("montoPrepagoContainer").style.display =
+        val === "si" ? "block" : "none";
+    validarFormulario();
+}
+
+
+function validarFormulario() {
+    const cliente = document.getElementById("id_cliente").value;
+    const tipoPago = document.getElementById("tipo_pago").value;
+    const prepago = document.getElementById("prepago").value;
+    const monto = document.getElementById("monto_prepago")?.value;
+
+    let valido = cliente && tipoPago && prepago;
+
+    const selects = document.querySelectorAll("#zapatosContainer select");
+    if (selects.length === 0) valido = false;
+
+    selects.forEach(s => {
+        if (!s.value) valido = false;
+    });
+
+    if (prepago === "si") {
+        valido = valido && monto && parseFloat(monto) > 0;
+    }
+
+    document.getElementById("btnCrear").disabled = !valido;
+}
 </script>
-
-
-
-
 
 {% endblock %}

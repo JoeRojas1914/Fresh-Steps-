@@ -1,13 +1,13 @@
 from db import get_connection
 
-def crear_venta(id_cliente, tipo_pago):
+def crear_venta(id_cliente, tipo_pago, prepago, monto_prepago):
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
-        INSERT INTO venta (id_cliente, tipo_pago, total)
-        VALUES (%s, %s, 0)
-    """, (id_cliente, tipo_pago))
+        INSERT INTO venta (id_cliente, tipo_pago, prepago, monto_prepago, total)
+        VALUES (%s, %s, %s, %s, 0)
+    """, (id_cliente, tipo_pago, prepago, monto_prepago))
 
     venta_id = cursor.lastrowid
     conn.commit()

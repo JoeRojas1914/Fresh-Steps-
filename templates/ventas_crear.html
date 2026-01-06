@@ -1,190 +1,90 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Nueva venta</h1>
+<h1 id="tituloNuevaVenta">Nueva venta</h1>
 
-<div id="clienteBusquedaContainer">
-    <div class="search-bar" id="searchBar">
-        <input type="text" id="buscarCliente" placeholder="Nombre del cliente">
-        <button type="button">Buscar</button>
+<div id="busquedaCliente">
+    <form class="search-form" onsubmit="return false;">
+        <input
+            type="text"
+            id="buscarCliente"
+            placeholder="Nombre del cliente"
+            autocomplete="off"
+        >
+        <button type="button" id="btnNuevoCliente">➕ Nuevo cliente</button>
+    </form>
+
+    <div class="results-list" id="listaClientes"></div>
+</div>
+
+<div id="modalCliente" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span class="close" onclick="cerrarModalCliente()">&times;</span>
+        <h2>Nuevo cliente</h2>
+
+        <form id="formNuevoCliente">
+            <input type="text" name="nombre" placeholder="Nombre" required>
+            <input type="text" name="apellido" placeholder="Apellido" required>
+            <input type="email" name="correo" placeholder="Correo">
+            <input type="text" name="telefono" placeholder="Teléfono">
+            <input type="text" name="direccion" placeholder="Dirección">
+
+            <button type="submit">Guardar</button>
+        </form>
     </div>
 </div>
 
-<ul id="listaClientes" class="results-list"></ul> 
 
-<div id="clienteSeleccionadoContainer" style="display:none;">
-    <div id="clienteSeleccionado" class="cliente-seleccionado"></div>
-    <button type="button">Cambiar cliente</button>
-</div>
 
-<hr>
-<form method="POST" action="/ventas/guardar">
-    <input type="hidden" id="id_cliente" name="id_cliente">
+<form method="POST" action="/ventas/guardar" id="formVenta" style="display:none;">
+    <input type="hidden" name="id_cliente" id="id_cliente">
+
+    <div id="clienteBox">
+        <strong id="clienteSeleccionado"></strong>
+        <button type="button" id="btnCambiarCliente">Cambiar cliente</button>
+    </div>
+
+    <hr>
 
     <div id="zapatosContainer"></div>
+    <button type="button" onclick="agregarZapato()">➕ Agregar Articulo</button>
 
-    <button type="button" id="btnAgregarZapato" onclick="agregarZapato()" disabled>➕ Agregar zapato</button>
-
-    <br><br>
+    <hr>
 
     <label>Tipo de pago</label>
-    <select name="tipo_pago">
+    <select name="tipo_pago" id="tipo_pago" onchange="validarFormulario()">
+        <option value="">-- Selecciona --</option>
         <option value="efectivo">Efectivo</option>
         <option value="tarjeta">Tarjeta</option>
     </select>
 
-    <br><br>
-    <button type="submit">Crear recibo</button>
+  <br>    
+
+    <label>¿Prepago?</label>
+    <select name="prepago" id="prepago" onchange="togglePrepago()">
+        <option value="">-- Selecciona --</option>
+        <option value="si">Sí</option>
+        <option value="no">No</option>
+    </select>
+
+    <div id="montoPrepagoContainer" style="display:none;">
+        <input type="number" step="0.01" name="monto_prepago" id="monto_prepago">
+    </div>
+  <br>    
+
+    
+
+    <button type="submit" id="btnCrear" disabled>Crear recibo</button>
 </form>
 
 
+
+
 <script>
-  let contadorZapatos = 0;
+let contadorZapatos = 0;
 
-
-
-  async function seleccionarCliente(cliente) {
-    document.getElementById("id_cliente").value = cliente.id_cliente;
-
-    const seleccionado = document.getElementById("clienteSeleccionado");
-    seleccionado.innerText = `${cliente.nombre} ${cliente.apellido}`;
-
-    document.getElementById("btnAgregarZapato").disabled = false;
-
-    // Oculta solo la barra, no la lista
-    document.getElementById("searchBar").style.display = "none";
-    document.getElementById("clienteSeleccionadoContainer").style.display = "block";
-
-    // Limpia resultados y búsqueda
-    document.getElementById("listaClientes").innerHTML = "";
-    document.getElementById("buscarCliente").value = "";
-
-    // Traer zapatos del cliente
-    const res = await fetch(`/api/zapatos/${cliente.id_cliente}`);
-    const zapatosCliente = await res.json();
-
-    const container = document.getElementById("zapatosContainer");
-    container.innerHTML = "";
-    contadorZapatos = 0;
-
-    zapatosCliente.forEach(z => {
-        agregarZapatoConDatos(z);
-    });
-}
-
-
-// Botón para cambiar cliente
-document.getElementById("btnCambiarCliente").addEventListener("click", () => {
-    // Limpiar selección
-    document.getElementById("id_cliente").value = "";
-    document.getElementById("clienteSeleccionado").innerText = "";
-    document.getElementById("btnAgregarZapato").disabled = true;
-    document.getElementById("zapatosContainer").innerHTML = "";
-    contadorZapatos = 0;
-
-    // Mostrar barra de búsqueda de nuevo
-    document.getElementById("clienteBusquedaContainer").style.display = "block";
-    document.getElementById("clienteSeleccionadoContainer").style.display = "none";
-});
-
-
-
-
-  function agregarZapato(zapato = null) {
-  const div = document.createElement("div");
-  div.className = "zapato-item";
-  div.dataset.index = contadorZapatos;
-
-  // Opciones de zapatos
-  let opcionesZapato = `<option value="">--Selecciona zapato--</option>`;
-  {% for z in zapatos %}
-    const selectedZ = (zapato && zapato.id_zapato == {{ z.id_zapato }}) ? "selected" : "";
-    opcionesZapato += `<option value="{{ z.id_zapato }}" ${selectedZ}>{{ z.color_base }} - {{ z.material }}</option>`;
-  {% endfor %}
-
-  // Opciones de servicios
-  let opcionesServicio = `<option value="">--Selecciona zapato primero--</option>`;
-  {% for s in servicios %}
-    const selectedS = (zapato && zapato.id_servicio == {{ s.id_servicio }}) ? "selected" : "";
-    opcionesServicio += `<option value="{{ s.id_servicio }}" ${selectedS}>{{ s.nombre }} (${{ s.precio }})</option>`;
-  {% endfor %}
-
-  div.innerHTML = `
-    <hr>
-    <div class="zapato-header">
-        <h4 class="zapato-titulo">Zapato ${contadorZapatos + 1}</h4>
-        <button type="button" class="btn-eliminar-zapato" onclick="eliminarZapato(this)">✖</button>
-    </div>
-
-    <label>Zapato</label>
-    <select name="zapatos[${contadorZapatos}][id_zapato]" onchange="habilitarServicio(this)">
-      ${opcionesZapato}
-    </select>
-
-    <label>Servicio</label>
-    <select name="zapatos[${contadorZapatos}][id_servicio]" ${zapato ? "" : "disabled"}>
-      ${opcionesServicio}
-    </select>
-  `;
-
-  document.getElementById("zapatosContainer").appendChild(div);
-  contadorZapatos++;
-  actualizarTitulosZapatos();
-}
-
-
-  function habilitarServicio(selectZapato) {
-    const servicioSelect = selectZapato.closest("div").querySelector("select[name*='id_servicio']");
-    servicioSelect.disabled = !selectZapato.value;
-  }
-
-  function eliminarZapato(boton) {
-  const div = boton.closest(".zapato-item");
-  div.remove();
-  contadorZapatos--;
-  actualizarTitulosZapatos();
-}
-
-
-function actualizarTitulosZapatos() {
-  const items = document.querySelectorAll(".zapato-item");
-  items.forEach((item, index) => {
-    const h4 = item.querySelector(".zapato-titulo");
-    const select = item.querySelector("select[name*='id_zapato']");
-    const opcion = select.options[select.selectedIndex];
-    const texto = opcion && opcion.value ? opcion.text : "--Selecciona zapato--";
-    h4.innerText = `Zapato ${index + 1}: ${texto}`;
-  });
-}
-
-
-  async function seleccionarCliente(cliente) {
-  document.getElementById("id_cliente").value = cliente.id_cliente;
-
-  const seleccionado = document.getElementById("clienteSeleccionado");
-  seleccionado.innerText = `${cliente.nombre} ${cliente.apellido}`;
-
-  document.getElementById("btnAgregarZapato").disabled = false;
-
-  document.getElementById("listaClientes").innerHTML = "";
-  document.getElementById("buscarCliente").value = "";
-
-  
-  const res = await fetch(`/api/zapatos/${cliente.id_cliente}`);
-  const zapatosCliente = await res.json();
-
-  const container = document.getElementById("zapatosContainer");
-  container.innerHTML = ""; 
-  contadorZapatos = 0;
-
-  zapatosCliente.forEach(z => {
-    agregarZapatoConDatos(z);
-  });
-}
-
-
-  document.getElementById("buscarCliente").addEventListener("input", async function () {
-    const q = this.value;
+document.getElementById("buscarCliente").addEventListener("input", async function () {
+    const q = this.value.trim();
     const lista = document.getElementById("listaClientes");
     lista.innerHTML = "";
 
@@ -194,19 +94,116 @@ function actualizarTitulosZapatos() {
     const clientes = await res.json();
 
     clientes.forEach(c => {
-      const li = document.createElement("li");
-      li.className = "result-item";
-      li.innerHTML = `<span class="result-name">${c.nombre} ${c.apellido}</span>`;
-      li.onclick = () => seleccionarCliente(c);
-      lista.appendChild(li);
+        const item = document.createElement("div");
+        item.className = "result-item";
+        item.style.cursor = "pointer";
+
+        item.innerHTML = `
+            <div class="result-name">
+                ${c.nombre} ${c.apellido}
+            </div>
+            <div class="result-action">
+                Seleccionar →
+            </div>
+        `;
+
+        item.onclick = () => seleccionarCliente(c);
+        lista.appendChild(item);
     });
-  });
 
+});
 
+function seleccionarCliente(cliente) {
+    document.getElementById("id_cliente").value = cliente.id_cliente;
+    document.getElementById("clienteSeleccionado").innerText =
+        `Cliente: ${cliente.nombre} ${cliente.apellido}`;
 
+    document.getElementById("tituloNuevaVenta").style.display = "none";
+    document.getElementById("busquedaCliente").style.display = "none";
+    document.getElementById("listaClientes").innerHTML = "";
+    document.getElementById("formVenta").style.display = "block";
 
-  
+    validarFormulario();
+}
+
+document.getElementById("btnCambiarCliente").addEventListener("click", () => {
+    location.reload();
+});
+
+document.getElementById("btnNuevoCliente").addEventListener("click", () => {
+    document.getElementById("modalCliente").style.display = "block";
+});
+function cerrarModalCliente() {
+    document.getElementById("modalCliente").style.display = "none";
+}
+
+function agregarZapato() {
+    const div = document.createElement("div");
+    div.innerHTML = `
+        <select name="zapatos[${contadorZapatos}][id_zapato]" onchange="validarFormulario()">
+            <option value="">Zapato</option>
+            {% for z in zapatos %}
+            <option value="{{ z.id_zapato }}">{{ z.color_base }} - {{ z.material }}</option>
+            {% endfor %}
+        </select>
+
+        <select name="zapatos[${contadorZapatos}][id_servicio]" onchange="validarFormulario()">
+            <option value="">Servicio</option>
+            {% for s in servicios %}
+            <option value="{{ s.id_servicio }}">{{ s.nombre }} (${{ s.precio }})</option>
+            {% endfor %}
+        </select>
+        <hr>
+    `;
+    document.getElementById("zapatosContainer").appendChild(div);
+    contadorZapatos++;
+}
+
+function togglePrepago() {
+    const val = document.getElementById("prepago").value;
+    document.getElementById("montoPrepagoContainer").style.display =
+        val === "si" ? "block" : "none";
+    validarFormulario();
+}
+
+function validarFormulario() {
+    const cliente = document.getElementById("id_cliente").value;
+    const tipoPago = document.getElementById("tipo_pago").value;
+    const prepago = document.getElementById("prepago").value;
+    const monto = document.getElementById("monto_prepago")?.value;
+
+    let zapatosOK = contadorZapatos > 0;
+    document.querySelectorAll("#zapatosContainer select").forEach(s => {
+        if (!s.value) zapatosOK = false;
+    });
+
+    let valido = cliente && tipoPago && zapatosOK;
+
+    if (prepago === "si") {
+        valido = valido && monto && parseFloat(monto) > 0;
+    }
+
+    document.getElementById("btnCrear").disabled = !valido;
+}
+
+document.getElementById("formNuevoCliente").addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+
+    const res = await fetch("/api/clientes/crear", {
+        method: "POST",
+        body: formData
+    });
+
+    const cliente = await res.json();
+
+    cerrarModalCliente();
+    seleccionarCliente(cliente);
+});
+
 </script>
+
 
 
 

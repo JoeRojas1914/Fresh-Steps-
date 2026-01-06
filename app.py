@@ -204,12 +204,36 @@ def api_clientes():
     clientes = buscar_clientes_por_nombre(q)
     return jsonify(clientes)
 
+@app.route("/api/clientes/crear", methods=["POST"])
+def api_crear_cliente():
+    nombre = request.form["nombre"]
+    apellido = request.form["apellido"]
+    correo = request.form.get("correo")
+    telefono = request.form.get("telefono")
+    direccion = request.form.get("direccion")
+
+    id_cliente = crear_cliente(nombre, apellido, correo, telefono, direccion)
+
+    return jsonify({
+        "id_cliente": id_cliente,
+        "nombre": nombre,
+        "apellido": apellido
+    })
+
+
+
 @app.route("/ventas/guardar", methods=["POST"])
 def guardar_venta():
     id_cliente = request.form["id_cliente"]
     tipo_pago = request.form["tipo_pago"]
 
-    venta_id = crear_venta(id_cliente, tipo_pago)
+    prepago = request.form.get("prepago")
+    monto_prepago = request.form.get("monto_prepago")
+
+    prepago = True if prepago == "si" else False
+    monto_prepago = monto_prepago if prepago else None
+
+    venta_id = crear_venta(id_cliente, tipo_pago, prepago, monto_prepago)
 
     total = 0
     form = request.form.to_dict(flat=False)
@@ -220,16 +244,16 @@ def guardar_venta():
         id_servicio = form[f"zapatos[{i}][id_servicio]"][0]
 
         vz_id = agregar_zapato_a_venta(venta_id, id_zapato)
-
         servicio = obtener_servicio_por_id(id_servicio)
-        agregar_servicio_a_zapato(vz_id, id_servicio,)
 
+        agregar_servicio_a_zapato(vz_id, id_servicio)
         total += float(servicio["precio"])
         i += 1
 
     actualizar_total_venta(venta_id, total)
 
     return redirect("/ventas/pendientes")
+
 
 
 

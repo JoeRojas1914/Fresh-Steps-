@@ -10,10 +10,12 @@ def crear_cliente(nombre, apellido, correo, telefono, direccion):
     """
 
     cursor.execute(sql, (nombre, apellido, correo, telefono, direccion))
+    id_cliente = cursor.lastrowid
     conn.commit()
 
     cursor.close()
     conn.close()
+    return id_cliente
 
 def obtener_clientes(q=None):
     conn = get_connection()

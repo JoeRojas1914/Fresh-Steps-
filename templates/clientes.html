@@ -71,26 +71,27 @@
 </table>
 
 <script>
-function abrirModal() {
-    document.getElementById("modal").style.display = "block";
-    document.getElementById("modalTitulo").innerText = "Agregar cliente";
-    document.getElementById("id_cliente").value = "";
-}
+    function abrirModal() {
+        document.getElementById("modal").style.display = "block";
+        document.getElementById("modalTitulo").innerText = "Agregar cliente";
+        document.getElementById("id_cliente").value = "";
+    }
 
-function cerrarModal() {
-    document.getElementById("modal").style.display = "none";
-}
+    function cerrarModal() {
+        document.getElementById("modal").style.display = "none";
+    }
 
-function editarCliente(id, nombre, apellido, correo, telefono, direccion) {
-    abrirModal();
-    document.getElementById("modalTitulo").innerText = "Editar cliente";
+    function editarCliente(id, nombre, apellido, correo, telefono, direccion) {
+        abrirModal();
+        document.getElementById("modalTitulo").innerText = "Editar cliente";
 
-    document.getElementById("id_cliente").value = id;
-    document.querySelector("[name=nombre]").value = nombre;
-    document.querySelector("[name=apellido]").value = apellido;
-    document.querySelector("[name=correo]").value = correo;
-    document.querySelector("[name=telefono]").value = telefono;
-    document.querySelector("[name=direccion]").value = direccion;
-}
-</script>
+        document.getElementById("id_cliente").value = id;
+        document.querySelector("[name=nombre]").value = nombre;
+        document.querySelector("[name=apellido]").value = apellido;
+        document.querySelector("[name=correo]").value = correo;
+        document.querySelector("[name=telefono]").value = telefono;
+        document.querySelector("[name=direccion]").value = direccion;
+    }
+    </script>
+    
 {% endblock %}

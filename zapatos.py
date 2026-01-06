@@ -1,15 +1,15 @@
 from db import get_connection
 
-def crear_zapato(id_cliente, color_base, color_secundario, material):
+def crear_zapato(id_cliente, color_base, color_secundario, material, tipo, marca):
     conn = get_connection()
     cursor = conn.cursor()
 
     sql = """
-    INSERT INTO zapato (id_cliente, color_base, color_secundario, material)
-    VALUES (%s, %s, %s, %s)
+    INSERT INTO zapato (id_cliente, color_base, color_secundario, material, tipo, marca)
+    VALUES (%s, %s, %s, %s, %s, %s)
     """
 
-    cursor.execute(sql, (id_cliente, color_base, color_secundario, material))
+    cursor.execute(sql, (id_cliente, color_base, color_secundario, material, tipo, marca))
     conn.commit()
 
     cursor.close()
@@ -29,15 +29,15 @@ def obtener_zapatos_cliente(id_cliente):
     conn.close()
     return zapatos
 
-def actualizar_zapato(id_zapato, color_base, color_secundario, material):
+def actualizar_zapato(id_zapato, color_base, color_secundario, material, tipo, marca):
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
         UPDATE zapato
-        SET color_base=%s, color_secundario=%s, material=%s
+        SET color_base=%s, color_secundario=%s, material=%s, tipo=%s, marca=%s
         WHERE id_zapato=%s
-    """, (color_base, color_secundario, material, id_zapato))
+    """, (color_base, color_secundario, material, tipo, marca, id_zapato))
 
     conn.commit()
     cursor.close()
@@ -53,6 +53,4 @@ def eliminar_zapato(id_zapato):
 
     cursor.close()
     conn.close()
-
-
 

@@ -131,11 +131,13 @@ def guardar_zapato():
     color_base = request.form["color_base"]
     color_secundario = request.form["color_secundario"]
     material = request.form["material"]
+    tipo = request.form["tipo"]
+    marca = request.form["marca"]
 
     if id_zapato:
-        actualizar_zapato(id_zapato, color_base, color_secundario, material)
+        actualizar_zapato(id_zapato, color_base, color_secundario, material, tipo, marca)
     else:
-        crear_zapato(id_cliente, color_base, color_secundario, material)
+        crear_zapato(id_cliente, color_base, color_secundario, material, tipo, marca)
 
     return redirect(f"/zapatos/{id_cliente}")
 

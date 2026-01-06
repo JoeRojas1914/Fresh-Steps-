@@ -15,6 +15,8 @@
       <input type="hidden" name="id_zapato" id="id_zapato">
       <input type="hidden" name="id_cliente" value="{{ cliente.id_cliente }}">
 
+      <input type="text" name="tipo" placeholder="Tipo">
+      <input type="text" name="marca" placeholder="Marca">
       <input type="text" name="color_base" placeholder="Color base" required>
       <input type="text" name="color_secundario" placeholder="Color secundario">
       <input type="text" name="material" placeholder="Material">
@@ -27,6 +29,8 @@
 <table border="1">
 <tr>
     <thead>
+      <th>Tipo</th>
+      <th>Marca</th>
       <th>Color</th>
       <th>Material</th>
       <th>Acciones</th>
@@ -36,6 +40,8 @@
   <tbody></tbody>
     {% for z in zapatos %}
     <tr>
+        <td>{{ z.tipo }}</td>
+        <td>{{ z.marca }}</td>
         <td>{{ z.color_base }} / {{ z.color_secundario }}</td>
         <td>{{ z.material }}</td>
         <td>
@@ -43,7 +49,9 @@
                 {{ z.id_zapato }},
                 '{{ z.color_base }}',
                 '{{ z.color_secundario }}',
-                '{{ z.material }}'
+                '{{ z.material }}',
+                '{{ z.tipo }}',
+                '{{ z.marca }}'
                 )">Edit
             </button>
 
@@ -58,13 +66,15 @@
   function abrirModal(){ document.getElementById("modal").style.display="block"; }
   function cerrarModal(){ document.getElementById("modal").style.display="none"; }
 
-  function editarZapato(id, base, sec, mat){
+  function editarZapato(id, base, sec, mat, tipo, marca){
     abrirModal();
     document.getElementById("tituloModal").innerText = "Editar zapato";
     document.getElementById("id_zapato").value=id;
     document.querySelector("[name=color_base]").value=base;
     document.querySelector("[name=color_secundario]").value=sec;
     document.querySelector("[name=material]").value=mat;
+    document.querySelector("[name=tipo]").value=tipo;
+    document.querySelector("[name=marca]").value=marca;
   }
 </script>
 

@@ -38,12 +38,15 @@ def guardar_cliente():
     telefono = request.form["telefono"]
     direccion = request.form["direccion"]
 
-    if id_cliente:  
+    if id_cliente:
         actualizar_cliente(id_cliente, nombre, apellido, correo, telefono, direccion)
-    else:           
+        flash("✅ Cliente actualizado correctamente.", "success")
+    else:
         crear_cliente(nombre, apellido, correo, telefono, direccion)
+        flash("✅ Cliente creado correctamente.", "success")
 
-    return redirect("/clientes")
+    return redirect(url_for("clientes"))
+
 
 
 
@@ -85,8 +88,12 @@ def guardar_servicio():
 
     if id_servicio:
         actualizar_servicio(id_servicio, nombre, descripcion, precio)
+        flash("✅ Servicio actualizado correctamente.", "success")
+
     else:
         crear_servicio(nombre, descripcion, precio)
+        flash("✅ Servicio creado correctamente.", "success")
+
 
     return redirect("/servicios")
 

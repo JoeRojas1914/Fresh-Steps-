@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from clientes import *
 from servicios import (obtener_servicios, crear_servicio, actualizar_servicio, eliminar_servicio, obtener_servicio_por_id, contar_servicios)
 from zapatos import (obtener_zapatos_cliente, crear_zapato, actualizar_zapato, eliminar_zapato)
@@ -168,10 +168,10 @@ def entregar_venta(id_venta):
 def api_clientes():
     q = request.args.get("q", "")
     if not q:
-        return []
+        return jsonify([])
 
     clientes = buscar_clientes_por_nombre(q)
-    return clientes
+    return jsonify(clientes)
 
 @app.route("/ventas/guardar", methods=["POST"])
 def guardar_venta():

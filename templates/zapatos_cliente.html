@@ -9,6 +9,8 @@
   <div class="modal-content">
     <span class="close" onclick="cerrarModal()">&times;</span>
 
+    <h2 id="tituloModal">Agregar zapato</h2>
+
     <form method="POST" action="/zapatos/guardar">
       <input type="hidden" name="id_zapato" id="id_zapato">
       <input type="hidden" name="id_cliente" value="{{ cliente.id_cliente }}">
@@ -53,16 +55,17 @@
 </table>
 
 <script>
-function abrirModal(){ document.getElementById("modal").style.display="block"; }
-function cerrarModal(){ document.getElementById("modal").style.display="none"; }
+  function abrirModal(){ document.getElementById("modal").style.display="block"; }
+  function cerrarModal(){ document.getElementById("modal").style.display="none"; }
 
-function editarZapato(id, base, sec, mat){
-  abrirModal();
-  document.getElementById("id_zapato").value=id;
-  document.querySelector("[name=color_base]").value=base;
-  document.querySelector("[name=color_secundario]").value=sec;
-  document.querySelector("[name=material]").value=mat;
-}
+  function editarZapato(id, base, sec, mat){
+    abrirModal();
+    document.getElementById("tituloModal").innerText = "Editar zapato";
+    document.getElementById("id_zapato").value=id;
+    document.querySelector("[name=color_base]").value=base;
+    document.querySelector("[name=color_secundario]").value=sec;
+    document.querySelector("[name=material]").value=mat;
+  }
 </script>
 
 

@@ -3,90 +3,156 @@
 {% block content %}
 <h1>Nueva venta</h1>
 
-<label>Buscar cliente</label>
-<input type="text" id="buscarCliente" placeholder="Nombre del cliente">
-<ul id="listaClientes"></ul>
+<div class="search-bar">
+    <input type="text" id="buscarCliente" placeholder="Nombre del cliente">
+    <button type="button">Buscar</button>
+</div>
+
+<ul id="listaClientes" class="results-list"></ul>
 
 <input type="hidden" name="id_cliente" id="id_cliente">
-<p id="clienteSeleccionado"></p>
+<div id="clienteSeleccionado" class="cliente-seleccionado"></div>
 
 <form method="POST" action="/ventas/guardar">
 
-<div id="zapatosContainer"></div>
 
-<button type="button" onclick="agregarZapato()">➕ Agregar zapato</button>
+  <div id="zapatosContainer"></div>
 
-<br><br>
+  <button type="button" id="btnAgregarZapato" onclick="agregarZapato()" disabled>➕ Agregar zapato</button>
 
-<label>Tipo de pago</label>
-<select name="tipo_pago">
-  <option>Efectivo</option>
-  <option>Tarjeta</option>
-</select>
+  <br><br>
 
-<button type="submit">Crear recibo</button>
+
+  <label>Tipo de pago</label>
+  <select name="tipo_pago">
+    <option value="efectivo">Efectivo</option>
+    <option value="tarjeta">Tarjeta</option>
+  </select>
+
+  <br><br>
+  <button type="submit">Crear recibo</button>
 </form>
 
 <script>
-let contadorZapatos = 0;
+  let contadorZapatos = 0;
 
-function agregarZapato() {
+
+  function agregarZapato(zapato = null) {
   const div = document.createElement("div");
+  div.className = "zapato-item";
+  div.dataset.index = contadorZapatos;
+
+  // Opciones de zapatos
+  let opcionesZapato = `<option value="">--Selecciona zapato--</option>`;
+  {% for z in zapatos %}
+    const selectedZ = (zapato && zapato.id_zapato == {{ z.id_zapato }}) ? "selected" : "";
+    opcionesZapato += `<option value="{{ z.id_zapato }}" ${selectedZ}>{{ z.color_base }} - {{ z.material }}</option>`;
+  {% endfor %}
+
+  // Opciones de servicios
+  let opcionesServicio = `<option value="">--Selecciona zapato primero--</option>`;
+  {% for s in servicios %}
+    const selectedS = (zapato && zapato.id_servicio == {{ s.id_servicio }}) ? "selected" : "";
+    opcionesServicio += `<option value="{{ s.id_servicio }}" ${selectedS}>{{ s.nombre }} (${{ s.precio }})</option>`;
+  {% endfor %}
+
   div.innerHTML = `
     <hr>
-    <h4>Zapato</h4>
+    <div class="zapato-header">
+        <h4 class="zapato-titulo">Zapato ${contadorZapatos + 1}</h4>
+        <button type="button" class="btn-eliminar-zapato" onclick="eliminarZapato(this)">✖</button>
+    </div>
 
-    <select name="zapatos[${contadorZapatos}][id_zapato]">
-      {% for z in zapatos %}
-      <option value="{{ z.id_zapato }}">
-        {{ z.color_base }} - {{ z.material }}
-      </option>
-      {% endfor %}
+    <label>Zapato</label>
+    <select name="zapatos[${contadorZapatos}][id_zapato]" onchange="habilitarServicio(this)">
+      ${opcionesZapato}
     </select>
 
-    <select name="zapatos[${contadorZapatos}][id_servicio]">
-      {% for s in servicios %}
-      <option value="{{ s.id_servicio }}">
-        {{ s.nombre }} (\${{ s.precio }})
-      </option>
-      {% endfor %}
+    <label>Servicio</label>
+    <select name="zapatos[${contadorZapatos}][id_servicio]" ${zapato ? "" : "disabled"}>
+      ${opcionesServicio}
     </select>
   `;
+
   document.getElementById("zapatosContainer").appendChild(div);
   contadorZapatos++;
+  actualizarTitulosZapatos();
 }
 
-// uno por default
-window.onload = agregarZapato;
-</script>
 
-<script>
-document.getElementById("buscarCliente").addEventListener("input", async function () {
-  const q = this.value;
-  const lista = document.getElementById("listaClientes");
-  lista.innerHTML = "";
+  function habilitarServicio(selectZapato) {
+    const servicioSelect = selectZapato.closest("div").querySelector("select[name*='id_servicio']");
+    servicioSelect.disabled = !selectZapato.value;
+  }
 
-  if (q.length < 2) return;
+  function eliminarZapato(boton) {
+  const div = boton.closest(".zapato-item");
+  div.remove();
+  contadorZapatos--;
+  actualizarTitulosZapatos();
+}
 
-  const res = await fetch(`/api/clientes?q=${q}`);
-  const clientes = await res.json();
 
-  clientes.forEach(c => {
-    const li = document.createElement("li");
-    li.textContent = `${c.nombre} ${c.apellido}`;
-    li.onclick = () => seleccionarCliente(c);
-    lista.appendChild(li);
+function actualizarTitulosZapatos() {
+  const items = document.querySelectorAll(".zapato-item");
+  items.forEach((item, index) => {
+    const h4 = item.querySelector(".zapato-titulo");
+    const select = item.querySelector("select[name*='id_zapato']");
+    const opcion = select.options[select.selectedIndex];
+    const texto = opcion && opcion.value ? opcion.text : "--Selecciona zapato--";
+    h4.innerText = `Zapato ${index + 1}: ${texto}`;
   });
-});
+}
 
-function seleccionarCliente(cliente) {
+
+  async function seleccionarCliente(cliente) {
   document.getElementById("id_cliente").value = cliente.id_cliente;
-  document.getElementById("clienteSeleccionado").innerText =
-    `Cliente: ${cliente.nombre} ${cliente.apellido}`;
+
+  const seleccionado = document.getElementById("clienteSeleccionado");
+  seleccionado.innerText = `Cliente seleccionado: ${cliente.nombre} ${cliente.apellido}`;
+
+  document.getElementById("btnAgregarZapato").disabled = false;
 
   document.getElementById("listaClientes").innerHTML = "";
   document.getElementById("buscarCliente").value = "";
+
+  // 🚀 Traer zapatos del cliente
+  const res = await fetch(`/api/zapatos/${cliente.id_cliente}`);
+  const zapatosCliente = await res.json();
+
+  const container = document.getElementById("zapatosContainer");
+  container.innerHTML = "";  // Limpiar contenedor
+  contadorZapatos = 0;
+
+  zapatosCliente.forEach(z => {
+    agregarZapatoConDatos(z);
+  });
 }
+
+
+  document.getElementById("buscarCliente").addEventListener("input", async function () {
+    const q = this.value;
+    const lista = document.getElementById("listaClientes");
+    lista.innerHTML = "";
+
+    if (q.length < 2) return;
+
+    const res = await fetch(`/api/clientes?q=${q}`);
+    const clientes = await res.json();
+
+    clientes.forEach(c => {
+      const li = document.createElement("li");
+      li.className = "result-item";
+      li.innerHTML = `<span class="result-name">${c.nombre} ${c.apellido}</span>`;
+      li.onclick = () => seleccionarCliente(c);
+      lista.appendChild(li);
+    });
+  });
+
+
+
+
+  
 </script>
 
 

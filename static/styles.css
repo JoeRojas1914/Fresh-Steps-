@@ -460,9 +460,110 @@ td .btn-delete {
     padding: 8px;
     width: 260px;
 }
-
+ 
 .search-bar button {
     padding: 8px 14px;
     cursor: pointer;
 }
 
+
+.results-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 500px;
+    margin-top: 10px;
+}
+
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    cursor: pointer;
+    font-weight: 500;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+}
+
+.result-item:hover {
+    background: #e6f3ff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+
+.results-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 500px;
+    margin-top: 6px;
+    margin-bottom: 12px;
+}
+
+
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    cursor: pointer;
+    font-weight: 500;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+}
+
+
+.cliente-seleccionado {
+    font-size: 16px;       
+    font-weight: 600;     
+    color: #1e3a8a;        
+    margin-top: 8px;       
+}
+
+
+.zapato-item {
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    background: #f8faff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: background 0.2s ease;
+}
+
+.zapato-item:hover {
+    background: #e6f3ff;
+}
+
+.zapato-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.zapato-titulo {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e3a8a;
+}
+
+.btn-eliminar-zapato {
+    background: #f87171;
+    border: none;
+    border-radius: 6px;
+    padding: 2px 6px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-eliminar-zapato:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(239,68,68,0.35);
+}

@@ -48,10 +48,10 @@
             <td>{{ g.total }}</td>
             <td>{{ g.fecha_registro }}</td>
             <td>
-                <button class="btn-edit"
-                        onclick='editarGasto({{ g.id_gasto }}, {{ g.descripcion|tojson }}, {{ g.proveedor|tojson }}, {{ g.total|tojson }}, "{{ g.fecha_registro.strftime("%Y-%m-%d") if g.fecha_registro else "" }}")'>
-                    Edit
-                </button>
+            <button class="btn-edit"
+                    onclick='editarGasto({{ g.id_gasto }}, {{ g.descripcion|tojson }}, {{ g.proveedor|tojson }}, {{ g.total|tojson }}, "{{ g.fecha_registro.strftime("%Y-%m-%d") if g.fecha_registro else "" }}")'>
+                Edit
+            </button>
 
                 <a href="/gastos/eliminar/{{ g.id_gasto }}" class="btn-delete" onclick="return confirm('¿Seguro que desea eliminar el gasto?')">
                     Delete

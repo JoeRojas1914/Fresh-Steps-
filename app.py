@@ -1,10 +1,12 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from clientes import *
-from gastos import crear_gasto, actualizar_gasto, eliminar_gasto,obtener_gastos
+from gastos import crear_gasto, actualizar_gasto, eliminar_gasto,obtener_gastos, obtener_gastos_por_proveedor
 from servicios import (obtener_servicios, crear_servicio, actualizar_servicio, eliminar_servicio, obtener_servicio_por_id, contar_servicios)
 from zapatos import (obtener_zapatos_cliente, crear_zapato, actualizar_zapato, eliminar_zapato)
 from ventas import (crear_venta, obtener_ventas_pendientes, marcar_entregada, agregar_zapato_a_venta, actualizar_total_venta)
 from clientes import (obtener_clientes)
+from datetime import date
+from calendar import monthrange
 
 
 
@@ -228,7 +230,29 @@ def guardar_gasto():
     return redirect("/gastos")
 
 
+# /////////////////////////////////ESTADISTICAS/////////////////////////////////////      
+@app.route("/estadisticas", methods=["GET", "POST"])
+def estadisticas():
+    hoy = date.today()
 
+    fecha_inicio = hoy.replace(day=1)
+    fecha_fin = hoy.replace(day=monthrange(hoy.year, hoy.month)[1])
+
+    if request.method == "POST":
+        fecha_inicio = date.fromisoformat(request.form.get("fecha_inicio"))
+        fecha_fin = date.fromisoformat(request.form.get("fecha_fin"))
+
+    gastos_por_proveedor = obtener_gastos_por_proveedor(
+        fecha_inicio.strftime("%Y-%m-%d"),
+        fecha_fin.strftime("%Y-%m-%d")
+    )
+
+    return render_template(
+        "estadisticas.html",
+        gastos=gastos_por_proveedor,
+        fecha_inicio=fecha_inicio.strftime("%Y-%m-%d"),
+        fecha_fin=fecha_fin.strftime("%Y-%m-%d")
+    )
 
 
 

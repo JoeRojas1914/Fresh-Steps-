@@ -3,42 +3,91 @@
 {% block content %}
 <h1>Nueva venta</h1>
 
-<div class="search-bar">
-    <input type="text" id="buscarCliente" placeholder="Nombre del cliente">
-    <button type="button">Buscar</button>
+<div id="clienteBusquedaContainer">
+    <div class="search-bar" id="searchBar">
+        <input type="text" id="buscarCliente" placeholder="Nombre del cliente">
+        <button type="button">Buscar</button>
+    </div>
 </div>
 
-<ul id="listaClientes" class="results-list"></ul>
+<ul id="listaClientes" class="results-list"></ul> 
+
+<div id="clienteSeleccionadoContainer" style="display:none;">
+    <div id="clienteSeleccionado" class="cliente-seleccionado"></div>
+    <button type="button">Cambiar cliente</button>
+</div>
 
 <hr>
-
-<input type="hidden" name="id_cliente" id="id_cliente">
-<div id="clienteSeleccionado" class="cliente-seleccionado"></div>
-
-<hr>
-
 <form method="POST" action="/ventas/guardar">
+    <input type="hidden" id="id_cliente" name="id_cliente">
 
+    <div id="zapatosContainer"></div>
 
-  <div id="zapatosContainer"></div>
+    <button type="button" id="btnAgregarZapato" onclick="agregarZapato()" disabled>➕ Agregar zapato</button>
 
-  <button type="button" id="btnAgregarZapato" onclick="agregarZapato()" disabled>➕ Agregar zapato</button>
+    <br><br>
 
-  <br><br>
+    <label>Tipo de pago</label>
+    <select name="tipo_pago">
+        <option value="efectivo">Efectivo</option>
+        <option value="tarjeta">Tarjeta</option>
+    </select>
 
-
-  <label>Tipo de pago</label>
-  <select name="tipo_pago">
-    <option value="efectivo">Efectivo</option>
-    <option value="tarjeta">Tarjeta</option>
-  </select>
-
-  <br><br>
-  <button type="submit">Crear recibo</button>
+    <br><br>
+    <button type="submit">Crear recibo</button>
 </form>
+
 
 <script>
   let contadorZapatos = 0;
+
+
+
+  async function seleccionarCliente(cliente) {
+    document.getElementById("id_cliente").value = cliente.id_cliente;
+
+    const seleccionado = document.getElementById("clienteSeleccionado");
+    seleccionado.innerText = `${cliente.nombre} ${cliente.apellido}`;
+
+    document.getElementById("btnAgregarZapato").disabled = false;
+
+    // Oculta solo la barra, no la lista
+    document.getElementById("searchBar").style.display = "none";
+    document.getElementById("clienteSeleccionadoContainer").style.display = "block";
+
+    // Limpia resultados y búsqueda
+    document.getElementById("listaClientes").innerHTML = "";
+    document.getElementById("buscarCliente").value = "";
+
+    // Traer zapatos del cliente
+    const res = await fetch(`/api/zapatos/${cliente.id_cliente}`);
+    const zapatosCliente = await res.json();
+
+    const container = document.getElementById("zapatosContainer");
+    container.innerHTML = "";
+    contadorZapatos = 0;
+
+    zapatosCliente.forEach(z => {
+        agregarZapatoConDatos(z);
+    });
+}
+
+
+// Botón para cambiar cliente
+document.getElementById("btnCambiarCliente").addEventListener("click", () => {
+    // Limpiar selección
+    document.getElementById("id_cliente").value = "";
+    document.getElementById("clienteSeleccionado").innerText = "";
+    document.getElementById("btnAgregarZapato").disabled = true;
+    document.getElementById("zapatosContainer").innerHTML = "";
+    contadorZapatos = 0;
+
+    // Mostrar barra de búsqueda de nuevo
+    document.getElementById("clienteBusquedaContainer").style.display = "block";
+    document.getElementById("clienteSeleccionadoContainer").style.display = "none";
+});
+
+
 
 
   function agregarZapato(zapato = null) {
@@ -120,7 +169,7 @@ function actualizarTitulosZapatos() {
   document.getElementById("listaClientes").innerHTML = "";
   document.getElementById("buscarCliente").value = "";
 
-  // 🚀 Traer zapatos del cliente
+  
   const res = await fetch(`/api/zapatos/${cliente.id_cliente}`);
   const zapatosCliente = await res.json();
 

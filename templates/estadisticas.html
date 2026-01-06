@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1>📊 Estadísticas</h1>
+</div>
+
+<div class="stats-page">
+
+    
+    <div class="card stats-card">
+        <h2 class="stats-title"> Gastos</h2>
+
+        <form method="POST" class="date-form">
+            <div class="date-group">
+                <label>Inicio</label>
+                <input type="date" name="fecha_inicio" value="{{ fecha_inicio }}" required>
+            </div>
+
+            <div class="date-group">
+                <label>Fin</label>
+                <input type="date" name="fecha_fin" value="{{ fecha_fin }}" required>
+            </div>
+
+            <button type="submit">Mostrar</button>
+        </form>
+
+        {% if gastos %}
+            <canvas id="gastosChart"></canvas>
+        {% else %}
+            <p class="no-data">No hay datos para este rango.</p>
+        {% endif %}
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('gastosChart');
+
+if (ctx) {
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: {{ gastos|map(attribute='proveedor')|list|tojson }},
+            datasets: [{
+                data: {{ gastos|map(attribute='total')|list|tojson }},
+                backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                borderColor: 'rgba(239, 68, 68, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            plugins: {
+                legend: {
+                    position: 'right'
+                }
+            }
+        }
+    });
+}
+</script>
+{% endblock %}

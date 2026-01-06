@@ -66,3 +66,21 @@ def obtener_gastos(q=None):
     conn.close()
 
     return gastos
+
+def obtener_gastos_por_proveedor(fecha_inicio, fecha_fin):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT proveedor, SUM(total) as total
+        FROM gastos
+        WHERE fecha_registro BETWEEN %s AND %s
+        GROUP BY proveedor
+        ORDER BY total DESC
+    """, (fecha_inicio, fecha_fin))
+
+    resultados = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return resultados
+

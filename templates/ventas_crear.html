@@ -81,6 +81,9 @@
             placeholder="$0.00"
             oninput="validarFormulario()"
         >
+        <div id="errorPrepago" style="color:red; font-size:0.9em; display:none;">
+            El prepago no puede ser mayor al total de la venta.
+        </div>
     </div>
 </div>
     
@@ -273,7 +276,7 @@ function validarFormulario() {
     const cliente = document.getElementById("id_cliente").value;
     const tipoPago = document.getElementById("tipo_pago").value;
     const prepago = document.getElementById("prepago").value;
-    const monto = document.getElementById("monto_prepago")?.value;
+    const monto = parseFloat(document.getElementById("monto_prepago")?.value || 0);
 
     let valido = cliente && tipoPago && prepago;
 
@@ -284,12 +287,32 @@ function validarFormulario() {
         if (!s.value) valido = false;
     });
 
+    let total = 0;
+    document.querySelectorAll("#zapatosContainer select[name$='[id_servicio]']").forEach(select => {
+        const idServicio = select.value;
+        if (idServicio) {
+            const servicio = serviciosGlobales.find(s => s.id_servicio == idServicio);
+            if (servicio) total += parseFloat(servicio.precio);
+        }
+    });
+
     if (prepago === "si") {
-        valido = valido && monto && parseFloat(monto) > 0;
+        if (!monto || monto <= 0) {
+            valido = false;
+        }
+        if (monto > total) {
+            valido = false;
+            document.getElementById("errorPrepago").style.display = "block";
+        } else {
+            document.getElementById("errorPrepago").style.display = "none";
+        }
+    } else {
+        document.getElementById("errorPrepago").style.display = "none";
     }
 
     document.getElementById("btnCrear").disabled = !valido;
 }
+
 
 function actualizarTotal() {
     let total = 0;

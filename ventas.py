@@ -148,3 +148,17 @@ def obtener_detalles_venta(id_venta):
     return detalles
 
 
+def contar_entregas_pendientes():
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT COUNT(*) 
+        FROM venta 
+        WHERE fecha_entrega IS NULL
+    """)
+    total = cursor.fetchone()[0]
+
+    cursor.close()
+    conn.close()
+    return total

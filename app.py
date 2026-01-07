@@ -40,6 +40,7 @@ from zapatos import (
 )
 
 from ventas import (
+    contar_entregas_pendientes,
     crear_venta,
     obtener_ventas_pendientes,
     marcar_entregada,
@@ -75,9 +76,9 @@ def buscar_clientes_por_nombre(texto):
 def index():
     return render_template(
         "index.html",
-        total_clientes=contar_clientes(),
-        total_servicios=contar_servicios()
+        total_entregas=contar_entregas_pendientes()  
     )
+
 
 
 # ================= CLIENTES =================

@@ -3,6 +3,12 @@
 
 <h1>🧾 Entregas pendientes</h1>
 
+{% if ventas %}
+<div style="margin-bottom: 20px;">
+    <input type="text" id="buscador-cliente" placeholder="Buscar por nombre del cliente..." 
+           style="padding:5px 10px; width:250px; border-radius:5px; border:1px solid #ccc;">
+</div>
+
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
     {% for category, message in messages %}
@@ -13,8 +19,7 @@
   {% endif %}
 {% endwith %}
 
-{% if ventas %}
-<table border="1">
+<table border="1" id="tabla-ventas">
     <thead>
         <tr>
             <th>Recibo</th>
@@ -100,6 +105,7 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
+    // Toggle detalles
     function toggleDetalles(idVenta) {
         const fila = document.getElementById(`detalles-${idVenta}`);
         fila.style.display = fila.style.display === "none" ? "table-row" : "none";
@@ -108,6 +114,28 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll('.btn-info').forEach(btn => {
         btn.addEventListener('click', () => {
             toggleDetalles(btn.dataset.id);
+        });
+    });
+
+    // Buscador por cliente
+    const inputBuscador = document.getElementById('buscador-cliente');
+    inputBuscador.addEventListener('keyup', () => {
+        const filtro = inputBuscador.value.toLowerCase();
+        const filas = document.querySelectorAll('#tabla-ventas tbody tr');
+
+        filas.forEach(fila => {
+            // Solo filas de ventas, no filas de detalles
+            if (!fila.classList.contains('detalles-venta')) {
+                const nombreCliente = fila.cells[1].textContent.toLowerCase();
+                fila.style.display = nombreCliente.includes(filtro) ? '' : 'none';
+
+                // Ocultar fila de detalles asociada también
+                const idVenta = fila.querySelector('.btn-info').dataset.id;
+                const filaDetalle = document.getElementById(`detalles-${idVenta}`);
+                if (filaDetalle) {
+                    filaDetalle.style.display = 'none';
+                }
+            }
         });
     });
 });

@@ -1,4 +1,6 @@
 from db import get_connection
+from datetime import date, timedelta
+from db import get_connection
 
 def crear_venta(id_cliente, tipo_pago, prepago, monto_prepago):
     conn = get_connection()
@@ -183,3 +185,46 @@ def contar_entregas_pendientes():
     cursor.close()
     conn.close()
     return total
+
+
+def obtener_ganancias_por_semana(mes=None, año=None):
+    hoy = date.today()
+    mes = mes or hoy.month
+    año = año or hoy.year
+
+    # Primer y último día del mes
+    primer_dia = date(año, mes, 1)
+    ultimo_dia = date(año, mes, monthrange(año, mes)[1])
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT fecha_entrega, total
+        FROM venta
+        WHERE fecha_entrega IS NOT NULL
+          AND fecha_entrega BETWEEN %s AND %s
+        ORDER BY fecha_entrega
+    """, (primer_dia, ultimo_dia))
+
+    ventas = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    semanas = [0, 0, 0, 0, 0]
+    labels = ["Semana 1", "Semana 2", "Semana 3", "Semana 4", "Semana 5"]
+
+    for v in ventas:
+        dia = v['fecha_entrega'].day
+        if dia <= 7:
+            semanas[0] += float(v['total'])
+        elif dia <= 14:
+            semanas[1] += float(v['total'])
+        elif dia <= 21:
+            semanas[2] += float(v['total'])
+        elif dia <= 28:
+            semanas[3] += float(v['total'])
+        else:
+            semanas[4] += float(v['total'])
+
+    return {"labels": labels, "totales": semanas}

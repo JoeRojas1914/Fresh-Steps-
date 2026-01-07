@@ -9,7 +9,6 @@ from db import get_connection
 # ================= IMPORTS DE MODULOS =================
 from clientes import (
     obtener_clientes,
-    contar_clientes,
     crear_cliente,
     actualizar_cliente,
 )
@@ -17,7 +16,6 @@ from clientes import (
 from gastos import (
     crear_gasto,
     actualizar_gasto,
-    eliminar_gasto,
     obtener_gastos,
     obtener_gastos_por_proveedor
 )
@@ -28,13 +26,11 @@ from servicios import (
     actualizar_servicio,
     eliminar_servicio,
     obtener_servicio_por_id,
-    contar_servicios
 )
 
 from zapatos import (
     obtener_zapatos_cliente,
     crear_zapato,
-    actualizar_zapato,
     eliminar_zapato,
     cliente_tiene_zapatos
 )
@@ -47,7 +43,8 @@ from ventas import (
     agregar_zapato_a_venta,
     asignar_servicio_a_venta_zapato,
     actualizar_total_venta,
-    obtener_detalles_venta
+    obtener_detalles_venta,
+    obtener_ganancias_por_semana
 )
 
 # ================= APP =================
@@ -419,7 +416,7 @@ def guardar_gasto():
 
 
 # ================= ESTADISTICAS =================
-@app.route("/estadisticas", methods=["GET", "POST"])
+app.route("/estadisticas", methods=["GET", "POST"])
 def estadisticas():
     hoy = date.today()
     inicio = hoy.replace(day=1)
@@ -429,15 +426,24 @@ def estadisticas():
         inicio = date.fromisoformat(request.form["fecha_inicio"])
         fin = date.fromisoformat(request.form["fecha_fin"])
 
+    gastos = obtener_gastos_por_proveedor(
+        inicio.strftime("%Y-%m-%d"),
+        fin.strftime("%Y-%m-%d")
+    )
+
+    ganancias_semana = obtener_ganancias_por_semana(hoy.month, hoy.year)
+
     return render_template(
         "estadisticas.html",
-        gastos=obtener_gastos_por_proveedor(
-            inicio.strftime("%Y-%m-%d"),
-            fin.strftime("%Y-%m-%d")
-        ),
+        gastos=gastos,
         fecha_inicio=inicio.strftime("%Y-%m-%d"),
-        fecha_fin=fin.strftime("%Y-%m-%d")
+        fecha_fin=fin.strftime("%Y-%m-%d"),
+        ganancias_semana=ganancias_semana
     )
+
+@app.route("/test")
+def test():
+    return "¡Funciona!"
 
 
 # ================= RUN =================

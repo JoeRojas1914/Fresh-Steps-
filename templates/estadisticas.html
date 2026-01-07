@@ -5,17 +5,24 @@
     <h1>📊 Estadísticas</h1>
 </div>
 
-<!-- Totales -->
-<div class="totals-container">
-    <div class="total-card">
+<div class="summary-cards">
+
+    <div class="summary-card kpi-card clients">
+        <div class="kpi-icon">👥</div>
         <h3>Total de clientes</h3>
-        <p>{{ total_clientes }}</p>
+        <div class="card-number">{{ total_clientes }}</div>
+        <span class="kpi-sub">Registrados</span>
     </div>
-    <div class="total-card">
+
+    <div class="summary-card kpi-card services">
+        <div class="kpi-icon">🧼</div>
         <h3>Total de servicios</h3>
-        <p>{{ total_servicios }}</p>
+        <div class="card-number">{{ total_servicios }}</div>
+        <span class="kpi-sub">Registrados</span>
     </div>
+
 </div>
+
 
 <div class="stats-page">
 
@@ -62,6 +69,17 @@ const nombresMeses = [
     "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
 ];
 
+const redPalette = [
+    "#b91c1c",
+    "#dc2626",
+    "#ef4444",
+    "#f87171",
+    "#fca5a5",
+    "#fecaca",
+    "#fee2e2",
+];
+
+
 document.addEventListener("DOMContentLoaded", async () => {
     initCharts();
     await cargarAños();
@@ -71,18 +89,35 @@ document.addEventListener("DOMContentLoaded", async () => {
 function initCharts() {
     gastosChart = new Chart(document.getElementById("gastosChart"), {
         type: "pie",
-        data: { labels: [], datasets: [{ data: [], backgroundColor: [] }] }
+        data: {
+            labels: [],
+            datasets: [{
+                data: [],
+                backgroundColor: []
+            }]
+        }
     });
 
     gananciasChart = new Chart(document.getElementById("gananciasChart"), {
         type: "bar",
         data: {
             labels: [],
-            datasets: [{ label: "Ganancias ($)", data: [] }]
+            datasets: [{
+                label: "Ganancias ($)",
+                data: [],
+                backgroundColor: "#22c55e",
+                hoverBackgroundColor: "#16a34a",
+                borderRadius: 8
+            }]
         },
-        options: { scales: { y: { beginAtZero: true } } }
+        options: {
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
     });
 }
+
 
 /* ================= CARGA AÑOS ================= */
 async function cargarAños() {
@@ -118,11 +153,16 @@ function cargarGastos() {
         .then(data => {
             gastosChart.data.labels = data.labels;
             gastosChart.data.datasets[0].data = data.data;
+
             gastosChart.data.datasets[0].backgroundColor =
-                data.labels.map(() => `hsl(${Math.random()*360},70%,60%)`);
+                data.labels.map((_, i) =>
+                    redPalette[i % redPalette.length]
+                );
+
             gastosChart.update();
         });
 }
+
 
 function cargarGanancias() {
     fetch(`/api/estadisticas/ganancias?mes=${mes_ganancias.value}&año=${año_ganancias.value}`)

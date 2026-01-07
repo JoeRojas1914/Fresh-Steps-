@@ -18,9 +18,13 @@ body {
 
 
 .page-content {
-    flex: 1;        
-    padding: 40px;
+    flex: 1;
+    width: 100%;
+    max-width: 100%;
+    padding: 40px 40px;
+    box-sizing: border-box;
 }
+
 
 
 
@@ -579,16 +583,22 @@ td .btn-delete {
 
 
 .stats-page {
-    display: flex;
-    justify-content: center;  
-    gap: 60px;                
-    margin-top: 30px;        
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    gap: 24px;
+    margin-top: 30px;
 }
 
 .stats-card {
-    width: 45%;              
-    min-width: 400px;        
+    padding: 22px;
+    min-height: 420px;
 }
+
+.stats-card canvas {
+    width: 100% !important;
+    max-height: 320px;
+}
+
 
 .month-form {
     display: flex;
@@ -597,9 +607,6 @@ td .btn-delete {
     margin-bottom: 24px;
 }
 
-.stats-card canvas {
-    margin-top: 10px;
-}
 
 
 .stats-title {
@@ -915,5 +922,45 @@ button:disabled:hover {
     font-weight: bold;
     color: #1e7fd6;
 }
+
+
+
+.kpi-card {
+    position: relative;
+    text-align: center;
+    padding: 26px 20px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #f7f7f7, #ffffff);
+    border: 1px solid #ffffff;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kpi-icon {
+    font-size: 34px;
+    margin-bottom: 10px;
+}
+
+.kpi-card h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #0b3c5d;
+    margin-bottom: 8px;
+}
+
+.kpi-card .card-number {
+    font-size: 32px;
+    font-weight: 800;
+    color: #1e7fd6;
+}
+
+.kpi-sub {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+
+
 
 

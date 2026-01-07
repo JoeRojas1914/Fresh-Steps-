@@ -13,6 +13,7 @@
   {% endif %}
 {% endwith %}
 
+{% if ventas %}
 <table border="1">
     <thead>
         <tr>
@@ -29,14 +30,17 @@
     </thead>
     <tbody>
     {% for v in ventas %}
+        {% set total = v.total | float(0) %}
+        {% set prepago = v.monto_prepago | float(0) %}
+        {% set deuda = total - prepago %}
         <tr>
             <td>#{{ v.id_venta }}</td>
             <td>{{ v.nombre }} {{ v.apellido }}</td>
             <td>{{ v.fecha_recibo }}</td>
             <td>{{ 'Sí' if v.prepago else 'No' }}</td>
-            <td>${{ v.total }}</td>
-            <td>${{ v.monto_prepago or 0 }}</td>
-            <td>${{ (v.total - (v.monto_prepago or 0)) | float }}</td>
+            <td>${{ total | round(2) }}</td>
+            <td>${{ prepago | round(2) }}</td>
+            <td>${{ deuda | round(2) }}</td>
             <td>
                 <button class="btn-info" data-id="{{ v.id_venta }}">ℹ️ Info</button>
             </td>
@@ -53,7 +57,6 @@
             <td colspan="9">
                 <div class="detalles-box">
                     <div class="detalles-title">🧾 Detalles de la venta</div>
-
                     <ul class="detalles-list">
                         {% for item in v.detalles %}
                             <li class="detalle-item">
@@ -63,7 +66,6 @@
                                         {{ item.zapato.color_base }}{% if item.zapato.color_secundario %}/{{ item.zapato.color_secundario }}{% endif %}
                                     </span>
                                 </div>
-
                                 <div class="detalle-servicio">
                                     {{ item.servicio.nombre }}
                                     <span class="detalle-precio">
@@ -80,28 +82,35 @@
     </tbody>
 </table>
 
-<script>
-function toggleDetalles(idVenta) {
-    const fila = document.getElementById(`detalles-${idVenta}`);
-    if (fila.style.display === "none") {
-        fila.style.display = "table-row";
-    } else {
-        fila.style.display = "none";
-    }
-}
+{% else %}
+<div style="
+    margin-top:30px;
+    padding:20px;
+    text-align:center;
+    font-size:1.2rem;
+    font-weight:bold;
+    background-color:#2fa4ff;
+    color:#ffffff;
+    border:1px solid #ffffff;
+    border-radius:10px;
+">
+    🎉 No hay entregas pendientes por cobrar
+</div>
+{% endif %}
 
-document.querySelectorAll('.btn-info').forEach(btn => {
-    btn.addEventListener('click', () => {
-        const idVenta = btn.dataset.id;
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    function toggleDetalles(idVenta) {
         const fila = document.getElementById(`detalles-${idVenta}`);
         fila.style.display = fila.style.display === "none" ? "table-row" : "none";
+    }
+
+    document.querySelectorAll('.btn-info').forEach(btn => {
+        btn.addEventListener('click', () => {
+            toggleDetalles(btn.dataset.id);
+        });
     });
 });
-
-{% for v in ventas %}
-console.log("Venta {{ v.id_venta }}:", {{ v.detalles | tojson }});
-{% endfor %}
-
 </script>
 
 {% endblock %}

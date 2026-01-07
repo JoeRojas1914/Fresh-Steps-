@@ -151,10 +151,15 @@ def ver_cliente(id_cliente):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("""
-        SELECT v.id_venta, v.fecha_recibo, v.total, v.tipo_pago
-        FROM venta v
-        WHERE v.id_cliente = %s
-        ORDER BY v.fecha_recibo DESC
+    SELECT 
+        v.id_venta, 
+        v.fecha_recibo, 
+        v.fecha_entrega,
+        v.total, 
+        v.tipo_pago
+    FROM venta v
+    WHERE v.id_cliente = %s
+    ORDER BY v.fecha_recibo DESC
     """, (id_cliente,))
     pedidos = cursor.fetchall()
     cursor.close()

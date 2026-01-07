@@ -7,7 +7,7 @@
 
 <div class="summary-cards">
 
-    <div class="summary-card kpi-card clients">
+    <div class="summary-card kpi-card clientes">
         <div class="kpi-icon">👥</div>
         <h3>Total de clientes</h3>
         <div class="card-number">{{ total_clientes }}</div>
@@ -22,6 +22,26 @@
     </div>
 
 </div>
+
+<div class="monthly-cards">
+
+    <div class="monthly-card ventas">
+        <h4>💰 Ventas del mes</h4>
+        <p id="ventasMes">$0</p>
+    </div>
+
+    <div class="monthly-card gastos">
+        <h4>💸 Gastos del mes</h4>
+        <p id="gastosMes">$0</p>
+    </div>
+
+    <div class="monthly-card ganancia">
+        <h4>📈 Ganancia del mes</h4>
+        <p id="gananciaMes">$0</p>
+    </div>
+
+</div>
+
 
 
 <div class="stats-page">
@@ -79,14 +99,13 @@ const redPalette = [
     "#fee2e2",
 ];
 
-
 document.addEventListener("DOMContentLoaded", async () => {
     initCharts();
     await cargarAños();
 });
 
-/* ================= CHARTS ================= */
 function initCharts() {
+
     gastosChart = new Chart(document.getElementById("gastosChart"), {
         type: "pie",
         data: {
@@ -118,8 +137,6 @@ function initCharts() {
     });
 }
 
-
-/* ================= CARGA AÑOS ================= */
 async function cargarAños() {
     const añosGastos = await fetchJSON("/api/estadisticas/gastos/años");
     const añosGanancias = await fetchJSON("/api/estadisticas/ganancias/años");
@@ -131,7 +148,6 @@ async function cargarAños() {
     await cargarMesesGanancias();
 }
 
-/* ================= CARGA MESES ================= */
 async function cargarMesesGastos() {
     const año = año_gastos.value;
     const meses = await fetchJSON(`/api/estadisticas/gastos/meses?año=${año}`);
@@ -141,31 +157,35 @@ async function cargarMesesGastos() {
 
 async function cargarMesesGanancias() {
     const año = año_ganancias.value;
-    const meses = await fetchJSON(`/api/estadisticas/ganancias/meses?año=${año}`);
+
+    const meses = await fetchJSON(
+        `/api/estadisticas/ganancias/meses?año=${año}`
+    );
+
     llenarSelect("mes_ganancias", meses, true);
+
     cargarGanancias();
+    cargarTotalesMes(); 
 }
 
-/* ================= FETCH DATA ================= */
+
 function cargarGastos() {
     fetch(`/api/estadisticas/gastos?mes=${mes_gastos.value}&año=${año_gastos.value}`)
         .then(r => r.json())
         .then(data => {
             gastosChart.data.labels = data.labels;
             gastosChart.data.datasets[0].data = data.data;
-
             gastosChart.data.datasets[0].backgroundColor =
-                data.labels.map((_, i) =>
-                    redPalette[i % redPalette.length]
-                );
-
+                data.labels.map((_, i) => redPalette[i % redPalette.length]);
             gastosChart.update();
         });
 }
 
-
 function cargarGanancias() {
-    fetch(`/api/estadisticas/ganancias?mes=${mes_ganancias.value}&año=${año_ganancias.value}`)
+    const año = document.getElementById("año_ganancias").value;
+    const mes = document.getElementById("mes_ganancias").value;
+
+    fetch(`/api/estadisticas/ganancias?mes=${mes}&año=${año}`)
         .then(r => r.json())
         .then(data => {
             gananciasChart.data.labels = data.rangos;
@@ -174,7 +194,28 @@ function cargarGanancias() {
         });
 }
 
-/* ================= HELPERS ================= */
+function cargarTotalesMes() {
+    const año = document.getElementById("año_ganancias").value;
+    const mes = document.getElementById("mes_ganancias").value;
+
+    if (!año || !mes) return;
+
+    fetch(`/api/estadisticas/totales-mes?mes=${mes}&año=${año}`)
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById("ventasMes").textContent =
+                `$${Number(data.ventas).toLocaleString()}`;
+
+            document.getElementById("gastosMes").textContent =
+                `$${Number(data.gastos).toLocaleString()}`;
+
+            document.getElementById("gananciaMes").textContent =
+                `$${Number(data.ganancia).toLocaleString()}`;
+        })
+        .catch(err => console.error("Error totales mes:", err));
+}
+
+
 function llenarSelect(id, valores, esMes=false) {
     const select = document.getElementById(id);
     select.innerHTML = "";
@@ -191,11 +232,15 @@ async function fetchJSON(url) {
     return res.json();
 }
 
-/* ================= EVENTS ================= */
 año_gastos.onchange = cargarMesesGastos;
 mes_gastos.onchange = cargarGastos;
+
 año_ganancias.onchange = cargarMesesGanancias;
-mes_ganancias.onchange = cargarGanancias;
+mes_ganancias.onchange = () => {
+    cargarGanancias();
+    cargarTotalesMes();
+};
 </script>
+
 
 {% endblock %}

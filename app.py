@@ -21,6 +21,7 @@ from gastos import (
     crear_gasto,
     actualizar_gasto,
     obtener_gastos,
+    eliminar_gasto
 )
 
 from servicios import (
@@ -351,7 +352,6 @@ def api_estadisticas_gastos():
     cur.close()
     conn.close()
 
-    # Generamos semanas del mes
     semanas = []
     semana_actual = inicio
     semana_map = []
@@ -366,11 +366,9 @@ def api_estadisticas_gastos():
         semana_map.append((start, end))
         semana_actual = end + timedelta(days=1)
 
-    # Inicializamos datos por proveedor
     proveedores_set = set(r["proveedor"] for r in rows)
     data_proveedores = {prov: [0]*len(semanas) for prov in proveedores_set}
 
-    # Distribuimos los gastos en cada semana
     for r in rows:
         for i, (start, end) in enumerate(semana_map):
             if start <= r["fecha_registro"] <= end:
@@ -478,7 +476,6 @@ def totales_mes():
     conn = get_connection()
     cur = conn.cursor(dictionary=True)
 
-    # Total ventas del mes
     cur.execute("""
         SELECT IFNULL(SUM(total),0) AS total_ventas
         FROM venta
@@ -486,7 +483,6 @@ def totales_mes():
     """, (inicio, fin))
     total_ventas = cur.fetchone()["total_ventas"]
 
-    # Total gastos del mes
     cur.execute("""
         SELECT IFNULL(SUM(total),0) AS total_gastos
         FROM gastos
@@ -600,9 +596,17 @@ def guardar_gasto():
 
     if id_gasto:
         actualizar_gasto(id_gasto, *datos)
+        flash("✅ Gasto editado correctamente.", "success")
     else:
         crear_gasto(*datos)
+        flash("✅ Gasto creado correctamente.", "success")
 
+    return redirect("/gastos")
+
+@app.route("/gastos/eliminar/<int:id_gasto>")
+def borrar_gasto(id_gasto):
+    eliminar_gasto(id_gasto) 
+    flash("✅ Gasto eliminado correctamente.", "success")
     return redirect("/gastos")
 
 

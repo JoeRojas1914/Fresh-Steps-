@@ -35,12 +35,11 @@ def actualizar_gasto(id_gasto, descripcion, proveedor, total, fecha_registro):
 def eliminar_gasto(id_gasto):
     conn = get_connection()
     cursor = conn.cursor()
-
     cursor.execute("DELETE FROM gastos WHERE id_gasto=%s", (id_gasto,))
-
     conn.commit()
     cursor.close()
     conn.close()
+
 
 
 def obtener_gastos(q=None):

@@ -4,6 +4,15 @@
 
 <h1>💸 Gastos</h1>
 
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert {{ category }}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
 
 <button onclick="abrirModal()">➕ Agregar gasto</button>
 

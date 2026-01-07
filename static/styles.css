@@ -1101,7 +1101,7 @@ button:disabled:hover {
     gap: 15px;
     margin-bottom: 30px;
     padding: 16px 20px;
-    background: linear-gradient(135deg, #f8fbff, #e6f3ff);
+    background: linear-gradient(135deg, #2fa4ff, #2fa4ff);
     border-radius: 16px;
     box-shadow: 0 6px 18px rgba(0,0,0,0.12);
 }

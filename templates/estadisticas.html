@@ -51,15 +51,13 @@
 </div>
 
 <div class="stats-page">
-    <!-- GASTOS -->
     <div class="card stats-card">
         <h2 class="stats-title">Gastos</h2>
         <canvas id="gastosChart"></canvas>
     </div>
 
-    <!-- GANANCIAS -->
     <div class="card stats-card">
-        <h2 class="stats-title">Ganancias por semana</h2>
+        <h2 class="stats-title">Ganancias</h2>
         <canvas id="gananciasChart"></canvas>
     </div>
 </div>
@@ -87,7 +85,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 function initCharts() {
-    // Gráfica de gastos por semana y proveedor
     gastosChart = new Chart(document.getElementById("gastosChart"), {
         type: "bar",
         data: { labels: [], datasets: [] },
@@ -101,7 +98,6 @@ function initCharts() {
         }
     });
 
-    // Gráfica de ganancias por semana
     gananciasChart = new Chart(document.getElementById("gananciasChart"), {
         type: "bar",
         data: { labels: [], datasets: [{ label: "Ganancias ($)", data: [], backgroundColor: "#22c55e", borderRadius: 8 }] },
@@ -130,7 +126,6 @@ function cargarTodasLasGraficas() {
 
     if (!mes || !año) return;
 
-    // 1️⃣ Gráfica de gastos
     fetch(`/api/estadisticas/gastos?mes=${mes}&año=${año}`)
         .then(r => r.json())
         .then(data => {
@@ -143,7 +138,6 @@ function cargarTodasLasGraficas() {
             gastosChart.update();
         });
 
-    // 2️⃣ Gráfica de ganancias
     fetch(`/api/estadisticas/ganancias?mes=${mes}&año=${año}`)
         .then(r => r.json())
         .then(data => {
@@ -152,7 +146,6 @@ function cargarTodasLasGraficas() {
             gananciasChart.update();
         });
 
-    // 3️⃣ Totales del mes para las tarjetas
     fetch(`/api/estadisticas/totales-mes?mes=${mes}&año=${año}`)
         .then(r => r.json())
         .then(data => {
@@ -178,7 +171,6 @@ async function fetchJSON(url) {
     return res.json();
 }
 
-// Actualización automática al cambiar año o mes
 document.getElementById("año_general").onchange = async () => {
     await cargarMeses();
     cargarTodasLasGraficas();

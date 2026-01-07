@@ -590,7 +590,16 @@ td .btn-delete {
     min-width: 400px;        
 }
 
+.month-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+}
 
+.stats-card canvas {
+    margin-top: 10px;
+}
 
 
 .stats-title {
@@ -881,13 +890,13 @@ button:disabled:hover {
 
 .summary-cards {
     display: flex;
-    gap: 20px;        /* espacio entre los resúmenes */
-    margin-top: 20px; /* espacio debajo del título */
-    flex-wrap: wrap;   /* se ajusta en pantallas pequeñas */
+    gap: 20px;       
+    margin-top: 20px; 
+    flex-wrap: wrap;   
 }
 
 .summary-card {
-    flex: 1 1 200px;   /* ancho mínimo de 200px y flexible */
+    flex: 1 1 200px;   
     text-align: center;
     padding: 20px;
     background: linear-gradient(135deg, #f8fbff, #e6f3ff);

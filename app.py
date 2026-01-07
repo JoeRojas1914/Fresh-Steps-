@@ -315,11 +315,107 @@ def api_crear_zapato():
 
     crear_zapato(id_cliente, color_base, color_secundario, material, tipo, marca)
 
-    # Obtener el último zapato creado
     zapatos = obtener_zapatos_cliente(id_cliente)
     nuevo_zapato = zapatos[-1]
 
     return jsonify(nuevo_zapato)
+
+@app.route("/api/estadisticas/gastos")
+def api_estadisticas_gastos():
+    hoy = date.today()
+    mes = request.args.get("mes", hoy.month, type=int)
+    año = request.args.get("año", hoy.year, type=int)
+
+    inicio = date(año, mes, 1)
+    fin = date(año, mes, monthrange(año, mes)[1])
+
+    gastos = obtener_gastos_por_proveedor(
+        inicio.strftime("%Y-%m-%d"),
+        fin.strftime("%Y-%m-%d")
+    )
+
+    return jsonify({
+        "labels": [g["proveedor"] for g in gastos],
+        "data": [float(g["total"]) for g in gastos]
+    })
+
+
+
+@app.route("/api/estadisticas/ganancias")
+def api_estadisticas_ganancias():
+    hoy = date.today()
+    mes = request.args.get("mes", hoy.month, type=int)
+    año = request.args.get("año", hoy.year, type=int)
+
+    return jsonify(obtener_ganancias_por_semana(mes, año))
+
+@app.route("/api/estadisticas/gastos/años")
+def años_gastos():
+    conn = get_connection()
+    cur = conn.cursor(dictionary=True)
+    cur.execute("""
+        SELECT DISTINCT YEAR(fecha_registro) AS año
+        FROM gastos
+        ORDER BY año DESC
+    """)
+    data = [r["año"] for r in cur.fetchall()]
+    cur.close()
+    conn.close()
+    return jsonify(data)
+
+
+
+@app.route("/api/estadisticas/gastos/meses")
+def meses_gastos():
+    año = request.args.get("año", type=int)
+
+    conn = get_connection()
+    cur = conn.cursor(dictionary=True)
+    cur.execute("""
+        SELECT DISTINCT MONTH(fecha_registro) AS mes
+        FROM gastos
+        WHERE YEAR(fecha_registro) = %s
+        ORDER BY mes
+    """, (año,))
+    data = [r["mes"] for r in cur.fetchall()]
+    cur.close()
+    conn.close()
+    return jsonify(data)
+
+
+
+@app.route("/api/estadisticas/ganancias/años")
+def años_ganancias():
+    conn = get_connection()
+    cur = conn.cursor(dictionary=True)
+    cur.execute("""
+        SELECT DISTINCT YEAR(fecha_recibo) AS año
+        FROM venta
+        ORDER BY año DESC
+    """)
+    data = [r["año"] for r in cur.fetchall()]
+    cur.close()
+    conn.close()
+    return jsonify(data)
+
+
+
+@app.route("/api/estadisticas/ganancias/meses")
+def meses_ganancias():
+    año = request.args.get("año", type=int)
+
+    conn = get_connection()
+    cur = conn.cursor(dictionary=True)
+    cur.execute("""
+        SELECT DISTINCT MONTH(fecha_recibo) AS mes
+        FROM venta
+        WHERE YEAR(fecha_recibo) = %s
+        ORDER BY mes
+    """, (año,))
+    data = [r["mes"] for r in cur.fetchall()]
+    cur.close()
+    conn.close()
+    return jsonify(data)
 
 
 
@@ -421,34 +517,23 @@ def guardar_gasto():
 
 
 # ================= ESTADISTICAS =================
-@app.route("/estadisticas", methods=["GET", "POST"])
+@app.route("/estadisticas")
 def estadisticas():
     hoy = date.today()
-    inicio = hoy.replace(day=1)
-    fin = hoy.replace(day=monthrange(hoy.year, hoy.month)[1])
-
-    if request.method == "POST":
-        inicio = date.fromisoformat(request.form["fecha_inicio"])
-        fin = date.fromisoformat(request.form["fecha_fin"])
-
-    gastos = obtener_gastos_por_proveedor(
-        inicio.strftime("%Y-%m-%d"),
-        fin.strftime("%Y-%m-%d")
-    )
-
-    ganancias_semana = obtener_ganancias_por_semana(hoy.month, hoy.year)
-
-    total_clientes = contar_clientes()
-    total_servicios = contar_servicios()
+    meses = {
+        1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril",
+        5: "Mayo", 6: "Junio", 7: "Julio", 8: "Agosto",
+        9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre"
+    }
 
     return render_template(
         "estadisticas.html",
-        gastos=gastos,
-        fecha_inicio=inicio.strftime("%Y-%m-%d"),
-        fecha_fin=fin.strftime("%Y-%m-%d"),
-        ganancias_semana=ganancias_semana,
-        total_clientes=total_clientes,
-        total_servicios=total_servicios
+        meses=meses,
+        año_actual=hoy.year,
+        mes_gastos=hoy.month,
+        mes_ganancias=hoy.month,
+        total_clientes=contar_clientes(),
+        total_servicios=contar_servicios()
     )
 
 

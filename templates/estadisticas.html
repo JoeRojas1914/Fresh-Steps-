@@ -5,7 +5,7 @@
     <h1>📊 Estadísticas</h1>
 </div>
 
-<!-- Totales de clientes y servicios -->
+<!-- Totales -->
 <div class="totals-container">
     <div class="total-card">
         <h3>Total de clientes</h3>
@@ -19,66 +19,143 @@
 
 <div class="stats-page">
 
-    <div class="card stats-card">
-        <h2 class="stats-title">Gastos</h2>
+<!-- ================= GASTOS ================= -->
+<div class="card stats-card">
+    <h2 class="stats-title">Gastos</h2>
 
-        <form method="POST" class="date-form">
-            <div class="date-group">
-                <label>Inicio</label>
-                <input type="date" name="fecha_inicio" value="{{ fecha_inicio }}" required>
-            </div>
+    <form class="month-form" onsubmit="return false;">
+        <label>Año:</label>
+        <select id="año_gastos"></select>
 
-            <div class="date-group">
-                <label>Fin</label>
-                <input type="date" name="fecha_fin" value="{{ fecha_fin }}" required>
-            </div>
+        <label>Mes:</label>
+        <select id="mes_gastos"></select>
+    </form>
 
-            <button type="submit">Mostrar</button>
-        </form>
+    <canvas id="gastosChart"></canvas>
+</div>
 
-        {% if gastos %}
-            <canvas id="gastosChart"></canvas>
-        {% else %}
-            <p class="no-data">No hay datos para este rango.</p>
-        {% endif %}
-    </div>
+<!-- ================= GANANCIAS ================= -->
+<div class="card stats-card">
+    <h2 class="stats-title">Ganancias por semana</h2>
 
-    <div class="card stats-card">
-        <h2 class="stats-title">Ganancias por semana</h2>
-        <canvas id="gananciasChart"></canvas>
-    </div>
+    <form class="month-form" onsubmit="return false;">
+        <label>Año:</label>
+        <select id="año_ganancias"></select>
+
+        <label>Mes:</label>
+        <select id="mes_ganancias"></select>
+    </form>
+
+    <canvas id="gananciasChart"></canvas>
+</div>
 
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
-const ctx = document.getElementById('gastosChart');
+let gastosChart;
+let gananciasChart;
 
-if (ctx) {
-    const labels = {{ gastos|map(attribute='proveedor')|list|tojson }};
-    const data = {{ gastos|map(attribute='total')|list|tojson }};
+const nombresMeses = [
+    "", "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+    "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
+];
 
-    const backgroundColors = labels.map(() => `hsl(${Math.random() * 360}, 70%, 60%)`);
-    const borderColors = backgroundColors.map(c => c.replace('60%', '40%'));
+document.addEventListener("DOMContentLoaded", async () => {
+    initCharts();
+    await cargarAños();
+});
 
-    new Chart(ctx, {
-        type: 'pie',
-        data: { labels, datasets: [{ data, backgroundColor: backgroundColors, borderColor: borderColors, borderWidth: 1 }] },
-        options: { plugins: { legend: { position: 'right' } } }
+/* ================= CHARTS ================= */
+function initCharts() {
+    gastosChart = new Chart(document.getElementById("gastosChart"), {
+        type: "pie",
+        data: { labels: [], datasets: [{ data: [], backgroundColor: [] }] }
+    });
+
+    gananciasChart = new Chart(document.getElementById("gananciasChart"), {
+        type: "bar",
+        data: {
+            labels: [],
+            datasets: [{ label: "Ganancias ($)", data: [] }]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
     });
 }
 
-const ctxGanancias = document.getElementById('gananciasChart');
-if (ctxGanancias) {
-    const labels = {{ ganancias_semana.labels|tojson }};
-    const data = {{ ganancias_semana.totales|tojson }};
+/* ================= CARGA AÑOS ================= */
+async function cargarAños() {
+    const añosGastos = await fetchJSON("/api/estadisticas/gastos/años");
+    const añosGanancias = await fetchJSON("/api/estadisticas/ganancias/años");
 
-    new Chart(ctxGanancias, {
-        type: 'bar',
-        data: { labels, datasets: [{ label: 'Ganancias ($)', data, backgroundColor: 'rgba(34,197,94,0.7)', borderColor: 'rgba(34,197,94,1)', borderWidth: 1 }] },
-        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    llenarSelect("año_gastos", añosGastos);
+    llenarSelect("año_ganancias", añosGanancias);
+
+    await cargarMesesGastos();
+    await cargarMesesGanancias();
+}
+
+/* ================= CARGA MESES ================= */
+async function cargarMesesGastos() {
+    const año = año_gastos.value;
+    const meses = await fetchJSON(`/api/estadisticas/gastos/meses?año=${año}`);
+    llenarSelect("mes_gastos", meses, true);
+    cargarGastos();
+}
+
+async function cargarMesesGanancias() {
+    const año = año_ganancias.value;
+    const meses = await fetchJSON(`/api/estadisticas/ganancias/meses?año=${año}`);
+    llenarSelect("mes_ganancias", meses, true);
+    cargarGanancias();
+}
+
+/* ================= FETCH DATA ================= */
+function cargarGastos() {
+    fetch(`/api/estadisticas/gastos?mes=${mes_gastos.value}&año=${año_gastos.value}`)
+        .then(r => r.json())
+        .then(data => {
+            gastosChart.data.labels = data.labels;
+            gastosChart.data.datasets[0].data = data.data;
+            gastosChart.data.datasets[0].backgroundColor =
+                data.labels.map(() => `hsl(${Math.random()*360},70%,60%)`);
+            gastosChart.update();
+        });
+}
+
+function cargarGanancias() {
+    fetch(`/api/estadisticas/ganancias?mes=${mes_ganancias.value}&año=${año_ganancias.value}`)
+        .then(r => r.json())
+        .then(data => {
+            gananciasChart.data.labels = data.rangos;
+            gananciasChart.data.datasets[0].data = data.totales;
+            gananciasChart.update();
+        });
+}
+
+/* ================= HELPERS ================= */
+function llenarSelect(id, valores, esMes=false) {
+    const select = document.getElementById(id);
+    select.innerHTML = "";
+    valores.forEach(v => {
+        const opt = document.createElement("option");
+        opt.value = v;
+        opt.text = esMes ? nombresMeses[v] : v;
+        select.appendChild(opt);
     });
 }
+
+async function fetchJSON(url) {
+    const res = await fetch(url);
+    return res.json();
+}
+
+/* ================= EVENTS ================= */
+año_gastos.onchange = cargarMesesGastos;
+mes_gastos.onchange = cargarGastos;
+año_ganancias.onchange = cargarMesesGanancias;
+mes_ganancias.onchange = cargarGanancias;
 </script>
 
 {% endblock %}

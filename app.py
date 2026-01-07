@@ -45,7 +45,8 @@ from ventas import (
     marcar_entregada,
     agregar_zapato_a_venta,
     asignar_servicio_a_venta_zapato,
-    actualizar_total_venta
+    actualizar_total_venta,
+    obtener_detalles_venta
 )
 
 # ================= APP =================
@@ -251,15 +252,22 @@ def ventas():
 
 @app.route("/ventas/pendientes")
 def ventas_pendientes():
+    ventas = obtener_ventas_pendientes()
+
+    for v in ventas:
+        v['detalles'] = obtener_detalles_venta(v['id_venta'])
+
     return render_template(
         "ventas_pendientes.html",
-        ventas=obtener_ventas_pendientes()
+        ventas=ventas
     )
 
 
 @app.route("/ventas/entregar/<int:id_venta>")
 def entregar_venta(id_venta):
     marcar_entregada(id_venta)
+    flash("✅ Venta entregada correctamente.", "success")
+
     return redirect("/ventas/pendientes")
 
 

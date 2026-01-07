@@ -1,16 +1,29 @@
 {% extends "base.html" %}
-
 {% block content %}
 
-<h1>🧾Entregas pendientes</h1>
+<h1>🧾 Entregas pendientes</h1>
 
-<table>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert {{ category }}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<table border="1">
     <thead>
         <tr>
             <th>Recibo</th>
             <th>Cliente</th>
             <th>Fecha</th>
+            <th>Prepago</th>
             <th>Total</th>
+            <th>Monto prepago</th>
+            <th>Pago a deber</th>
+            <th>Detalles</th>
             <th>Acción</th>
         </tr>
     </thead>
@@ -20,18 +33,54 @@
             <td>#{{ v.id_venta }}</td>
             <td>{{ v.nombre }} {{ v.apellido }}</td>
             <td>{{ v.fecha_recibo }}</td>
+            <td>{{ 'Sí' if v.prepago else 'No' }}</td>
             <td>${{ v.total }}</td>
+            <td>${{ v.monto_prepago or 0 }}</td>
+            <td>${{ (v.total - (v.monto_prepago or 0)) | float }}</td>
+            <td>
+                <button class="btn-info" data-id="{{ v.id_venta }}">ℹ️ Info</button>
+            </td>
             <td>
                 <a href="/ventas/entregar/{{ v.id_venta }}"
                    onclick="return confirm('¿Marcar como entregada?')"
-                   class="btn-edit"
+                   class="btn-entregar"
                 >
                    ✅ Entregar
                 </a>
             </td>
         </tr>
+        <tr id="detalles-{{ v.id_venta }}" class="detalles-venta" style="display:none;">
+            <td colspan="9">
+                <strong>Detalles de la venta:</strong>
+                <ul>
+                {% for item in v.detalles %}
+                    <li>{{ item.zapato.marca }} / {{ item.zapato.tipo }} - {{ item.servicio.nombre }} (${{ item.servicio.precio }})</li>
+                {% endfor %}
+                </ul>
+            </td>
+        </tr>
     {% endfor %}
     </tbody>
 </table>
+
+<script>
+function toggleDetalles(idVenta) {
+    const fila = document.getElementById(`detalles-${idVenta}`);
+    if (fila.style.display === "none") {
+        fila.style.display = "table-row";
+    } else {
+        fila.style.display = "none";
+    }
+}
+
+document.querySelectorAll('.btn-info').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const idVenta = btn.dataset.id;
+        const fila = document.getElementById(`detalles-${idVenta}`);
+        fila.style.display = fila.style.display === "none" ? "table-row" : "none";
+    });
+});
+
+</script>
 
 {% endblock %}

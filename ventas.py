@@ -124,3 +124,27 @@ def actualizar_total_venta(id_venta, total):
     cursor.close()
     conn.close()
 
+
+def obtener_detalles_venta(id_venta):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT z.marca, z.tipo, s.nombre AS nombre_servicio, zs.precio_aplicado AS precio
+        FROM venta_zapato vz
+        JOIN zapato z ON vz.id_zapato = z.id_zapato
+        JOIN zapato_servicio zs ON vz.id_venta_zapato = zs.id_venta_zapato
+        JOIN servicio s ON zs.id_servicio = s.id_servicio
+        WHERE vz.id_venta = %s
+    """, (id_venta,))
+
+    detalles = []
+    for row in cursor.fetchall():
+        detalles.append({
+            "zapato": {"marca": row["marca"], "tipo": row["tipo"]},
+            "servicio": {"nombre": row["nombre_servicio"], "precio": row["precio"]}
+        })
+
+    return detalles
+
+

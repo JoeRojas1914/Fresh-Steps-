@@ -92,3 +92,13 @@ def contar_servicios():
     conn.close()
 
     return total
+
+def servicio_tiene_ventas(id_servicio):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM zapato_servicio WHERE id_servicio = %s", (id_servicio,))
+    resultado = cursor.fetchone()[0]
+    cursor.close()
+    conn.close()
+    return resultado > 0
+

@@ -200,8 +200,16 @@ def guardar_servicio():
 
 @app.route("/servicios/eliminar/<int:id_servicio>")
 def borrar_servicio(id_servicio):
+    from servicios import servicio_tiene_ventas
+
+    if servicio_tiene_ventas(id_servicio):
+        flash("❌ No se puede eliminar este servicio porque ya está asociado a una venta.", "error")
+        return redirect("/servicios")
+
     eliminar_servicio(id_servicio)
+    flash("✅ Servicio eliminado correctamente.", "success")
     return redirect("/servicios")
+
 
 
 # ================= ZAPATOS =================

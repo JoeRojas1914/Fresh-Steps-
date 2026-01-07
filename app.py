@@ -3,7 +3,7 @@ from datetime import date
 from calendar import monthrange
 import os
 from dotenv import load_dotenv
-from datetime import date
+from datetime import date, timedelta
 from calendar import monthrange
 
 
@@ -21,7 +21,6 @@ from gastos import (
     crear_gasto,
     actualizar_gasto,
     obtener_gastos,
-    obtener_gastos_por_proveedor
 )
 
 from servicios import (
@@ -325,24 +324,64 @@ def api_crear_zapato():
 
     return jsonify(nuevo_zapato)
 
+
 @app.route("/api/estadisticas/gastos")
 def api_estadisticas_gastos():
-    hoy = date.today()
-    mes = request.args.get("mes", hoy.month, type=int)
-    año = request.args.get("año", hoy.year, type=int)
+    mes = request.args.get("mes", type=int)
+    año = request.args.get("año", type=int)
+    if not mes:
+        mes = date.today().month
+    if not año:
+        año = date.today().year
 
     inicio = date(año, mes, 1)
     fin = date(año, mes, monthrange(año, mes)[1])
 
-    gastos = obtener_gastos_por_proveedor(
-        inicio.strftime("%Y-%m-%d"),
-        fin.strftime("%Y-%m-%d")
-    )
+    conn = get_connection()
+    cur = conn.cursor(dictionary=True)
+
+    cur.execute("""
+        SELECT proveedor, fecha_registro, SUM(total) AS total
+        FROM gastos
+        WHERE fecha_registro BETWEEN %s AND %s
+        GROUP BY proveedor, fecha_registro
+    """, (inicio, fin))
+
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    # Generamos semanas del mes
+    semanas = []
+    semana_actual = inicio
+    semana_map = []
+
+    meses_nombres = ["", "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+                     "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
+
+    while semana_actual <= fin:
+        start = semana_actual
+        end = min(semana_actual + timedelta(days=6), fin)
+        semanas.append(f"{start.day}-{end.day} {meses_nombres[start.month]}")
+        semana_map.append((start, end))
+        semana_actual = end + timedelta(days=1)
+
+    # Inicializamos datos por proveedor
+    proveedores_set = set(r["proveedor"] for r in rows)
+    data_proveedores = {prov: [0]*len(semanas) for prov in proveedores_set}
+
+    # Distribuimos los gastos en cada semana
+    for r in rows:
+        for i, (start, end) in enumerate(semana_map):
+            if start <= r["fecha_registro"] <= end:
+                data_proveedores[r["proveedor"]][i] += float(r["total"])
+                break
 
     return jsonify({
-        "labels": [g["proveedor"] for g in gastos],
-        "data": [float(g["total"]) for g in gastos]
+        "semanas": semanas,
+        "proveedores": data_proveedores
     })
+
 
 
 
@@ -421,6 +460,52 @@ def meses_ganancias():
     cur.close()
     conn.close()
     return jsonify(data)
+
+
+@app.route("/api/estadisticas/totales-mes")
+def totales_mes():
+    mes = request.args.get("mes", type=int)
+    año = request.args.get("año", type=int)
+
+    if not mes:
+        mes = date.today().month
+    if not año:
+        año = date.today().year
+
+    inicio = date(año, mes, 1)
+    fin = date(año, mes, monthrange(año, mes)[1])
+
+    conn = get_connection()
+    cur = conn.cursor(dictionary=True)
+
+    # Total ventas del mes
+    cur.execute("""
+        SELECT IFNULL(SUM(total),0) AS total_ventas
+        FROM venta
+        WHERE fecha_recibo BETWEEN %s AND %s
+    """, (inicio, fin))
+    total_ventas = cur.fetchone()["total_ventas"]
+
+    # Total gastos del mes
+    cur.execute("""
+        SELECT IFNULL(SUM(total),0) AS total_gastos
+        FROM gastos
+        WHERE fecha_registro BETWEEN %s AND %s
+    """, (inicio, fin))
+    total_gastos = cur.fetchone()["total_gastos"]
+
+    cur.close()
+    conn.close()
+
+    ganancia = total_ventas - total_gastos
+
+    return jsonify({
+        "ventas": total_ventas,
+        "gastos": total_gastos,
+        "ganancia": ganancia
+    })
+
+
 
 
 

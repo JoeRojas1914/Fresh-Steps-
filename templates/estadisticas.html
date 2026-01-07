@@ -23,7 +23,6 @@
 
 </div>
 
-<!-- ================= SELECTOR GENERAL DE FECHA ================= -->
 <div class="date-selector" style="margin: 20px 0;">
     <form onsubmit="return false;" style="display:flex; gap:15px; align-items:center;">
         <label>Año:</label>
@@ -34,7 +33,6 @@
     </form>
 </div>
 
-<!-- ================= MONTHLY CARDS ================= -->
 <div class="monthly-cards">
     <div class="monthly-card ventas">
         <h4>💰 Ventas del mes</h4>
@@ -52,7 +50,6 @@
     </div>
 </div>
 
-<!-- ================= GRÁFICAS ================= -->
 <div class="stats-page">
     <!-- GASTOS -->
     <div class="card stats-card">
@@ -67,7 +64,6 @@
     </div>
 </div>
 
-<!-- ================= CHART.JS ================= -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
@@ -91,44 +87,40 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 function initCharts() {
+    // Gráfica de gastos por semana y proveedor
     gastosChart = new Chart(document.getElementById("gastosChart"), {
-        type: "pie",
-        data: { labels: [], datasets: [{ data: [], backgroundColor: [] }] }
+        type: "bar",
+        data: { labels: [], datasets: [] },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: "top" } },
+            scales: {
+                x: { stacked: true },
+                y: { stacked: true, beginAtZero: true }
+            }
+        }
     });
 
+    // Gráfica de ganancias por semana
     gananciasChart = new Chart(document.getElementById("gananciasChart"), {
         type: "bar",
-        data: {
-            labels: [],
-            datasets: [{
-                label: "Ganancias ($)",
-                data: [],
-                backgroundColor: "#22c55e",
-                hoverBackgroundColor: "#16a34a",
-                borderRadius: 8
-            }]
-        },
-        options: {
-            scales: { y: { beginAtZero: true } }
-        }
+        data: { labels: [], datasets: [{ label: "Ganancias ($)", data: [], backgroundColor: "#22c55e", borderRadius: 8 }] },
+        options: { scales: { y: { beginAtZero: true } } }
     });
 }
 
-// ================= FUNCIONES DE CARGA =================
 async function cargarAños() {
     const añosGastos = await fetchJSON("/api/estadisticas/gastos/años");
     const añosGanancias = await fetchJSON("/api/estadisticas/ganancias/años");
-    const años = Array.from(new Set([...añosGastos, ...añosGanancias])); // unificar
+    const años = Array.from(new Set([...añosGastos, ...añosGanancias]));
     llenarSelect("año_general", años);
 }
 
 async function cargarMeses() {
     const año = document.getElementById("año_general").value;
-
     const mesesGastos = await fetchJSON(`/api/estadisticas/gastos/meses?año=${año}`);
     const mesesGanancias = await fetchJSON(`/api/estadisticas/ganancias/meses?año=${año}`);
     const meses = Array.from(new Set([...mesesGastos, ...mesesGanancias]));
-
     llenarSelect("mes_general", meses, true);
 }
 
@@ -138,18 +130,20 @@ function cargarTodasLasGraficas() {
 
     if (!mes || !año) return;
 
-    // Cargar gastos
+    // 1️⃣ Gráfica de gastos
     fetch(`/api/estadisticas/gastos?mes=${mes}&año=${año}`)
         .then(r => r.json())
         .then(data => {
-            gastosChart.data.labels = data.labels;
-            gastosChart.data.datasets[0].data = data.data;
-            gastosChart.data.datasets[0].backgroundColor =
-                data.labels.map((_, i) => redPalette[i % redPalette.length]);
+            gastosChart.data.labels = data.semanas;
+            gastosChart.data.datasets = Object.keys(data.proveedores).map((prov, i) => ({
+                label: prov,
+                data: data.proveedores[prov],
+                backgroundColor: redPalette[i % redPalette.length]
+            }));
             gastosChart.update();
         });
 
-    // Cargar ganancias
+    // 2️⃣ Gráfica de ganancias
     fetch(`/api/estadisticas/ganancias?mes=${mes}&año=${año}`)
         .then(r => r.json())
         .then(data => {
@@ -158,7 +152,7 @@ function cargarTodasLasGraficas() {
             gananciasChart.update();
         });
 
-    // Cargar monthly cards y totales
+    // 3️⃣ Totales del mes para las tarjetas
     fetch(`/api/estadisticas/totales-mes?mes=${mes}&año=${año}`)
         .then(r => r.json())
         .then(data => {
@@ -168,7 +162,6 @@ function cargarTodasLasGraficas() {
         });
 }
 
-// ================= FUNCIONES AUXILIARES =================
 function llenarSelect(id, valores, esMes=false) {
     const select = document.getElementById(id);
     select.innerHTML = "";
@@ -185,7 +178,7 @@ async function fetchJSON(url) {
     return res.json();
 }
 
-// ================= EVENTOS =================
+// Actualización automática al cambiar año o mes
 document.getElementById("año_general").onchange = async () => {
     await cargarMeses();
     cargarTodasLasGraficas();
@@ -193,5 +186,7 @@ document.getElementById("año_general").onchange = async () => {
 
 document.getElementById("mes_general").onchange = cargarTodasLasGraficas;
 </script>
+
+
 
 {% endblock %}

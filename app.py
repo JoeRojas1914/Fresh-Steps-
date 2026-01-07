@@ -307,6 +307,7 @@ def guardar_venta():
         i += 1
 
     actualizar_total_venta(venta_id, total)
+    flash("✅ Venta creada correctamente.", "success")
     return redirect("/ventas/pendientes")
 
 

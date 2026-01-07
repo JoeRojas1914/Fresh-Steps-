@@ -54,7 +54,7 @@
                 <strong>Detalles de la venta:</strong>
                 <ul>
                 {% for item in v.detalles %}
-                    <li>{{ item.zapato.marca }} / {{ item.zapato.tipo }} - {{ item.servicio.nombre }} (${{ item.servicio.precio }})</li>
+                    <li>{{ item['zapato']['marca'] }} / {{ item['zapato']['tipo'] }} - {{ item['servicio']['nombre'] }} (${{ item['servicio']['precio'] }})</li>
                 {% endfor %}
                 </ul>
             </td>
@@ -80,6 +80,10 @@ document.querySelectorAll('.btn-info').forEach(btn => {
         fila.style.display = fila.style.display === "none" ? "table-row" : "none";
     });
 });
+
+{% for v in ventas %}
+console.log("Venta {{ v.id_venta }}:", {{ v.detalles | tojson }});
+{% endfor %}
 
 </script>
 

@@ -1,6 +1,6 @@
 from db import get_connection
-from datetime import date, timedelta
-from db import get_connection
+from datetime import date, timedelta    
+from calendar import monthrange
 
 def crear_venta(id_cliente, tipo_pago, prepago, monto_prepago):
     conn = get_connection()
@@ -30,10 +30,13 @@ def agregar_zapato_a_venta(id_venta, id_zapato):
         VALUES (%s, %s)
     """, (id_venta, id_zapato))
 
+    id_venta_zapato = cursor.lastrowid
+
     conn.commit()
     cursor.close()
     conn.close()
 
+    return id_venta_zapato
 
 
 def asignar_servicio_a_venta_zapato(id_venta_zapato, id_servicio, precio):
@@ -166,9 +169,6 @@ def obtener_detalles_venta(id_venta):
         })
 
     return detalles
-
-
-
 
 
 def contar_entregas_pendientes():

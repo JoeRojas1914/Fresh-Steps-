@@ -580,14 +580,17 @@ td .btn-delete {
 
 .stats-page {
     display: flex;
-    justify-content: center;
+    justify-content: center;  
+    gap: 60px;                
+    margin-top: 30px;        
 }
-
 
 .stats-card {
-    width: 50%;
-    min-width: 420px;
+    width: 45%;              
+    min-width: 400px;        
 }
+
+
 
 
 .stats-title {
@@ -874,6 +877,34 @@ button:disabled:hover {
     justify-content: center;
     text-transform: uppercase;
     user-select: none;
+}
+
+.summary-cards {
+    display: flex;
+    gap: 20px;        /* espacio entre los resúmenes */
+    margin-top: 20px; /* espacio debajo del título */
+    flex-wrap: wrap;   /* se ajusta en pantallas pequeñas */
+}
+
+.summary-card {
+    flex: 1 1 200px;   /* ancho mínimo de 200px y flexible */
+    text-align: center;
+    padding: 20px;
+    background: linear-gradient(135deg, #f8fbff, #e6f3ff);
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+.summary-card h3 {
+    font-size: 16px;
+    color: #0b3c5d;
+    margin-bottom: 10px;
+}
+
+.card-number {
+    font-size: 28px;
+    font-weight: bold;
+    color: #1e7fd6;
 }
 
 

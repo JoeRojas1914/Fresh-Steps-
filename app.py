@@ -3,11 +3,15 @@ from datetime import date
 from calendar import monthrange
 import os
 from dotenv import load_dotenv
+from datetime import date
+from calendar import monthrange
+
 
 from db import get_connection
 
 # ================= IMPORTS DE MODULOS =================
 from clientes import (
+    contar_clientes,
     obtener_clientes,
     crear_cliente,
     actualizar_cliente,
@@ -21,6 +25,7 @@ from gastos import (
 )
 
 from servicios import (
+    contar_servicios,
     obtener_servicios,
     crear_servicio,
     actualizar_servicio,
@@ -416,7 +421,7 @@ def guardar_gasto():
 
 
 # ================= ESTADISTICAS =================
-app.route("/estadisticas", methods=["GET", "POST"])
+@app.route("/estadisticas", methods=["GET", "POST"])
 def estadisticas():
     hoy = date.today()
     inicio = hoy.replace(day=1)
@@ -433,17 +438,20 @@ def estadisticas():
 
     ganancias_semana = obtener_ganancias_por_semana(hoy.month, hoy.year)
 
+    total_clientes = contar_clientes()
+    total_servicios = contar_servicios()
+
     return render_template(
         "estadisticas.html",
         gastos=gastos,
         fecha_inicio=inicio.strftime("%Y-%m-%d"),
         fecha_fin=fin.strftime("%Y-%m-%d"),
-        ganancias_semana=ganancias_semana
+        ganancias_semana=ganancias_semana,
+        total_clientes=total_clientes,
+        total_servicios=total_servicios
     )
 
-@app.route("/test")
-def test():
-    return "¡Funciona!"
+
 
 
 # ================= RUN =================

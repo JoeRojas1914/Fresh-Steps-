@@ -5,6 +5,18 @@
     <h1>📊 Estadísticas</h1>
 </div>
 
+<!-- Totales de clientes y servicios -->
+<div class="totals-container">
+    <div class="total-card">
+        <h3>Total de clientes</h3>
+        <p>{{ total_clientes }}</p>
+    </div>
+    <div class="total-card">
+        <h3>Total de servicios</h3>
+        <p>{{ total_servicios }}</p>
+    </div>
+</div>
+
 <div class="stats-page">
 
     <div class="card stats-card">
@@ -33,10 +45,8 @@
 
     <div class="card stats-card">
         <h2 class="stats-title">Ganancias por semana</h2>
-
         <canvas id="gananciasChart"></canvas>
     </div>
-
 
 </div>
 
@@ -48,61 +58,27 @@ if (ctx) {
     const labels = {{ gastos|map(attribute='proveedor')|list|tojson }};
     const data = {{ gastos|map(attribute='total')|list|tojson }};
 
-    // Genera colores HSL dinámicos para cada dato
     const backgroundColors = labels.map(() => `hsl(${Math.random() * 360}, 70%, 60%)`);
-    const borderColors = backgroundColors.map(c => c.replace('60%', '40%')); // borde más oscuro
+    const borderColors = backgroundColors.map(c => c.replace('60%', '40%'));
 
     new Chart(ctx, {
         type: 'pie',
-        data: {
-            labels: labels,
-            datasets: [{
-                data: data,
-                backgroundColor: backgroundColors,
-                borderColor: borderColors,
-                borderWidth: 1
-            }]
-        },
-        options: {
-            plugins: {
-                legend: {
-                    position: 'right'
-                }
-            }
-        }
+        data: { labels, datasets: [{ data, backgroundColor: backgroundColors, borderColor: borderColors, borderWidth: 1 }] },
+        options: { plugins: { legend: { position: 'right' } } }
     });
 }
 
 const ctxGanancias = document.getElementById('gananciasChart');
-
 if (ctxGanancias) {
     const labels = {{ ganancias_semana.labels|tojson }};
     const data = {{ ganancias_semana.totales|tojson }};
 
     new Chart(ctxGanancias, {
         type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Ganancias ($)',
-                data: data,
-                backgroundColor: 'rgba(34,197,94,0.7)',
-                borderColor: 'rgba(34,197,94,1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            plugins: {
-                legend: { display: false }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
+        data: { labels, datasets: [{ label: 'Ganancias ($)', data, backgroundColor: 'rgba(34,197,94,0.7)', borderColor: 'rgba(34,197,94,1)', borderWidth: 1 }] },
+        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
     });
 }
-
 </script>
+
 {% endblock %}

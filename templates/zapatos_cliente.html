@@ -56,16 +56,6 @@
         <td>{{ z.color_base }} / {{ z.color_secundario }}</td>
         <td>{{ z.material }}</td>
         <td>
-            <button class="btn-edit" onclick="editarZapato(
-                {{ z.id_zapato }},
-                '{{ z.color_base }}',
-                '{{ z.color_secundario }}',
-                '{{ z.material }}',
-                '{{ z.tipo }}',
-                '{{ z.marca }}'
-                )">Edit
-            </button>
-
             <a href="/zapatos/eliminar/{{ z.id_zapato }}/{{ cliente.id_cliente }}" class="btn-delete" onclick="return confirm('¿Eliminar zapato?')">Delete</a>
         </td>
     </tr>
@@ -73,21 +63,6 @@
   </tbody>
 </table>
 
-<script>
-  function abrirModal(){ document.getElementById("modal").style.display="block"; }
-  function cerrarModal(){ document.getElementById("modal").style.display="none"; }
-
-  function editarZapato(id, base, sec, mat, tipo, marca){
-    abrirModal();
-    document.getElementById("tituloModal").innerText = "Editar zapato";
-    document.getElementById("id_zapato").value=id;
-    document.querySelector("[name=color_base]").value=base;
-    document.querySelector("[name=color_secundario]").value=sec;
-    document.querySelector("[name=material]").value=mat;
-    document.querySelector("[name=tipo]").value=tipo;
-    document.querySelector("[name=marca]").value=marca;
-  }
-</script>
 
 
 {% endblock %}

@@ -126,11 +126,19 @@ def actualizar_total_venta(id_venta, total):
 
 
 def obtener_detalles_venta(id_venta):
+    """
+    Devuelve los detalles de una venta:
+    cada zapato con sus servicios aplicados y precio.
+    """
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute("""
-        SELECT z.marca, z.tipo, s.nombre AS nombre_servicio, zs.precio_aplicado AS precio
+        SELECT 
+            z.marca,
+            z.tipo,
+            s.nombre AS nombre_servicio,
+            zs.precio_aplicado AS precio
         FROM venta_zapato vz
         JOIN zapato z ON vz.id_zapato = z.id_zapato
         JOIN zapato_servicio zs ON vz.id_venta_zapato = zs.id_venta_zapato
@@ -138,14 +146,27 @@ def obtener_detalles_venta(id_venta):
         WHERE vz.id_venta = %s
     """, (id_venta,))
 
+    resultados = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
     detalles = []
-    for row in cursor.fetchall():
+    for r in resultados:
         detalles.append({
-            "zapato": {"marca": row["marca"], "tipo": row["tipo"]},
-            "servicio": {"nombre": row["nombre_servicio"], "precio": row["precio"]}
+            'zapato': {
+                'marca': r['marca'],
+                'tipo': r['tipo']
+            },
+            'servicio': {
+                'nombre': r['nombre_servicio'],
+                'precio': r['precio']
+            }
         })
 
     return detalles
+
+
+
 
 
 def contar_entregas_pendientes():

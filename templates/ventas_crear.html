@@ -37,6 +37,25 @@
 </div>
 
 
+<div id="modalZapato" class="modal" style="display:none;">
+    <div class="modal-content">
+        <span class="close" onclick="cerrarModalZapato()">&times;</span>
+        <h2>Nuevo calzado</h2>
+
+        <form id="formNuevoZapato">
+            <input type="hidden" name="id_cliente" id="id_cliente_modal">
+            <input type="text" name="marca" placeholder="Marca" required>
+            <input type="text" name="tipo" placeholder="Tipo" required>
+            <input type="text" name="material" placeholder="Material" required>
+            <input type="text" name="color_base" placeholder="Color base" required>
+            <input type="text" name="color_secundario" placeholder="Color secundario" required>
+
+            <button type="submit">Guardar</button>
+        </form>
+    </div>
+</div>
+
+
 
 <form method="POST" action="/ventas/guardar" id="formVenta" style="display:none;">
     <input type="hidden" name="id_cliente" id="id_cliente">
@@ -106,32 +125,25 @@
 let contadorZapatos = 0;
 let serviciosGlobales = [];
 let zapatosCliente = [];
-
+let selectActual = null; 
 
 document.addEventListener("DOMContentLoaded", async () => {
     await cargarServicios();
 
-    document.getElementById("buscarCliente")
-        .addEventListener("input", buscarClientes);
-
-    document.getElementById("btnCambiarCliente")
-        .addEventListener("click", () => location.reload());
-
-    document.getElementById("btnNuevoCliente")
-        .addEventListener("click", () => {
-            document.getElementById("modalCliente").style.display = "block";
-        });
-
-    document.getElementById("formNuevoCliente")
-        .addEventListener("submit", crearCliente);
+    document.getElementById("buscarCliente").addEventListener("input", buscarClientes);
+    document.getElementById("btnCambiarCliente").addEventListener("click", () => location.reload());
+    document.getElementById("btnNuevoCliente").addEventListener("click", () => {
+        document.getElementById("modalCliente").style.display = "block";
+    });
+    document.getElementById("formNuevoCliente").addEventListener("submit", crearCliente);
+    document.getElementById("formNuevoZapato").addEventListener("submit", crearZapato); // listener único
+    document.getElementById("monto_prepago")?.addEventListener("input", actualizarTotal);
 });
-
 
 async function buscarClientes() {
     const q = this.value.trim();
     const lista = document.getElementById("listaClientes");
     lista.innerHTML = "";
-
     if (q.length < 2) return;
 
     const res = await fetch(`/api/clientes?q=${q}`);
@@ -148,7 +160,6 @@ async function buscarClientes() {
         lista.appendChild(item);
     });
 }
-
 
 function seleccionarCliente(cliente) {
     document.getElementById("id_cliente").value = cliente.id_cliente;
@@ -168,23 +179,14 @@ function cerrarModalCliente() {
     document.getElementById("modalCliente").style.display = "none";
 }
 
-
 async function crearCliente(e) {
     e.preventDefault();
-
     const formData = new FormData(e.target);
-
-    const res = await fetch("/api/clientes/crear", {
-        method: "POST",
-        body: formData
-    });
-
+    const res = await fetch("/api/clientes/crear", { method: "POST", body: formData });
     const cliente = await res.json();
-
     cerrarModalCliente();
     seleccionarCliente(cliente);
 }
-
 
 async function cargarServicios() {
     const res = await fetch("/api/servicios");
@@ -196,7 +198,6 @@ async function cargarZapatosCliente(idCliente) {
     zapatosCliente = await res.json();
 }
 
-
 function agregarZapato() {
     const index = contadorZapatos;
 
@@ -205,10 +206,8 @@ function agregarZapato() {
     div.innerHTML = `
         <div class="zapato-header">
             <div class="zapato-titulo">🧾 Artículo ${index + 1}</div>
-            <button type="button" class="btn-eliminar-zapato"
-                onclick="eliminarZapato(this)">✕</button>
+            <button type="button" class="btn-eliminar-zapato" onclick="eliminarZapato(this)">✕</button>
         </div>
-
         ${crearSelectZapatos(index)}
         ${crearSelectServicios(index)}
     `;
@@ -231,48 +230,75 @@ function renumerarArticulos() {
     contadorZapatos = document.querySelectorAll(".zapato-item").length;
 }
 
-
 function crearSelectZapatos(index) {
-    let opciones = `<option value="">Selecciona zapato</option>`;
+    let opciones = `<option value="">Selecciona zapato</option>
+                    <option value="nuevo">➕ Registrar nuevo calzado</option>`;
     zapatosCliente.forEach(z => {
-        opciones += `
-            <option value="${z.id_zapato}">
-                ${z.marca} / ${z.tipo} / ${z.material} / ${z.color_base}-${z.color_secundario}
-            </option>`;
+        opciones += `<option value="${z.id_zapato}">
+            ${z.marca} / ${z.tipo} / ${z.material} / ${z.color_base}-${z.color_secundario}
+        </option>`;
     });
 
-    return `
-        <select name="zapatos[${index}][id_zapato]" onchange="validarFormulario()">
-            ${opciones}
-        </select>`;
+    return `<select name="zapatos[${index}][id_zapato]" onchange="seleccionarZapato(this)">
+        ${opciones}
+    </select>`;
 }
 
 function crearSelectServicios(index) {
     let opciones = `<option value="">Selecciona servicio</option>`;
     serviciosGlobales.forEach(s => {
-        opciones += `
-            <option value="${s.id_servicio}">
-                ${s.nombre} ($${s.precio})
-            </option>`;
+        opciones += `<option value="${s.id_servicio}">${s.nombre} ($${s.precio})</option>`;
     });
 
-    return `
-        <select name="zapatos[${index}][id_servicio]" onchange="validarFormulario(); actualizarTotal()">
-            ${opciones}
-        </select>`;
+    return `<select name="zapatos[${index}][id_servicio]" onchange="validarFormulario(); actualizarTotal()">
+        ${opciones}
+    </select>`;
 }
 
+function seleccionarZapato(select) {
+    if (select.value === "nuevo") {
+        selectActual = select;
+        document.getElementById("id_cliente_modal").value = document.getElementById("id_cliente").value;
+        document.getElementById("modalZapato").style.display = "block";
+    }
+}
 
-function togglePrepago() {
-    const val = document.getElementById("prepago").value;
-    document.getElementById("montoPrepagoContainer").style.display =
-        val === "si" ? "block" : "none";
+function cerrarModalZapato() {
+    document.getElementById("modalZapato").style.display = "none";
+    document.getElementById("formNuevoZapato").reset();
+}
+
+async function crearZapato(e) {
+    e.preventDefault();
+
+    const formData = new FormData(e.target);
+    const res = await fetch("/api/zapatos/crear", { method: "POST", body: formData });
+    const nuevoZapato = await res.json();
+
+    zapatosCliente.push(nuevoZapato);
+
+    if (selectActual) {
+        selectActual.innerHTML = `
+            <option value="">Selecciona zapato</option>
+            <option value="nuevo">➕ Registrar nuevo calzado</option>
+            ${zapatosCliente.map(z => `
+                <option value="${z.id_zapato}" ${z.id_zapato == nuevoZapato.id_zapato ? "selected" : ""}>
+                    ${z.marca} / ${z.tipo} / ${z.material} / ${z.color_base}-${z.color_secundario}
+                </option>
+            `).join("")}
+        `;
+        selectActual = null;
+    }
+
+    cerrarModalZapato();
     validarFormulario();
 }
 
-document.getElementById("monto_prepago")?.addEventListener("input", actualizarTotal);
-
-
+function togglePrepago() {
+    const val = document.getElementById("prepago").value;
+    document.getElementById("montoPrepagoContainer").style.display = val === "si" ? "block" : "none";
+    validarFormulario();
+}
 
 function validarFormulario() {
     const cliente = document.getElementById("id_cliente").value;
@@ -284,10 +310,7 @@ function validarFormulario() {
 
     const selects = document.querySelectorAll("#zapatosContainer select");
     if (selects.length === 0) valido = false;
-
-    selects.forEach(s => {
-        if (!s.value) valido = false;
-    });
+    selects.forEach(s => { if (!s.value) valido = false; });
 
     let total = 0;
     document.querySelectorAll("#zapatosContainer select[name$='[id_servicio]']").forEach(select => {
@@ -299,15 +322,9 @@ function validarFormulario() {
     });
 
     if (prepago === "si") {
-        if (!monto || monto <= 0) {
-            valido = false;
-        }
-        if (monto > total) {
-            valido = false;
-            document.getElementById("errorPrepago").style.display = "block";
-        } else {
-            document.getElementById("errorPrepago").style.display = "none";
-        }
+        if (!monto || monto <= 0) valido = false;
+        if (monto > total) document.getElementById("errorPrepago").style.display = "block";
+        else document.getElementById("errorPrepago").style.display = "none";
     } else {
         document.getElementById("errorPrepago").style.display = "none";
     }
@@ -315,10 +332,8 @@ function validarFormulario() {
     document.getElementById("btnCrear").disabled = !valido;
 }
 
-
 function actualizarTotal() {
     let total = 0;
-
     document.querySelectorAll("#zapatosContainer select[name$='[id_servicio]']").forEach(select => {
         const idServicio = select.value;
         if (idServicio) {
@@ -326,11 +341,9 @@ function actualizarTotal() {
             if (servicio) total += parseFloat(servicio.precio);
         }
     });
-
     document.getElementById("totalVenta").innerText = `Total: $${total.toFixed(2)}`;
 }
-
-
 </script>
+
 
 {% endblock %}

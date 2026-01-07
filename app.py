@@ -288,6 +288,24 @@ def api_zapatos_cliente(id_cliente):
 def api_servicios():
     return jsonify(obtener_servicios())
 
+@app.route("/api/zapatos/crear", methods=["POST"])
+def api_crear_zapato():
+    id_cliente = request.form["id_cliente"]
+    color_base = request.form["color_base"]
+    color_secundario = request.form["color_secundario"]
+    material = request.form["material"]
+    tipo = request.form["tipo"]
+    marca = request.form["marca"]
+
+    crear_zapato(id_cliente, color_base, color_secundario, material, tipo, marca)
+
+    # Obtener el último zapato creado
+    zapatos = obtener_zapatos_cliente(id_cliente)
+    nuevo_zapato = zapatos[-1]
+
+    return jsonify(nuevo_zapato)
+
+
 
 # ================= VENTAS =================
 @app.route("/ventas")
@@ -298,14 +316,18 @@ def ventas():
 @app.route("/ventas/pendientes")
 def ventas_pendientes():
     ventas = obtener_ventas_pendientes()
+    ventas_con_detalles = []
 
     for v in ventas:
-        v['detalles'] = obtener_detalles_venta(v['id_venta'])
+        detalles = obtener_detalles_venta(v['id_venta'])
+        v['detalles'] = detalles
+        ventas_con_detalles.append(v)
 
     return render_template(
         "ventas_pendientes.html",
-        ventas=ventas
+        ventas=ventas_con_detalles
     )
+
 
 
 @app.route("/ventas/entregar/<int:id_venta>")

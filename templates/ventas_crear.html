@@ -219,9 +219,11 @@ function agregarZapato() {
 
 function eliminarZapato(btn) {
     btn.closest(".zapato-item").remove();
-    renumerarArticulos();
-    validarFormulario();
+    renumerarArticulos();               
+    validarFormulario();              
+    actualizarTotal();                   
 }
+
 
 function renumerarArticulos() {
     document.querySelectorAll(".zapato-item").forEach((item, i) => {

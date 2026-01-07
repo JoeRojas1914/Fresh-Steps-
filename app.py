@@ -238,7 +238,6 @@ def zapatos_cliente(id_cliente):
 
 @app.route("/zapatos/guardar", methods=["POST"])
 def guardar_zapato():
-    id_zapato = request.form.get("id_zapato")
 
     datos = (
         request.form["id_cliente"],
@@ -249,10 +248,9 @@ def guardar_zapato():
         request.form["marca"]
     )
 
-    if id_zapato:
-        actualizar_zapato(id_zapato, *datos[1:])
-    else:
-        crear_zapato(*datos)
+
+    crear_zapato(*datos)
+    flash("✅ Zapato añadido correctamente.", "success")
 
     return redirect(f"/zapatos/{datos[0]}")
 

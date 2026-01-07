@@ -64,5 +64,16 @@
 </table>
 
 
+<script>
+  function abrirModal(){
+      document.getElementById("modal").style.display = "block";
+      document.getElementById("tituloModal").innerText = "Agregar zapato";
+      document.getElementById("id_zapato").value = "";
+  }
+
+  function cerrarModal(){
+      document.getElementById("modal").style.display = "none";
+  }
+</script>
 
 {% endblock %}

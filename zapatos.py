@@ -70,3 +70,12 @@ def cliente_tiene_zapatos(id_cliente):
     conn.close()
 
     return cantidad > 0
+
+def zapato_tiene_ventas(id_zapato):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM venta_zapato WHERE id_zapato = %s", (id_zapato,))
+    resultado = cursor.fetchone()[0]
+    cursor.close()
+    conn.close()
+    return resultado > 0

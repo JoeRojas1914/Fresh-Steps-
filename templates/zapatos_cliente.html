@@ -3,6 +3,17 @@
 {% block content %}
 <h2>👞 Zapatos de {{ cliente.nombre }} {{ cliente.apellido }}</h2>
 
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-messages">
+      {% for category, message in messages %}
+        <div class="alert {{ category }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+
 <button onclick="abrirModal()">➕ Agregar zapato</button>
 
 <div id="modal" class="modal">

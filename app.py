@@ -251,8 +251,16 @@ def guardar_zapato():
 
 @app.route("/zapatos/eliminar/<int:id_zapato>/<int:id_cliente>")
 def borrar_zapato(id_zapato, id_cliente):
+    from zapatos import zapato_tiene_ventas
+
+    if zapato_tiene_ventas(id_zapato):
+        flash("❌ No se puede eliminar este calzado porque ya está asociado a una venta.", "error")
+        return redirect(f"/zapatos/{id_cliente}")
+
     eliminar_zapato(id_zapato)
+    flash("✅ Zapato eliminado correctamente.", "success")
     return redirect(f"/zapatos/{id_cliente}")
+
 
 
 # ================= API =================

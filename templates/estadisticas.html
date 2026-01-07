@@ -23,8 +23,19 @@
 
 </div>
 
-<div class="monthly-cards">
+<!-- ================= SELECTOR GENERAL DE FECHA ================= -->
+<div class="date-selector" style="margin: 20px 0;">
+    <form onsubmit="return false;" style="display:flex; gap:15px; align-items:center;">
+        <label>Año:</label>
+        <select id="año_general"></select>
 
+        <label>Mes:</label>
+        <select id="mes_general"></select>
+    </form>
+</div>
+
+<!-- ================= MONTHLY CARDS ================= -->
+<div class="monthly-cards">
     <div class="monthly-card ventas">
         <h4>💰 Ventas del mes</h4>
         <p id="ventasMes">$0</p>
@@ -39,45 +50,24 @@
         <h4>📈 Ganancia del mes</h4>
         <p id="gananciaMes">$0</p>
     </div>
-
 </div>
 
-
-
+<!-- ================= GRÁFICAS ================= -->
 <div class="stats-page">
+    <!-- GASTOS -->
+    <div class="card stats-card">
+        <h2 class="stats-title">Gastos</h2>
+        <canvas id="gastosChart"></canvas>
+    </div>
 
-<!-- ================= GASTOS ================= -->
-<div class="card stats-card">
-    <h2 class="stats-title">Gastos</h2>
-
-    <form class="month-form" onsubmit="return false;">
-        <label>Año:</label>
-        <select id="año_gastos"></select>
-
-        <label>Mes:</label>
-        <select id="mes_gastos"></select>
-    </form>
-
-    <canvas id="gastosChart"></canvas>
+    <!-- GANANCIAS -->
+    <div class="card stats-card">
+        <h2 class="stats-title">Ganancias por semana</h2>
+        <canvas id="gananciasChart"></canvas>
+    </div>
 </div>
 
-<!-- ================= GANANCIAS ================= -->
-<div class="card stats-card">
-    <h2 class="stats-title">Ganancias por semana</h2>
-
-    <form class="month-form" onsubmit="return false;">
-        <label>Año:</label>
-        <select id="año_ganancias"></select>
-
-        <label>Mes:</label>
-        <select id="mes_ganancias"></select>
-    </form>
-
-    <canvas id="gananciasChart"></canvas>
-</div>
-
-</div>
-
+<!-- ================= CHART.JS ================= -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
@@ -90,31 +80,20 @@ const nombresMeses = [
 ];
 
 const redPalette = [
-    "#b91c1c",
-    "#dc2626",
-    "#ef4444",
-    "#f87171",
-    "#fca5a5",
-    "#fecaca",
-    "#fee2e2",
+    "#b91c1c", "#dc2626", "#ef4444", "#f87171", "#fca5a5", "#fecaca", "#fee2e2",
 ];
 
 document.addEventListener("DOMContentLoaded", async () => {
     initCharts();
     await cargarAños();
+    await cargarMeses();
+    cargarTodasLasGraficas();
 });
 
 function initCharts() {
-
     gastosChart = new Chart(document.getElementById("gastosChart"), {
         type: "pie",
-        data: {
-            labels: [],
-            datasets: [{
-                data: [],
-                backgroundColor: []
-            }]
-        }
+        data: { labels: [], datasets: [{ data: [], backgroundColor: [] }] }
     });
 
     gananciasChart = new Chart(document.getElementById("gananciasChart"), {
@@ -130,47 +109,37 @@ function initCharts() {
             }]
         },
         options: {
-            scales: {
-                y: { beginAtZero: true }
-            }
+            scales: { y: { beginAtZero: true } }
         }
     });
 }
 
+// ================= FUNCIONES DE CARGA =================
 async function cargarAños() {
     const añosGastos = await fetchJSON("/api/estadisticas/gastos/años");
     const añosGanancias = await fetchJSON("/api/estadisticas/ganancias/años");
-
-    llenarSelect("año_gastos", añosGastos);
-    llenarSelect("año_ganancias", añosGanancias);
-
-    await cargarMesesGastos();
-    await cargarMesesGanancias();
+    const años = Array.from(new Set([...añosGastos, ...añosGanancias])); // unificar
+    llenarSelect("año_general", años);
 }
 
-async function cargarMesesGastos() {
-    const año = año_gastos.value;
-    const meses = await fetchJSON(`/api/estadisticas/gastos/meses?año=${año}`);
-    llenarSelect("mes_gastos", meses, true);
-    cargarGastos();
+async function cargarMeses() {
+    const año = document.getElementById("año_general").value;
+
+    const mesesGastos = await fetchJSON(`/api/estadisticas/gastos/meses?año=${año}`);
+    const mesesGanancias = await fetchJSON(`/api/estadisticas/ganancias/meses?año=${año}`);
+    const meses = Array.from(new Set([...mesesGastos, ...mesesGanancias]));
+
+    llenarSelect("mes_general", meses, true);
 }
 
-async function cargarMesesGanancias() {
-    const año = año_ganancias.value;
+function cargarTodasLasGraficas() {
+    const mes = document.getElementById("mes_general").value;
+    const año = document.getElementById("año_general").value;
 
-    const meses = await fetchJSON(
-        `/api/estadisticas/ganancias/meses?año=${año}`
-    );
+    if (!mes || !año) return;
 
-    llenarSelect("mes_ganancias", meses, true);
-
-    cargarGanancias();
-    cargarTotalesMes(); 
-}
-
-
-function cargarGastos() {
-    fetch(`/api/estadisticas/gastos?mes=${mes_gastos.value}&año=${año_gastos.value}`)
+    // Cargar gastos
+    fetch(`/api/estadisticas/gastos?mes=${mes}&año=${año}`)
         .then(r => r.json())
         .then(data => {
             gastosChart.data.labels = data.labels;
@@ -179,12 +148,8 @@ function cargarGastos() {
                 data.labels.map((_, i) => redPalette[i % redPalette.length]);
             gastosChart.update();
         });
-}
 
-function cargarGanancias() {
-    const año = document.getElementById("año_ganancias").value;
-    const mes = document.getElementById("mes_ganancias").value;
-
+    // Cargar ganancias
     fetch(`/api/estadisticas/ganancias?mes=${mes}&año=${año}`)
         .then(r => r.json())
         .then(data => {
@@ -192,30 +157,18 @@ function cargarGanancias() {
             gananciasChart.data.datasets[0].data = data.totales;
             gananciasChart.update();
         });
-}
 
-function cargarTotalesMes() {
-    const año = document.getElementById("año_ganancias").value;
-    const mes = document.getElementById("mes_ganancias").value;
-
-    if (!año || !mes) return;
-
+    // Cargar monthly cards y totales
     fetch(`/api/estadisticas/totales-mes?mes=${mes}&año=${año}`)
         .then(r => r.json())
         .then(data => {
-            document.getElementById("ventasMes").textContent =
-                `$${Number(data.ventas).toLocaleString()}`;
-
-            document.getElementById("gastosMes").textContent =
-                `$${Number(data.gastos).toLocaleString()}`;
-
-            document.getElementById("gananciaMes").textContent =
-                `$${Number(data.ganancia).toLocaleString()}`;
-        })
-        .catch(err => console.error("Error totales mes:", err));
+            document.getElementById("ventasMes").textContent = `$${Number(data.ventas).toLocaleString()}`;
+            document.getElementById("gastosMes").textContent = `$${Number(data.gastos).toLocaleString()}`;
+            document.getElementById("gananciaMes").textContent = `$${Number(data.ganancia).toLocaleString()}`;
+        });
 }
 
-
+// ================= FUNCIONES AUXILIARES =================
 function llenarSelect(id, valores, esMes=false) {
     const select = document.getElementById(id);
     select.innerHTML = "";
@@ -232,15 +185,13 @@ async function fetchJSON(url) {
     return res.json();
 }
 
-año_gastos.onchange = cargarMesesGastos;
-mes_gastos.onchange = cargarGastos;
-
-año_ganancias.onchange = cargarMesesGanancias;
-mes_ganancias.onchange = () => {
-    cargarGanancias();
-    cargarTotalesMes();
+// ================= EVENTOS =================
+document.getElementById("año_general").onchange = async () => {
+    await cargarMeses();
+    cargarTodasLasGraficas();
 };
-</script>
 
+document.getElementById("mes_general").onchange = cargarTodasLasGraficas;
+</script>
 
 {% endblock %}

@@ -51,12 +51,29 @@
         </tr>
         <tr id="detalles-{{ v.id_venta }}" class="detalles-venta" style="display:none;">
             <td colspan="9">
-                <strong>Detalles de la venta:</strong>
-                <ul>
-                {% for item in v.detalles %}
-                    <li>{{ item['zapato']['marca'] }} / {{ item['zapato']['tipo'] }} - {{ item['servicio']['nombre'] }} (${{ item['servicio']['precio'] }})</li>
-                {% endfor %}
-                </ul>
+                <div class="detalles-box">
+                    <div class="detalles-title">🧾 Detalles de la venta</div>
+
+                    <ul class="detalles-list">
+                        {% for item in v.detalles %}
+                            <li class="detalle-item">
+                                <div class="detalle-zapato">
+                                    👟 {{ item.zapato.tipo }} {{ item.zapato.marca }}
+                                    <span class="detalle-color">
+                                        {{ item.zapato.color_base }}{% if item.zapato.color_secundario %}/{{ item.zapato.color_secundario }}{% endif %}
+                                    </span>
+                                </div>
+
+                                <div class="detalle-servicio">
+                                    {{ item.servicio.nombre }}
+                                    <span class="detalle-precio">
+                                        ${{ "{:.2f}".format(item.servicio.precio) }}
+                                    </span>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
             </td>
         </tr>
     {% endfor %}

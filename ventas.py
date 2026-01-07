@@ -142,6 +142,8 @@ def obtener_detalles_venta(id_venta):
         SELECT 
             z.marca,
             z.tipo,
+            z.color_base,
+            z.color_secundario,
             s.nombre AS nombre_servicio,
             zs.precio_aplicado AS precio
         FROM venta_zapato vz
@@ -160,7 +162,9 @@ def obtener_detalles_venta(id_venta):
         detalles.append({
             'zapato': {
                 'marca': r['marca'],
-                'tipo': r['tipo']
+                'tipo': r['tipo'],
+                'color_base': r['color_base'],
+                'color_secundario': r['color_secundario']
             },
             'servicio': {
                 'nombre': r['nombre_servicio'],
@@ -192,7 +196,6 @@ def obtener_ganancias_por_semana(mes=None, año=None):
     mes = mes or hoy.month
     año = año or hoy.year
 
-    # Diccionario de nombres de meses
     meses_nombre = {
         1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril",
         5: "Mayo", 6: "Junio", 7: "Julio", 8: "Agosto",
@@ -200,11 +203,9 @@ def obtener_ganancias_por_semana(mes=None, año=None):
     }
     nombre_mes = meses_nombre[mes]
 
-    # Primer y último día del mes
     primer_dia = date(año, mes, 1)
     ultimo_dia = date(año, mes, monthrange(año, mes)[1])
 
-    # Conexión a DB
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
@@ -220,12 +221,10 @@ def obtener_ganancias_por_semana(mes=None, año=None):
     cursor.close()
     conn.close()
 
-    # Convertimos las fechas a date para poder comparar
     for v in ventas:
         if isinstance(v['fecha_entrega'], datetime):
             v['fecha_entrega'] = v['fecha_entrega'].date()
 
-    # Generar rangos de semanas
     rangos = []
     totales = []
 
@@ -234,17 +233,15 @@ def obtener_ganancias_por_semana(mes=None, año=None):
         inicio_semana = dia_actual
         fin_semana = min(dia_actual + timedelta(days=6), ultimo_dia)
 
-        # Calcular total de ventas de esta semana
         total_semana = sum(
             float(v['total']) for v in ventas
             if inicio_semana <= v['fecha_entrega'] <= fin_semana
         )
 
-        # Agregar rango como "Enero 1 - Enero 7"
         rangos.append(f"{nombre_mes} {inicio_semana.day} - {nombre_mes} {fin_semana.day}")
         totales.append(total_semana)
 
-        # Avanzar a la siguiente semana
         dia_actual = fin_semana + timedelta(days=1)
 
     return {"rangos": rangos, "totales": totales}
+

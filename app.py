@@ -126,6 +126,50 @@ def eliminar_cliente(id_cliente):
     flash("✅ Cliente eliminado correctamente.", "success")
     return redirect(url_for("clientes"))
 
+@app.route("/clientes/<int:id_cliente>")
+def ver_cliente(id_cliente):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT *, DATE_FORMAT(fecha_registro, '%d/%m/%Y') as fecha_registro_fmt
+        FROM cliente
+        WHERE id_cliente = %s
+    """, (id_cliente,))
+    cliente = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM venta WHERE id_cliente = %s", (id_cliente,))
+    total_pedidos = cursor.fetchone()[0]
+    cursor.close()
+    conn.close()
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT v.id_venta, v.fecha_recibo, v.total, v.tipo_pago
+        FROM venta v
+        WHERE v.id_cliente = %s
+        ORDER BY v.fecha_recibo DESC
+    """, (id_cliente,))
+    pedidos = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    for p in pedidos:
+        p['detalles'] = obtener_detalles_venta(p['id_venta'])
+
+    return render_template(
+        "cliente_perfil.html",
+        cliente=cliente,
+        total_pedidos=total_pedidos,
+        pedidos=pedidos
+    )
+
+
+
 
 # ================= SERVICIOS =================
 @app.route("/servicios")

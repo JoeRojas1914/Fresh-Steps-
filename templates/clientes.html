@@ -61,7 +61,7 @@
     </thead>
     <tbody>
         {% for c in clientes %}
-        <tr>
+        <tr onclick="window.location.href='/clientes/{{ c.id_cliente }}'" style="cursor:pointer;">
             <td>{{ c.nombre }} {{ c.apellido }}</td>
             <td>{{ c.correo }}</td>
             <td>{{ c.telefono }}</td>

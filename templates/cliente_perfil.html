@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-content">
+
+  <div class="cliente-header" style="display:flex; gap:30px; align-items:center; flex-wrap:wrap; margin-bottom:30px;">
+
+    <div class="cliente-avatar">
+    {% if cliente.avatar_url %}
+        <img src="{{ cliente.avatar_url }}" alt="Avatar" class="avatar-img">
+    {% else %}
+        <div class="avatar-placeholder">
+        {{ cliente.nombre[0] }}{{ cliente.apellido[0] }}
+        </div>
+    {% endif %}
+    </div>
+
+
+
+    <div class="cliente-info" style="flex:1; display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px;">
+
+      <div><strong>Nombre:</strong> {{ cliente.nombre }} {{ cliente.apellido }}</div>
+      <div><strong>Teléfono:</strong> {{ cliente.telefono or 'N/A' }}</div>
+      <div><strong>Correo:</strong> {{ cliente.correo or 'N/A' }}</div>
+      <div><strong>Dirección:</strong> {{ cliente.direccion or 'N/A' }}</div>
+      <div><strong>Fecha registro:</strong> {{ cliente.fecha_registro_fmt }}</div>
+      <div><strong>Total pedidos:</strong> {{ total_pedidos }}</div>
+
+    </div>
+  </div>
+
+  <h2 style="margin-bottom:20px;">📦 Historial de pedidos</h2>
+
+  <div class="pedidos-container" style="display:flex; flex-direction:column; gap:20px;">
+    {% for p in pedidos %}
+    <div class="pedido-card" style="border-radius:16px; padding:20px; background:white; box-shadow:0 6px 16px rgba(0,0,0,0.08);">
+
+      <p style="font-weight:600; color:#1e3a8a;">Fecha: {{ p.fecha_recibo.strftime('%d/%m/%Y') }}</p>
+
+      <table style="width:100%; margin-top:10px; border-collapse:collapse;">
+        <thead>
+          <tr style="background:#e6f3ff; color:#1e3a8a;">
+            <th style="padding:8px; text-align:left;">Zapato</th>
+            <th style="padding:8px; text-align:left;">Servicio</th>
+            <th style="padding:8px; text-align:left;">Precio</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for z in p.detalles %}
+          <tr>
+            <td style="padding:6px;">{{ z.zapato.marca }} {{ z.zapato.tipo }}</td>
+            <td style="padding:6px;">{{ z.servicio.nombre }}</td>
+            <td style="padding:6px;">${{ "{:.2f}".format(z.servicio.precio) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <p style="margin-top:10px;"><strong>Total:</strong> ${{ "{:.2f}".format(p.total) }}</p>
+      <p><strong>Tipo de pago:</strong> {{ p.tipo_pago }}</p>
+    </div>
+    {% else %}
+    <p>Este cliente no tiene pedidos aún.</p>
+    {% endfor %}
+  </div>
+
+</div>
+
+{% endblock %}
+

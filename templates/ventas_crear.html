@@ -87,6 +87,10 @@
 
     
 
+    <div id="totalVenta" style="font-weight:bold; font-size:1.2em;">
+        Total: $0.00
+    </div>
+
     <button type="submit" id="btnCrear" disabled>Crear recibo</button>
 </form>
 
@@ -97,6 +101,7 @@
 let contadorZapatos = 0;
 let serviciosGlobales = [];
 let zapatosCliente = [];
+
 
 document.addEventListener("DOMContentLoaded", async () => {
     await cargarServicios();
@@ -247,7 +252,7 @@ function crearSelectServicios(index) {
     });
 
     return `
-        <select name="zapatos[${index}][id_servicio]" onchange="validarFormulario()">
+        <select name="zapatos[${index}][id_servicio]" onchange="validarFormulario(); actualizarTotal()">
             ${opciones}
         </select>`;
 }
@@ -259,6 +264,9 @@ function togglePrepago() {
         val === "si" ? "block" : "none";
     validarFormulario();
 }
+
+document.getElementById("monto_prepago")?.addEventListener("input", actualizarTotal);
+
 
 
 function validarFormulario() {
@@ -282,6 +290,22 @@ function validarFormulario() {
 
     document.getElementById("btnCrear").disabled = !valido;
 }
+
+function actualizarTotal() {
+    let total = 0;
+
+    document.querySelectorAll("#zapatosContainer select[name$='[id_servicio]']").forEach(select => {
+        const idServicio = select.value;
+        if (idServicio) {
+            const servicio = serviciosGlobales.find(s => s.id_servicio == idServicio);
+            if (servicio) total += parseFloat(servicio.precio);
+        }
+    });
+
+    document.getElementById("totalVenta").innerText = `Total: $${total.toFixed(2)}`;
+}
+
+
 </script>
 
 {% endblock %}

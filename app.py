@@ -203,7 +203,26 @@ def ver_cliente(id_cliente):
 @app.route("/servicios")
 def servicios_page():
     q = request.args.get("q")
-    return render_template("servicios.html", servicios=obtener_servicios(q), q=q)
+    pagina = request.args.get("pagina", 1, type=int)  
+    servicios_por_pagina = 10
+
+    todos_servicios = obtener_servicios(q)
+
+    total_servicios = len(todos_servicios)
+    total_paginas = (total_servicios + servicios_por_pagina - 1) // servicios_por_pagina
+
+    inicio = (pagina - 1) * servicios_por_pagina
+    fin = inicio + servicios_por_pagina
+    servicios = todos_servicios[inicio:fin]
+
+    return render_template(
+        "servicios.html",
+        servicios=servicios,
+        q=q,
+        pagina=pagina,
+        total_paginas=total_paginas
+    )
+
 
 
 @app.route("/servicios/guardar", methods=["POST"])

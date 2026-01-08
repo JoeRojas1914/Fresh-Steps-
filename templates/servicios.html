@@ -74,6 +74,36 @@
     </tbody>
 </table>
 
+<div class="paginacion">
+    {% if total_paginas > 1 %}
+
+        {% set bloque = ((pagina - 1) // 10) %}
+        {% set inicio = bloque * 10 + 1 %}
+        {% set fin = inicio + 9 %}
+        {% if fin > total_paginas %}
+            {% set fin = total_paginas %}
+        {% endif %}
+
+        {% if inicio > 1 %}
+            <a href="{{ url_for('servicios_page', pagina=inicio-10, q=q) }}">«</a>
+        {% endif %}
+
+        {% for p in range(inicio, fin + 1) %}
+            {% if p == pagina %}
+                <strong>{{ p }}</strong>
+            {% else %}
+                <a href="{{ url_for('servicios_page', pagina=p, q=q) }}">{{ p }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if fin < total_paginas %}
+            <a href="{{ url_for('servicios_page', pagina=inicio+10, q=q) }}">»</a>
+        {% endif %}
+
+
+    {% endif %}
+</div>
+
 <script>
 function abrirModal() {
     document.getElementById("modal").style.display = "block";

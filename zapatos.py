@@ -18,16 +18,17 @@ def crear_zapato(id_cliente, color_base, color_secundario, material, tipo, marca
 def obtener_zapatos_cliente(id_cliente):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-
     cursor.execute("""
-        SELECT * FROM zapato
+        SELECT *
+        FROM zapato
         WHERE id_cliente = %s
+        ORDER BY fecha_registro DESC
     """, (id_cliente,))
-
     zapatos = cursor.fetchall()
     cursor.close()
     conn.close()
     return zapatos
+
 
 def actualizar_zapato(id_zapato, color_base, color_secundario, material, tipo, marca):
     conn = get_connection()

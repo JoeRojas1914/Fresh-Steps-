@@ -35,7 +35,7 @@
 
 <div class="monthly-cards">
     <div class="monthly-card ventas">
-        <h4>💰 Ventas del mes</h4>
+        <h4>💰 Ingresos del mes</h4>
         <p id="ventasMes">$0</p>
     </div>
 
@@ -52,8 +52,8 @@
 
 <div class="stats-page">
     <div class="card stats-card">
-        <h2 class="stats-title">Ganancias</h2>
-        <canvas id="gananciasChart"></canvas>
+        <h2 class="stats-title">Ingresos</h2>
+        <canvas id="ingresosChart"></canvas>
     </div>
 
     <div class="card stats-card">
@@ -66,7 +66,7 @@
 
 <script>
 let gastosChart;
-let gananciasChart;
+let ingresosChart;
 
 const nombresMeses = [
     "", "Enero","Febrero","Marzo","Abril","Mayo","Junio",
@@ -98,25 +98,25 @@ function initCharts() {
         }
     });
 
-    gananciasChart = new Chart(document.getElementById("gananciasChart"), {
+    ingresosChart = new Chart(document.getElementById("ingresosChart"), {
         type: "bar",
-        data: { labels: [], datasets: [{ label: "Ganancias ($)", data: [], backgroundColor: "#22c55e", borderRadius: 8 }] },
+        data: { labels: [], datasets: [{ label: "Ingresos ($)", data: [], backgroundColor: "#22c55e", borderRadius: 8 }] },
         options: { scales: { y: { beginAtZero: true } } }
     });
 }
 
 async function cargarAños() {
     const añosGastos = await fetchJSON("/api/estadisticas/gastos/años");
-    const añosGanancias = await fetchJSON("/api/estadisticas/ganancias/años");
-    const años = Array.from(new Set([...añosGastos, ...añosGanancias]));
+    const añosIngresos = await fetchJSON("/api/estadisticas/ingresos/años");
+    const años = Array.from(new Set([...añosGastos, ...añosIngresos]));
     llenarSelect("año_general", años);
 }
 
 async function cargarMeses() {
     const año = document.getElementById("año_general").value;
     const mesesGastos = await fetchJSON(`/api/estadisticas/gastos/meses?año=${año}`);
-    const mesesGanancias = await fetchJSON(`/api/estadisticas/ganancias/meses?año=${año}`);
-    const meses = Array.from(new Set([...mesesGastos, ...mesesGanancias]));
+    const mesesIngresos = await fetchJSON(`/api/estadisticas/ingresos/meses?año=${año}`);
+    const meses = Array.from(new Set([...mesesGastos, ...mesesIngresos]));
     llenarSelect("mes_general", meses, true);
 }
 
@@ -138,12 +138,12 @@ function cargarTodasLasGraficas() {
             gastosChart.update();
         });
 
-    fetch(`/api/estadisticas/ganancias?mes=${mes}&año=${año}`)
+    fetch(`/api/estadisticas/ingresos?mes=${mes}&año=${año}`)
         .then(r => r.json())
         .then(data => {
-            gananciasChart.data.labels = data.rangos;
-            gananciasChart.data.datasets[0].data = data.totales;
-            gananciasChart.update();
+            ingresosChart.data.labels = data.rangos;
+            ingresosChart.data.datasets[0].data = data.totales;
+            ingresosChart.update();
         });
 
     fetch(`/api/estadisticas/totales-mes?mes=${mes}&año=${año}`)

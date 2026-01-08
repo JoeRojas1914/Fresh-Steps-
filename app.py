@@ -50,7 +50,7 @@ from ventas import (
     asignar_servicio_a_venta_zapato,
     actualizar_total_venta,
     obtener_detalles_venta,
-    obtener_ganancias_por_semana
+    obtener_ingresos_por_semana
 )
 
 # ================= APP =================
@@ -384,13 +384,13 @@ def api_estadisticas_gastos():
 
 
 
-@app.route("/api/estadisticas/ganancias")
-def api_estadisticas_ganancias():
+@app.route("/api/estadisticas/ingresos")
+def api_estadisticas_ingresos():
     hoy = date.today()
     mes = request.args.get("mes", hoy.month, type=int)
     año = request.args.get("año", hoy.year, type=int)
 
-    return jsonify(obtener_ganancias_por_semana(mes, año))
+    return jsonify(obtener_ingresos_por_semana(mes, año))
 
 @app.route("/api/estadisticas/gastos/años")
 def años_gastos():
@@ -427,8 +427,8 @@ def meses_gastos():
 
 
 
-@app.route("/api/estadisticas/ganancias/años")
-def años_ganancias():
+@app.route("/api/estadisticas/ingresos/años")
+def años_ingresos():
     conn = get_connection()
     cur = conn.cursor(dictionary=True)
     cur.execute("""
@@ -443,8 +443,8 @@ def años_ganancias():
 
 
 
-@app.route("/api/estadisticas/ganancias/meses")
-def meses_ganancias():
+@app.route("/api/estadisticas/ingresos/meses")
+def meses_ingresos():
     año = request.args.get("año", type=int)
 
     conn = get_connection()
@@ -630,7 +630,7 @@ def estadisticas():
         meses=meses,
         año_actual=hoy.year,
         mes_gastos=hoy.month,
-        mes_ganancias=hoy.month,
+        mes_ingresos=hoy.month,
         total_clientes=contar_clientes(),
         total_servicios=contar_servicios()
     )

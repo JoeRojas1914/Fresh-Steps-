@@ -191,7 +191,7 @@ def contar_entregas_pendientes():
     return total
 
 
-def obtener_ganancias_por_semana(mes=None, año=None):
+def obtener_ingresos_por_semana(mes=None, año=None):
     hoy = date.today()
     mes = mes or hoy.month
     año = año or hoy.year

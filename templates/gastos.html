@@ -4,7 +4,7 @@
 
 <h1>💸 Gastos</h1>
 
-<form method="GET" action="/gastos" style="margin-bottom: 20px;">
+<form method="GET" action="/gastos" class="search-form">
     <input type="text" name="proveedor" placeholder="Buscar por proveedor..." value="{{ request.args.get('proveedor', '') }}">
     <button type="submit">Buscar</button>
 </form>

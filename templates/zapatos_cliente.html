@@ -63,6 +63,37 @@
   </tbody>
 </table>
 
+  <div class="paginacion">
+    {% if total_paginas > 1 %}
+        {# Calcular bloque actual de 10 páginas #}
+        {% set bloque = ((pagina - 1) // 10) %}
+        {% set inicio = bloque * 10 + 1 %}
+        {% set fin = inicio + 9 %}
+        {% if fin > total_paginas %}
+            {% set fin = total_paginas %}
+        {% endif %}
+
+        {# Botón «Anterior» para desplazar el bloque #}
+        {% if inicio > 1 %}
+            <a href="{{ url_for('zapatos_cliente', id_cliente=cliente.id_cliente, pagina=inicio-10) }}">«</a>
+        {% endif %}
+
+        {# Números de página #}
+        {% for p in range(inicio, fin + 1) %}
+            {% if p == pagina %}
+                <strong>{{ p }}</strong>
+            {% else %}
+                <a href="{{ url_for('zapatos_cliente', id_cliente=cliente.id_cliente, pagina=p) }}">{{ p }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {# Botón «Siguiente» para desplazar el bloque #}
+        {% if fin < total_paginas %}
+            <a href="{{ url_for('zapatos_cliente', id_cliente=cliente.id_cliente, pagina=inicio+10) }}">»</a>
+        {% endif %}
+    {% endif %}
+  </div>
+
 
 <script>
   function abrirModal(){

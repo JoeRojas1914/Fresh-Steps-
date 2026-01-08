@@ -278,6 +278,9 @@ def buscar_cliente_zapatos():
 
 @app.route("/zapatos/<int:id_cliente>")
 def zapatos_cliente(id_cliente):
+    pagina = request.args.get("pagina", 1, type=int)
+    per_page = 10  
+
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT * FROM cliente WHERE id_cliente=%s", (id_cliente,))
@@ -285,11 +288,22 @@ def zapatos_cliente(id_cliente):
     cursor.close()
     conn.close()
 
+    zapatos = obtener_zapatos_cliente(id_cliente)
+    total_zapatos = len(zapatos)
+    total_paginas = (total_zapatos + per_page - 1) // per_page  
+
+    start = (pagina - 1) * per_page
+    end = start + per_page
+    zapatos_paginados = zapatos[start:end]
+
     return render_template(
         "zapatos_cliente.html",
-        zapatos=obtener_zapatos_cliente(id_cliente),
-        cliente=cliente
+        zapatos=zapatos_paginados,
+        cliente=cliente,
+        pagina=pagina,
+        total_paginas=total_paginas
     )
+
 
 
 @app.route("/zapatos/guardar", methods=["POST"])

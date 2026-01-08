@@ -37,7 +37,6 @@
             <input type="hidden" name="id_servicio" id="id_servicio">
 
             <input type="text" name="nombre" placeholder="Nombre" required>
-            <textarea name="descripcion" placeholder="Descripción"></textarea>
             <input type="number" step="0.01" name="precio" placeholder="Precio" required>
 
             <button type="submit">Guardar</button>
@@ -64,7 +63,6 @@
                 <button class="btn-edit" onclick="editarServicio(
                     {{ s.id_servicio }},
                     '{{ s.nombre }}',
-                    '{{ s.descripcion }}',
                     {{ s.precio }}
                 )">Editar</button>
 
@@ -87,13 +85,12 @@ function cerrarModal() {
     document.getElementById("modal").style.display = "none";
 }
 
-function editarServicio(id, nombre, descripcion, precio) {
+function editarServicio(id, nombre, precio) {
     abrirModal();
     document.getElementById("tituloModal").innerText = "Editar servicio";
 
     document.getElementById("id_servicio").value = id;
     document.querySelector("[name=nombre]").value = nombre;
-    document.querySelector("[name=descripcion]").value = descripcion;
     document.querySelector("[name=precio]").value = precio;
 }
 </script>

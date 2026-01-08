@@ -1,15 +1,15 @@
 from db import get_connection
 
-def crear_servicio(nombre, descripcion, precio):
+def crear_servicio(nombre, precio):
     conn = get_connection()
     cursor = conn.cursor()
 
     sql = """
-    INSERT INTO servicio (nombre, descripcion, precio)
-    VALUES (%s, %s, %s)
+    INSERT INTO servicio (nombre, precio)
+    VALUES (%s, %s)
     """
 
-    cursor.execute(sql, (nombre, descripcion, precio))
+    cursor.execute(sql, (nombre, precio))
     conn.commit()
 
     cursor.close()
@@ -21,14 +21,14 @@ def obtener_servicios(q=None):
 
     if q:
         cursor.execute("""
-            SELECT id_servicio, nombre, descripcion, precio
+            SELECT id_servicio, nombre precio
             FROM servicio
             WHERE nombre LIKE %s
             ORDER BY nombre ASC
         """, (f"%{q}%",))
     else:
         cursor.execute("""
-            SELECT id_servicio, nombre, descripcion, precio
+            SELECT id_servicio, nombre, precio
             FROM servicio
             ORDER BY nombre ASC
         """)
@@ -41,15 +41,15 @@ def obtener_servicios(q=None):
     return servicios
 
 
-def actualizar_servicio(id_servicio, nombre, descripcion, precio):
+def actualizar_servicio(id_servicio, nombre, precio):
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
         UPDATE servicio
-        SET nombre=%s, descripcion=%s, precio=%s
+        SET nombre=%s, precio=%s
         WHERE id_servicio=%s
-    """, (nombre, descripcion, precio, id_servicio))
+    """, (nombre, precio, id_servicio))
 
     conn.commit()
     cursor.close()

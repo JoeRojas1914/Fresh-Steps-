@@ -192,7 +192,6 @@ def guardar_servicio():
 
     datos = (
         request.form["nombre"],
-        request.form["descripcion"],
         request.form["precio"]
     )
 
@@ -580,8 +579,28 @@ def guardar_venta():
 # ================= GASTOS =================
 @app.route("/gastos")
 def gastos():
-    proveedor = request.args.get("proveedor")
-    return render_template("gastos.html", gastos=obtener_gastos(proveedor), proveedor=proveedor)
+    proveedor = request.args.get("proveedor", "")
+    pagina = request.args.get("pagina", 1, type=int)  
+    por_pagina = 10 
+
+    todos_los_gastos = obtener_gastos(proveedor)
+
+    # Calcular total de páginas
+    total_gastos = len(todos_los_gastos)
+    total_paginas = (total_gastos + por_pagina - 1) // por_pagina
+
+    inicio = (pagina - 1) * por_pagina
+    fin = inicio + por_pagina
+    gastos_pagina = todos_los_gastos[inicio:fin]
+
+    return render_template(
+        "gastos.html",
+        gastos=gastos_pagina,
+        proveedor=proveedor,
+        pagina=pagina,
+        total_paginas=total_paginas
+    )
+
 
 
 

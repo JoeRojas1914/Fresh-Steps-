@@ -1300,4 +1300,13 @@ button:disabled:hover {
     text-align: center;
 }
 
+.venta-express {
+    background-color: #fff3cd; 
+    border-left: 6px solid #ffc107;
+    font-weight: bold;
+}
+
+.venta-express td {
+    color: #856404;
+}
 

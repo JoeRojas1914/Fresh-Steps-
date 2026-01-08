@@ -90,7 +90,7 @@ def obtener_ventas_pendientes():
         FROM venta v
         JOIN cliente c ON v.id_cliente = c.id_cliente
         WHERE v.fecha_entrega IS NULL
-        ORDER BY v.fecha_recibo
+        ORDER BY v.entrega_express DESC, v.fecha_recibo ASC
     """)
 
     ventas = cursor.fetchall()

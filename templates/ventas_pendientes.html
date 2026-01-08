@@ -38,9 +38,23 @@
         {% set total = v.total | float(0) %}
         {% set prepago = v.monto_prepago | float(0) %}
         {% set deuda = total - prepago %}
-        <tr>
+        <tr class="{% if v.entrega_express == 1 %}venta-express{% endif %}">
             <td>#{{ v.id_venta }}</td>
-            <td>{{ v.nombre }} {{ v.apellido }}</td>
+            <td>
+                {{ v.nombre }} {{ v.apellido }}
+                {% if v.entrega_express == 1 %}
+                    <span style="
+                        background:#dc3545;
+                        color:white;
+                        padding:2px 6px;
+                        border-radius:5px;
+                        font-size:0.75rem;
+                        margin-left:6px;
+                    ">
+                        EXPRESS
+                    </span>
+                {% endif %}
+            </td>
             <td>{{ v.fecha_recibo }}</td>
             <td>{{ 'Sí' if v.prepago else 'No' }}</td>
             <td>${{ total | round(2) }}</td>
@@ -105,7 +119,6 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-    // Toggle detalles
     function toggleDetalles(idVenta) {
         const fila = document.getElementById(`detalles-${idVenta}`);
         fila.style.display = fila.style.display === "none" ? "table-row" : "none";
@@ -117,19 +130,16 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // Buscador por cliente
     const inputBuscador = document.getElementById('buscador-cliente');
     inputBuscador.addEventListener('keyup', () => {
         const filtro = inputBuscador.value.toLowerCase();
         const filas = document.querySelectorAll('#tabla-ventas tbody tr');
 
         filas.forEach(fila => {
-            // Solo filas de ventas, no filas de detalles
             if (!fila.classList.contains('detalles-venta')) {
                 const nombreCliente = fila.cells[1].textContent.toLowerCase();
                 fila.style.display = nombreCliente.includes(filtro) ? '' : 'none';
 
-                // Ocultar fila de detalles asociada también
                 const idVenta = fila.querySelector('.btn-info').dataset.id;
                 const filaDetalle = document.getElementById(`detalles-${idVenta}`);
                 if (filaDetalle) {

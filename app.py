@@ -46,9 +46,6 @@ from ventas import (
     crear_venta,
     obtener_ventas_pendientes,
     marcar_entregada,
-    agregar_zapato_a_venta,
-    asignar_servicio_a_venta_zapato,
-    actualizar_total_venta,
     obtener_detalles_venta,
     obtener_ingresos_por_semana
 )
@@ -603,40 +600,37 @@ def entregar_venta(id_venta):
 def guardar_venta():
     prepago = request.form.get("prepago") == "si"
     monto_prepago = request.form.get("monto_prepago") if prepago else None
+    entrega_express = request.form.get("entrega_express") == "1"
 
-    venta_id = crear_venta(
-        request.form["id_cliente"],
-        request.form["tipo_pago"],
-        prepago,
-        monto_prepago
-    )
-
-    total = 0
+    zapatos = []
     form = request.form.to_dict(flat=False)
     i = 0
 
     while f"zapatos[{i}][id_zapato]" in form:
-        id_zapato = form[f"zapatos[{i}][id_zapato]"][0]
-        id_servicio = form[f"zapatos[{i}][id_servicio]"][0]
-
-        vz_id = agregar_zapato_a_venta(venta_id, id_zapato)
-
-        servicio = obtener_servicio_por_id(id_servicio)
-        precio = float(servicio["precio"])
-
-        asignar_servicio_a_venta_zapato(
-            vz_id,
-            id_servicio,
-            precio
-        )
-
-        total += precio
-
+        zapatos.append({
+            "id_zapato": form[f"zapatos[{i}][id_zapato]"][0],
+            "id_servicio": form[f"zapatos[{i}][id_servicio]"][0],
+        })
         i += 1
 
-    actualizar_total_venta(venta_id, total)
-    flash("✅ Venta creada correctamente.", "success")
+    try:
+        crear_venta(
+            id_cliente=request.form["id_cliente"],
+            tipo_pago=request.form["tipo_pago"],
+            prepago=prepago,
+            monto_prepago=monto_prepago,
+            entrega_express=entrega_express,
+            zapatos=zapatos
+        )
+
+        flash("✅ Venta creada correctamente.", "success")
+
+    except Exception as e:
+        flash(f"❌ Error al crear la venta: {str(e)}", "danger")
+
     return redirect("/ventas/pendientes")
+
+
 
 
 # ================= GASTOS =================

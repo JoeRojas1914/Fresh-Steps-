@@ -2,84 +2,83 @@ from db import get_connection
 from datetime import date, datetime, timedelta 
 from calendar import monthrange
 
-def crear_venta(id_cliente, tipo_pago, prepago, monto_prepago):
+from db import get_connection
+
+def crear_venta(id_cliente, tipo_pago, prepago, monto_prepago, entrega_express, zapatos):
     conn = get_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("""
-        INSERT INTO venta (id_cliente, tipo_pago, prepago, monto_prepago, total)
-        VALUES (%s, %s, %s, %s, 0)
-    """, (id_cliente, tipo_pago, prepago, monto_prepago))
+    try:
+        cursor.execute("""
+            INSERT INTO venta (
+                id_cliente,
+                tipo_pago,
+                prepago,
+                monto_prepago,
+                entrega_express,
+                total
+            )
+            VALUES (%s, %s, %s, %s, %s, 0)
+        """, (
+            id_cliente,
+            tipo_pago,
+            prepago,
+            monto_prepago,
+            entrega_express
+        ))
 
-    venta_id = cursor.lastrowid
-    conn.commit()
-    cursor.close()
-    conn.close()
+        id_venta = cursor.lastrowid
+        total = 0
 
-    return venta_id
+        for z in zapatos:
+            cursor.execute("""
+                INSERT INTO venta_zapato (id_venta, id_zapato)
+                VALUES (%s, %s)
+            """, (id_venta, z["id_zapato"]))
+
+            id_venta_zapato = cursor.lastrowid
+
+            cursor.execute(
+                "SELECT precio FROM servicio WHERE id_servicio=%s",
+                (z["id_servicio"],)
+            )
+            precio = float(cursor.fetchone()["precio"])
+
+            cursor.execute("""
+                INSERT INTO zapato_servicio (
+                    id_venta_zapato,
+                    id_servicio,
+                    precio_aplicado
+                )
+                VALUES (%s, %s, %s)
+            """, (
+                id_venta_zapato,
+                z["id_servicio"],
+                precio
+            ))
+
+            total += precio
+
+        if entrega_express:
+            total += 50
+
+        cursor.execute(
+            "UPDATE venta SET total=%s WHERE id_venta=%s",
+            (total, id_venta)
+        )
+
+        conn.commit()
+        return id_venta
+
+    except Exception as e:
+        conn.rollback()
+        raise e
+
+    finally:
+        cursor.close()
+        conn.close()
 
 
-
-
-def agregar_zapato_a_venta(id_venta, id_zapato):
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        INSERT INTO venta_zapato (id_venta, id_zapato)
-        VALUES (%s, %s)
-    """, (id_venta, id_zapato))
-
-    id_venta_zapato = cursor.lastrowid
-
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-    return id_venta_zapato
-
-
-def asignar_servicio_a_venta_zapato(id_venta_zapato, id_servicio, precio):
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        INSERT INTO zapato_servicio (id_venta_zapato, id_servicio, precio_aplicado)
-        VALUES (%s, %s, %s)
-    """, (id_venta_zapato, id_servicio, precio))
-
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-
-
-
-
-def calcular_total_venta(id_venta):
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT SUM(s.precio)
-        FROM venta_zapato vz
-        JOIN zapato_servicio zs ON vz.id_zapato = zs.id_zapato
-        JOIN servicio s ON zs.id_servicio = s.id_servicio
-        WHERE vz.id_venta = %s
-    """, (id_venta,))
-
-    total = cursor.fetchone()[0] or 0
-
-    cursor.execute(
-        "UPDATE venta SET total = %s WHERE id_venta = %s",
-        (total, id_venta)
-    )
-
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-    return total
 
 
 def obtener_ventas_pendientes():
@@ -116,18 +115,6 @@ def marcar_entregada(id_venta):
     conn.close()
 
 
-def actualizar_total_venta(id_venta, total):
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute(
-        "UPDATE venta SET total=%s WHERE id_venta=%s",
-        (total, id_venta)
-    )
-
-    conn.commit()
-    cursor.close()
-    conn.close()
 
 
 def obtener_detalles_venta(id_venta):

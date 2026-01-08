@@ -110,7 +110,13 @@
         <div class="form-item">
             <label class="form-label">&nbsp;</label>
             <label class="custom-checkbox">
-                <input type="checkbox" id="entregaExpress" onchange="actualizarTotal()">
+                <input
+                    type="checkbox"
+                    id="entregaExpress"
+                    name="entrega_express"
+                    value="1"
+                    onchange="actualizarTotal()"
+                >
                 <span class="checkmark"></span>
                 Entrega Express (+$50)
             </label>
@@ -146,8 +152,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.getElementById("modalCliente").style.display = "block";
     });
     document.getElementById("formNuevoCliente").addEventListener("submit", crearCliente);
-    document.getElementById("formNuevoZapato").addEventListener("submit", crearZapato); // listener único
-    document.getElementById("monto_prepago")?.addEventListener("input", actualizarTotal);
+    document.getElementById("formNuevoZapato").addEventListener("submit", crearZapato);
 });
 
 async function buscarClientes() {
@@ -346,7 +351,7 @@ function validarFormulario() {
 
 function actualizarTotal() {
     let total = 0;
-    
+
     document.querySelectorAll("#zapatosContainer select[name$='[id_servicio]']").forEach(select => {
         const idServicio = select.value;
         if (idServicio) {

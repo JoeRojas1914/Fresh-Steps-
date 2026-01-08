@@ -21,7 +21,8 @@ from gastos import (
     crear_gasto,
     actualizar_gasto,
     obtener_gastos,
-    eliminar_gasto
+    eliminar_gasto,
+    obtener_gastos_por_proveedor,
 )
 
 from servicios import (
@@ -579,8 +580,9 @@ def guardar_venta():
 # ================= GASTOS =================
 @app.route("/gastos")
 def gastos():
-    q = request.args.get("q")
-    return render_template("gastos.html", gastos=obtener_gastos(q), q=q)
+    proveedor = request.args.get("proveedor")
+    return render_template("gastos.html", gastos=obtener_gastos(proveedor), proveedor=proveedor)
+
 
 
 @app.route("/gastos/guardar", methods=["POST"])
@@ -608,6 +610,9 @@ def borrar_gasto(id_gasto):
     eliminar_gasto(id_gasto) 
     flash("✅ Gasto eliminado correctamente.", "success")
     return redirect("/gastos")
+
+
+
 
 
 # ================= ESTADISTICAS =================

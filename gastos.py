@@ -83,3 +83,24 @@ def obtener_gastos_por_proveedor(fecha_inicio, fecha_fin):
     conn.close()
     return resultados
 
+
+def obtener_gastos_por_proveedor(proveedor=None):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if proveedor:
+        cursor.execute("""
+            SELECT * FROM gastos
+            WHERE proveedor LIKE %s
+            ORDER BY fecha_registro DESC
+        """, (f"%{proveedor}%",))
+    else:
+        cursor.execute("""
+            SELECT * FROM gastos
+            ORDER BY fecha_registro DESC
+        """)
+
+    resultados = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return resultados

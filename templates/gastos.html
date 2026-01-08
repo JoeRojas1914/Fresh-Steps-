@@ -4,6 +4,11 @@
 
 <h1>💸 Gastos</h1>
 
+<form method="GET" action="/gastos" style="margin-bottom: 20px;">
+    <input type="text" name="proveedor" placeholder="Buscar por proveedor..." value="{{ request.args.get('proveedor', '') }}">
+    <button type="submit">Buscar</button>
+</form>
+
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
     {% for category, message in messages %}

@@ -807,8 +807,13 @@ select:focus {
 }
 
 #montoPrepagoContainer input {
-    max-width: 160px;
+    height: 42px;
+    padding: 0 10px;
+    line-height: 42px;
+    box-sizing: border-box;
 }
+
+
 
 
 button:disabled {
@@ -1208,6 +1213,22 @@ button:disabled:hover {
     flex: 1;
     min-width: 150px; 
 }
+
+.form-item select,
+.form-item input {
+    height: 42px;
+}
+
+.checkbox-item {
+    justify-content: flex-start;
+}
+
+.checkbox-item .custom-checkbox {
+    height: 42px;
+    display: flex;
+    align-items: center;
+}
+
 
 .custom-checkbox {
     display: flex;

@@ -78,11 +78,21 @@
 
 <div class="paginacion">
     {% if total_paginas > 1 %}
-        {% if pagina > 1 %}
-            <a href="{{ url_for('gastos', pagina=pagina-1, proveedor=proveedor) }}">« Anterior</a>
+        {# Calcular bloque de 10 páginas #}
+        {% set bloque = ((pagina - 1) // 10) %}
+        {% set inicio = bloque * 10 + 1 %}
+        {% set fin = inicio + 9 %}
+        {% if fin > total_paginas %}
+            {% set fin = total_paginas %}
         {% endif %}
 
-        {% for p in range(1, total_paginas + 1) %}
+        {# Botón «Anterior» para desplazar el bloque hacia atrás #}
+        {% if inicio > 1 %}
+            <a href="{{ url_for('gastos', pagina=inicio-10, proveedor=proveedor) }}">«</a>
+        {% endif %}
+
+        {# Mostrar páginas del bloque #}
+        {% for p in range(inicio, fin + 1) %}
             {% if p == pagina %}
                 <strong>{{ p }}</strong>
             {% else %}
@@ -90,11 +100,14 @@
             {% endif %}
         {% endfor %}
 
-        {% if pagina < total_paginas %}
-            <a href="{{ url_for('gastos', pagina=pagina+1, proveedor=proveedor) }}">Siguiente »</a>
+        {# Botón «Siguiente» para desplazar el bloque hacia adelante #}
+        {% if fin < total_paginas %}
+            <a href="{{ url_for('gastos', pagina=inicio+10, proveedor=proveedor) }}">»</a>
         {% endif %}
     {% endif %}
 </div>
+
+
 
 
 <script>

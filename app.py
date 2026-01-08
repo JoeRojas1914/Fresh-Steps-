@@ -87,8 +87,28 @@ def index():
 # ================= CLIENTES =================
 @app.route("/clientes")
 def clientes():
-    q = request.args.get("q")
-    return render_template("clientes.html", clientes=obtener_clientes(q), q=q)
+    q = request.args.get("q", "")
+    pagina = request.args.get("pagina", 1, type=int)  
+    por_pagina = 10 
+
+    todos_los_clientes = obtener_clientes(q)
+
+    total_clientes = len(todos_los_clientes)
+    total_paginas = (total_clientes + por_pagina - 1) // por_pagina  
+
+    inicio = (pagina - 1) * por_pagina
+    fin = inicio + por_pagina
+    clientes_pagina = todos_los_clientes[inicio:fin]
+
+    return render_template(
+        "clientes.html",
+        clientes=clientes_pagina,
+        q=q,
+        pagina=pagina,
+        total_paginas=total_paginas
+    )
+
+
 
 
 @app.route("/clientes/guardar", methods=["POST"])

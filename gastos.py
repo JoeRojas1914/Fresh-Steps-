@@ -1,106 +1,74 @@
 from db import get_connection
 
-def crear_gasto(descripcion, proveedor, total, fecha_registro):
+# ==========================
+# CREAR GASTO
+# ==========================
+def crear_gasto(id_negocio, descripcion, proveedor, total, fecha_registro):
+    """
+    Crea un nuevo gasto asociado a un negocio.
+    """
     conn = get_connection()
     cursor = conn.cursor()
-
 
     sql = """
-    INSERT INTO gastos (descripcion, proveedor, total, fecha_registro)
-    VALUES (%s, %s, %s, %s)
+    INSERT INTO gasto (id_negocio, descripcion, proveedor, total, fecha_registro)
+    VALUES (%s, %s, %s, %s, %s)
     """
-
-    cursor.execute(sql, (descripcion, proveedor, total, fecha_registro))
+    cursor.execute(sql, (id_negocio, descripcion, proveedor, total, fecha_registro))
+    id_gasto = cursor.lastrowid
     conn.commit()
 
     cursor.close()
     conn.close()
+    return id_gasto
 
 
-def actualizar_gasto(id_gasto, descripcion, proveedor, total, fecha_registro):
+# ==========================
+# ACTUALIZAR GASTO
+# ==========================
+def actualizar_gasto(id_gasto, id_negocio, descripcion, proveedor, total, fecha_registro):
+    """
+    Actualiza un gasto existente y su negocio asociado.
+    """
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
-        UPDATE gastos
-        SET descripcion=%s, proveedor=%s, total=%s, fecha_registro=%s
+        UPDATE gasto
+        SET id_negocio=%s, descripcion=%s, proveedor=%s, total=%s, fecha_registro=%s
         WHERE id_gasto=%s
-    """, (descripcion, proveedor, total, fecha_registro, id_gasto))
+    """, (id_negocio, descripcion, proveedor, total, fecha_registro, id_gasto))
 
     conn.commit()
     cursor.close()
     conn.close()
 
 
+# ==========================
+# ELIMINAR GASTO
+# ==========================
 def eliminar_gasto(id_gasto):
+    """
+    Elimina un gasto por su ID.
+    """
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM gastos WHERE id_gasto=%s", (id_gasto,))
+    cursor.execute("DELETE FROM gasto WHERE id_gasto=%s", (id_gasto,))
     conn.commit()
     cursor.close()
     conn.close()
 
 
-
-def obtener_gastos(q=None, limit=10, offset=0):
+# ==========================
+# OBTENER GASTOS (CON PAGINACIÓN Y FILTRO POR NEGOCIO)
+# ==========================
+def obtener_gastos(id_negocio=None, q=None, limit=10, offset=0):
+    """
+    Devuelve una lista de gastos con paginación y búsqueda opcional.
+    - id_negocio: filtrar por negocio (opcional)
+    - q: búsqueda por descripción o proveedor (opcional)
+    - limit: cantidad de registros por página
+    - offset: número de registros a saltar
+    """
     conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    if q:
-        cursor.execute("""
-            SELECT id_gasto, descripcion, proveedor, total, fecha_registro
-            FROM gastos
-            WHERE descripcion LIKE %s OR proveedor LIKE %s
-            ORDER BY fecha_registro DESC
-            LIMIT %s OFFSET %s
-        """, (f"%{q}%", f"%{q}%", limit, offset))
-    else:
-        cursor.execute("""
-            SELECT id_gasto, descripcion, proveedor, total, fecha_registro
-            FROM gastos
-            ORDER BY fecha_registro DESC
-            LIMIT %s OFFSET %s
-        """, (limit, offset))
-
-    gastos = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return gastos
-
-
-
-def obtener_gastos_por_proveedor(fecha_inicio, fecha_fin):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    cursor.execute("""
-        SELECT proveedor, SUM(total) as total
-        FROM gastos
-        WHERE fecha_registro BETWEEN %s AND %s
-        GROUP BY proveedor
-        ORDER BY total DESC
-    """, (fecha_inicio, fecha_fin))
-
-    resultados = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return resultados
-
-
-def contar_gastos(q=None):
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    if q:
-        cursor.execute("""
-            SELECT COUNT(*)
-            FROM gastos
-            WHERE descripcion LIKE %s OR proveedor LIKE %s
-        """, (f"%{q}%", f"%{q}%"))
-    else:
-        cursor.execute("SELECT COUNT(*) FROM gastos")
-
-    total = cursor.fetchone()[0]
-    cursor.close()
-    conn.close()
-    return total
+    cursor = conn.

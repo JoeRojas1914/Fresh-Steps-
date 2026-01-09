@@ -4,21 +4,21 @@
 
 <div class="page-content">
 
+  <!-- ================= HEADER CLIENTE ================= -->
   <div class="cliente-header" style="display:flex; gap:30px; align-items:center; flex-wrap:wrap; margin-bottom:30px;">
 
     <div class="cliente-avatar">
-    {% if cliente.avatar_url %}
+      {% if cliente.avatar_url %}
         <img src="{{ cliente.avatar_url }}" alt="Avatar" class="avatar-img">
-    {% else %}
+      {% else %}
         <div class="avatar-placeholder">
-        {{ cliente.nombre[0] }}{{ cliente.apellido[0] }}
+          {{ cliente.nombre[0] }}{{ cliente.apellido[0] }}
         </div>
-    {% endif %}
+      {% endif %}
     </div>
 
-
-
-    <div class="cliente-info" style="flex:1; display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px;">
+    <div class="cliente-info"
+         style="flex:1; display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px;">
 
       <div><strong>Nombre:</strong> {{ cliente.nombre }} {{ cliente.apellido }}</div>
       <div><strong>Teléfono:</strong> {{ cliente.telefono or 'N/A' }}</div>
@@ -30,24 +30,50 @@
     </div>
   </div>
 
-  <h2 style="margin-bottom:20px;">📦 Historial de pedidos</h2>
+  <!-- ================= TABS ================= -->
+  <div class="tabs">
+    <a href="{{ url_for('ver_cliente', id_cliente=cliente.id_cliente, tab='pedidos') }}"
+       class="tab {{ 'active' if tab == 'pedidos' else '' }}">
+      📦 Pedidos
+    </a>
+
+    <a href="{{ url_for('ver_cliente', id_cliente=cliente.id_cliente, tab='zapatos') }}"
+       class="tab {{ 'active' if tab == 'zapatos' else '' }}">
+      👞 Calzado
+    </a>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-messages">
+      {% for category, message in messages %}
+        <div class="alert {{ category }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+  <!-- ================= PEDIDOS ================= -->
+  {% if tab == 'pedidos' %}
+
+  <h2 style="margin-bottom:20px;">📦 Pedidos</h2>
 
   <div class="pedidos-container" style="display:flex; flex-direction:column; gap:20px;">
     {% for p in pedidos %}
-    <div class="pedido-card" style="border-radius:16px; padding:20px; background:white; box-shadow:0 6px 16px rgba(0,0,0,0.08);">
+    <div class="pedido-card"
+         style="border-radius:16px; padding:20px; background:white;
+                box-shadow:0 6px 16px rgba(0,0,0,0.08);">
 
-      <p style="font-weight:600; color:#1e3a8a;">Fecha: {{ p.fecha_recibo.strftime('%d/%m/%Y') }}</p>
+      <p style="font-weight:600; color:#1e3a8a;">
+        Fecha: {{ p.fecha_recibo.strftime('%d/%m/%Y') }}
+      </p>
 
       <p style="margin-top:4px;">
         <strong>Status:</strong>
         {% if p.fecha_entrega %}
-          <span class="status status-completado">
-            ✔ Completado
-          </span>
+          <span class="status status-completado">✔ Completado</span>
         {% else %}
-          <span class="status status-pendiente">
-            ⏳ Pendiente
-          </span>
+          <span class="status status-pendiente">⏳ Pendiente</span>
         {% endif %}
       </p>
 
@@ -63,11 +89,9 @@
           {% for z in p.detalles %}
           <tr>
             <td style="padding:6px;">
-                {{ z.zapato.tipo }}
-                {{ z.zapato.marca }}
-                - {{ z.zapato.color_base }}
-                {% if z.zapato.color_secundario %}/{{ z.zapato.color_secundario }}
-                {% endif %}
+              {{ z.zapato.tipo }} {{ z.zapato.marca }}
+              - {{ z.zapato.color_base }}
+              {% if z.zapato.color_secundario %}/{{ z.zapato.color_secundario }}{% endif %}
             </td>
             <td style="padding:6px;">{{ z.servicio.nombre }}</td>
             <td style="padding:6px;">${{ "{:.2f}".format(z.servicio.precio) }}</td>
@@ -76,46 +100,82 @@
         </tbody>
       </table>
 
-      <p style="margin-top:10px;"><strong>Total:</strong> ${{ "{:.2f}".format(p.total) }}</p>
+      <p style="margin-top:10px;">
+        <strong>Total:</strong> ${{ "{:.2f}".format(p.total) }}
+      </p>
       <p><strong>Tipo de pago:</strong> {{ p.tipo_pago }}</p>
     </div>
     {% else %}
-    <p>Este cliente no tiene pedidos aún.</p>
+      <p>Este cliente no tiene pedidos aún.</p>
     {% endfor %}
   </div>
 
+  <!-- PAGINACIÓN -->
   <div class="paginacion">
     {% if total_paginas > 1 %}
-        {# Calcular bloque actual de 10 páginas #}
-        {% set bloque = ((pagina - 1) // 10) %}
-        {% set inicio = bloque * 10 + 1 %}
-        {% set fin = inicio + 9 %}
-        {% if fin > total_paginas %}
-            {% set fin = total_paginas %}
-        {% endif %}
+      {% set bloque = ((pagina - 1) // 10) %}
+      {% set inicio = bloque * 10 + 1 %}
+      {% set fin = inicio + 9 %}
+      {% if fin > total_paginas %}
+        {% set fin = total_paginas %}
+      {% endif %}
 
-        {# Botón «Anterior» para desplazar el bloque #}
-        {% if inicio > 1 %}
-            <a href="{{ url_for('ver_cliente', id_cliente=cliente.id_cliente, pagina=inicio-10) }}">«</a>
-        {% endif %}
+      {% if inicio > 1 %}
+        <a href="{{ url_for('ver_cliente', id_cliente=cliente.id_cliente, pagina=inicio-10) }}">«</a>
+      {% endif %}
 
-        {# Números de página #}
-        {% for p in range(inicio, fin + 1) %}
-            {% if p == pagina %}
-                <strong>{{ p }}</strong>
-            {% else %}
-                <a href="{{ url_for('ver_cliente', id_cliente=cliente.id_cliente, pagina=p) }}">{{ p }}</a>
-            {% endif %}
-        {% endfor %}
-
-        {# Botón «Siguiente» para desplazar el bloque #}
-        {% if fin < total_paginas %}
-            <a href="{{ url_for('ver_cliente', id_cliente=cliente.id_cliente, pagina=inicio+10) }}">»</a>
+      {% for p in range(inicio, fin + 1) %}
+        {% if p == pagina %}
+          <strong>{{ p }}</strong>
+        {% else %}
+          <a href="{{ url_for('ver_cliente', id_cliente=cliente.id_cliente, pagina=p) }}">{{ p }}</a>
         {% endif %}
+      {% endfor %}
+
+      {% if fin < total_paginas %}
+        <a href="{{ url_for('ver_cliente', id_cliente=cliente.id_cliente, pagina=inicio+10) }}">»</a>
+      {% endif %}
     {% endif %}
   </div>
+
+  {% endif %}
+
+
+
+  <!-- ================= ZAPATOS ================= -->
+{% if tab == 'zapatos' %}
+
+<h2 style="margin-bottom:20px;">👞 Calzado</h2>
+
+<button onclick="abrirModal()" class="action-btn">
+    ➕ Agregar calzado
+</button>
+
+<br><br>
+
+<div class="zapatos-grid">
+  {% for z in zapatos %}
+  <div class="zapato-card">
+    <div class="zapato-info">
+      <h4>{{ z.tipo }} {{ z.marca }}</h4>
+      <p><strong>Color:</strong> {{ z.color_base }}{% if z.color_secundario %} / {{ z.color_secundario }}{% endif %}</p>
+      <p><strong>Material:</strong> {{ z.material or 'N/A' }}</p>
+    </div>
+
+    <a href="/zapatos/eliminar/{{ z.id_zapato }}/{{ cliente.id_cliente }}"
+       class="btn-delete"
+       onclick="return confirm('¿Eliminar calzado?')">
+       🗑 Eliminar
+    </a>
+  </div>
+  {% else %}
+  <p>Este cliente no tiene calzado registrado.</p>
+  {% endfor %}
+</div>
+
+{% endif %}
+
 
 </div>
 
 {% endblock %}
-

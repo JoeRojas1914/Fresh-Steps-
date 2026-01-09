@@ -173,6 +173,7 @@ def eliminar_cliente(id_cliente):
 @app.route("/clientes/<int:id_cliente>")
 def ver_cliente(id_cliente):
     pagina = request.args.get("pagina", 1, type=int)
+    tab = request.args.get("tab", "pedidos")  # 👈 NUEVO
     pedidos_por_pagina = 5
 
     conn = get_connection()
@@ -194,21 +195,15 @@ def ver_cliente(id_cliente):
     conn.close()
 
     total_paginas = (total_pedidos + pedidos_por_pagina - 1) // pedidos_por_pagina
-
     inicio = (pagina - 1) * pedidos_por_pagina
 
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("""
-        SELECT 
-            v.id_venta, 
-            v.fecha_recibo, 
-            v.fecha_entrega,
-            v.total, 
-            v.tipo_pago
-        FROM venta v
-        WHERE v.id_cliente = %s
-        ORDER BY v.fecha_recibo DESC
+        SELECT id_venta, fecha_recibo, fecha_entrega, total, tipo_pago
+        FROM venta
+        WHERE id_cliente = %s
+        ORDER BY fecha_recibo DESC
         LIMIT %s OFFSET %s
     """, (id_cliente, pedidos_por_pagina, inicio))
     pedidos = cursor.fetchall()
@@ -216,16 +211,21 @@ def ver_cliente(id_cliente):
     conn.close()
 
     for p in pedidos:
-        p['detalles'] = obtener_detalles_venta(p['id_venta'])
+        p["detalles"] = obtener_detalles_venta(p["id_venta"])
+
+    zapatos = obtener_zapatos_cliente(id_cliente)
 
     return render_template(
         "cliente_perfil.html",
         cliente=cliente,
-        total_pedidos=total_pedidos,
         pedidos=pedidos,
+        zapatos=zapatos,      
+        total_pedidos=total_pedidos,
         pagina=pagina,
-        total_paginas=total_paginas
+        total_paginas=total_paginas,
+        tab=tab                
     )
+
 
 
 

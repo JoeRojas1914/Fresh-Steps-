@@ -62,6 +62,19 @@
     </div>
 </div>
 
+<div class="stats-page">
+    <div class="card stats-card">
+        <h2 class="stats-title">Ventas</h2>
+        <canvas id="ventasSemanaChart"></canvas>
+    </div>
+
+    <div class="card stats-card">
+        <h2 class="stats-title">Unidades recibidas</h2>
+        <canvas id="unidadesSemanaChart"></canvas>
+    </div>
+</div>
+
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
@@ -103,6 +116,45 @@ function initCharts() {
         data: { labels: [], datasets: [{ label: "Ingresos ($)", data: [], backgroundColor: "#22c55e", borderRadius: 8 }] },
         options: { scales: { y: { beginAtZero: true } } }
     });
+
+
+    ventasSemanaChart = new Chart(
+        document.getElementById("ventasSemanaChart"), {
+            type: "bar",
+            data: {
+                labels: [],
+                datasets: [{
+                    label: "Ventas",
+                    data: [],
+                    backgroundColor: "#3b82f6",
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        }
+    );
+
+
+    unidadesSemanaChart = new Chart(
+        document.getElementById("unidadesSemanaChart"), {
+            type: "bar",
+            data: {
+                labels: [],
+                datasets: [{
+                    label: "Unidades",
+                    data: [],
+                    backgroundColor: "#a855f7",
+                    borderRadius: 8
+                }]
+            },
+            options: { scales: { y: { beginAtZero: true } } }
+        }
+    );
+
 }
 
 async function cargarAños() {
@@ -153,6 +205,23 @@ function cargarTodasLasGraficas() {
             document.getElementById("gastosMes").textContent = `$${Number(data.gastos).toLocaleString()}`;
             document.getElementById("gananciaMes").textContent = `$${Number(data.ganancia).toLocaleString()}`;
         });
+
+    fetch(`/api/estadisticas/ventas-semana?mes=${mes}&año=${año}`)
+        .then(r => r.json())
+        .then(data => {
+            ventasSemanaChart.data.labels = data.semanas;
+            ventasSemanaChart.data.datasets[0].data = data.totales;
+            ventasSemanaChart.update();
+        });
+
+    fetch(`/api/estadisticas/unidades-semana?mes=${mes}&año=${año}`)
+        .then(r => r.json())
+        .then(data => {
+            unidadesSemanaChart.data.labels = data.semanas;
+            unidadesSemanaChart.data.datasets[0].data = data.totales;
+            unidadesSemanaChart.update();
+        });
+
 }
 
 function llenarSelect(id, valores, esMes=false) {

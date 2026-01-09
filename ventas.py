@@ -233,10 +233,11 @@ def obtener_ingresos_por_semana(mes=None, año=None):
             if inicio_semana <= v['fecha_entrega'] <= fin_semana
         )
 
-        rangos.append(f"{nombre_mes} {inicio_semana.day} - {nombre_mes} {fin_semana.day}")
+        rangos.append(f"{inicio_semana.day}-{fin_semana.day} {nombre_mes}")
         totales.append(total_semana)
 
         dia_actual = fin_semana + timedelta(days=1)
 
     return {"rangos": rangos, "totales": totales}
+
 

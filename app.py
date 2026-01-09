@@ -562,6 +562,105 @@ def totales_mes():
     })
 
 
+@app.route("/api/estadisticas/ventas-semana")
+def api_ventas_por_semana():
+    mes = request.args.get("mes", type=int)
+    año = request.args.get("año", type=int)
+
+    inicio = date(año, mes, 1)
+    fin = date(año, mes, monthrange(año, mes)[1])
+
+    conn = get_connection()
+    cur = conn.cursor(dictionary=True)
+
+    cur.execute("""
+        SELECT fecha_recibo
+        FROM venta
+        WHERE fecha_recibo BETWEEN %s AND %s
+    """, (inicio, fin))
+
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    semanas = []
+    valores = []
+
+    semana_actual = inicio
+    while semana_actual <= fin:
+        start = semana_actual
+        end = min(semana_actual + timedelta(days=6), fin)
+
+        total = sum(
+            1 for r in rows
+            if start <= r["fecha_recibo"].date() <= end
+        )
+
+        meses_nombres = ["", "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+                 "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
+
+        semanas.append(f"{start.day}-{end.day} {meses_nombres[start.month]}")
+
+        valores.append(total)
+
+        semana_actual = end + timedelta(days=1)
+
+    return jsonify({
+        "semanas": semanas,
+        "totales": valores
+    })
+
+
+@app.route("/api/estadisticas/unidades-semana")
+def api_unidades_por_semana():
+    mes = request.args.get("mes", type=int)
+    año = request.args.get("año", type=int)
+
+    inicio = date(año, mes, 1)
+    fin = date(año, mes, monthrange(año, mes)[1])
+
+    conn = get_connection()
+    cur = conn.cursor(dictionary=True)
+
+    cur.execute("""
+        SELECT v.fecha_recibo, COUNT(vz.id_venta_zapato) AS unidades
+        FROM venta v
+        JOIN venta_zapato vz ON v.id_venta = vz.id_venta
+        WHERE v.fecha_recibo BETWEEN %s AND %s
+        GROUP BY v.id_venta, v.fecha_recibo
+    """, (inicio, fin))
+
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    semanas = []
+    valores = []
+
+    semana_actual = inicio
+    while semana_actual <= fin:
+        start = semana_actual
+        end = min(semana_actual + timedelta(days=6), fin)
+
+        total = sum(
+            r["unidades"] for r in rows
+            if start <= r["fecha_recibo"].date() <= end
+        )
+
+        meses_nombres = ["", "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+                 "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
+
+        semanas.append(f"{start.day}-{end.day} {meses_nombres[start.month]}")
+
+        valores.append(total)
+
+        semana_actual = end + timedelta(days=1)
+
+    return jsonify({
+        "semanas": semanas,
+        "totales": valores
+    })
+
 
 
 

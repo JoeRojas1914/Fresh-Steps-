@@ -17,7 +17,7 @@ def crear_cliente(nombre, apellido, correo, telefono, direccion):
     conn.close()
     return id_cliente
 
-def obtener_clientes(q=None):
+def obtener_clientes(q=None, limit=10, offset=0):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
@@ -27,30 +27,34 @@ def obtener_clientes(q=None):
             FROM cliente
             WHERE nombre LIKE %s OR apellido LIKE %s
             ORDER BY nombre ASC, apellido ASC
-        """, (f"%{q}%", f"%{q}%"))
+            LIMIT %s OFFSET %s
+        """, (f"%{q}%", f"%{q}%", limit, offset))
     else:
         cursor.execute("""
             SELECT id_cliente, nombre, apellido, correo, telefono, direccion
             FROM cliente
             ORDER BY nombre ASC, apellido ASC
-        """)
+            LIMIT %s OFFSET %s
+        """, (limit, offset))
 
     clientes = cursor.fetchall()
     cursor.close()
     conn.close()
-
     return clientes
+
 
 
 def eliminar_cliente(id_cliente):
     conn = get_connection()
     cursor = conn.cursor()
-
-    cursor.execute("DELETE FROM cliente WHERE id_cliente=%s", (id_cliente,))
-
+    cursor.execute(
+        "DELETE FROM cliente WHERE id_cliente = %s",
+        (id_cliente,)
+    )
     conn.commit()
     cursor.close()
     conn.close()
+
 
 
 def actualizar_cliente(id_cliente, nombre, apellido, correo, telefono, direccion):
@@ -68,14 +72,21 @@ def actualizar_cliente(id_cliente, nombre, apellido, correo, telefono, direccion
     conn.close()
 
 
-def contar_clientes():
+def contar_clientes(q=None):
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT COUNT(*) FROM cliente")
-    total = cursor.fetchone()[0]
+    if q:
+        cursor.execute("""
+            SELECT COUNT(*)
+            FROM cliente
+            WHERE nombre LIKE %s OR apellido LIKE %s
+        """, (f"%{q}%", f"%{q}%"))
+    else:
+        cursor.execute("SELECT COUNT(*) FROM cliente")
 
+    total = cursor.fetchone()[0]
     cursor.close()
     conn.close()
-
     return total
+

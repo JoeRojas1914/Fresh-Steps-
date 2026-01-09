@@ -1,13 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
-from datetime import date
+from datetime import date, timedelta
 from calendar import monthrange
 import os
 from dotenv import load_dotenv
-from datetime import date, timedelta
-from calendar import monthrange
-
-
 from db import get_connection
+
 
 # ================= IMPORTS DE MODULOS =================
 from clientes import (
@@ -22,7 +19,6 @@ from gastos import (
     actualizar_gasto,
     obtener_gastos,
     eliminar_gasto,
-    obtener_gastos_por_proveedor,
 )
 
 from servicios import (
@@ -31,7 +27,6 @@ from servicios import (
     crear_servicio,
     actualizar_servicio,
     eliminar_servicio,
-    obtener_servicio_por_id,
 )
 
 from zapatos import (
@@ -54,6 +49,7 @@ from ventas import (
 load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY")
+
 
 # ================= UTILIDADES =================
 def buscar_clientes_por_nombre(texto):
@@ -85,25 +81,28 @@ def index():
 @app.route("/clientes")
 def clientes():
     q = request.args.get("q", "")
-    pagina = request.args.get("pagina", 1, type=int)  
-    por_pagina = 10 
+    pagina = request.args.get("pagina", 1, type=int)
+    por_pagina = 10
 
-    todos_los_clientes = obtener_clientes(q)
+    offset = (pagina - 1) * por_pagina
 
-    total_clientes = len(todos_los_clientes)
-    total_paginas = (total_clientes + por_pagina - 1) // por_pagina  
+    total_clientes = contar_clientes(q)
+    total_paginas = (total_clientes + por_pagina - 1) // por_pagina
 
-    inicio = (pagina - 1) * por_pagina
-    fin = inicio + por_pagina
-    clientes_pagina = todos_los_clientes[inicio:fin]
+    clientes = obtener_clientes(
+        q=q,
+        limit=por_pagina,
+        offset=offset
+    )
 
     return render_template(
         "clientes.html",
-        clientes=clientes_pagina,
+        clientes=clientes,
         q=q,
         pagina=pagina,
         total_paginas=total_paginas
     )
+
 
 
 

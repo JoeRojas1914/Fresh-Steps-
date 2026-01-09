@@ -2,7 +2,6 @@ from db import get_connection
 from datetime import date, datetime, timedelta 
 from calendar import monthrange
 
-from db import get_connection
 
 def crear_venta(id_cliente, tipo_pago, prepago, monto_prepago, entrega_express, aplica_descuento, porcentaje_descuento, zapatos):
     conn = get_connection()

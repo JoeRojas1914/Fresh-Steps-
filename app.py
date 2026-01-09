@@ -68,6 +68,29 @@ def buscar_clientes_por_nombre(texto):
     conn.close()
     return resultados
 
+def generar_semanas_mes(año, mes):
+    inicio = date(año, mes, 1)
+    fin = date(año, mes, monthrange(año, mes)[1])
+
+    semanas = []
+    actual = inicio
+
+    meses_nombres = ["", "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+                     "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
+
+    while actual <= fin:
+        end = min(actual + timedelta(days=6), fin)
+        label = f"{actual.day}-{end.day} {meses_nombres[actual.month]}"
+        semanas.append({
+            "inicio": actual,
+            "fin": end,
+            "label": label
+        })
+        actual = end + timedelta(days=1)
+
+    return semanas
+
+
 
 # ================= HOME =================
 @app.route("/")
@@ -397,13 +420,8 @@ def api_crear_zapato():
 def api_estadisticas_gastos():
     mes = request.args.get("mes", type=int)
     año = request.args.get("año", type=int)
-    if not mes:
-        mes = date.today().month
-    if not año:
-        año = date.today().year
 
-    inicio = date(año, mes, 1)
-    fin = date(año, mes, monthrange(año, mes)[1])
+    semanas = generar_semanas_mes(año, mes)
 
     conn = get_connection()
     cur = conn.cursor(dictionary=True)
@@ -411,41 +429,29 @@ def api_estadisticas_gastos():
     cur.execute("""
         SELECT proveedor, fecha_registro, SUM(total) AS total
         FROM gastos
-        WHERE fecha_registro BETWEEN %s AND %s
+        WHERE YEAR(fecha_registro) = %s
+          AND MONTH(fecha_registro) = %s
         GROUP BY proveedor, fecha_registro
-    """, (inicio, fin))
+    """, (año, mes))
 
     rows = cur.fetchall()
     cur.close()
     conn.close()
 
-    semanas = []
-    semana_actual = inicio
-    semana_map = []
-
-    meses_nombres = ["", "Enero","Febrero","Marzo","Abril","Mayo","Junio",
-                     "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
-
-    while semana_actual <= fin:
-        start = semana_actual
-        end = min(semana_actual + timedelta(days=6), fin)
-        semanas.append(f"{start.day}-{end.day} {meses_nombres[start.month]}")
-        semana_map.append((start, end))
-        semana_actual = end + timedelta(days=1)
-
-    proveedores_set = set(r["proveedor"] for r in rows)
-    data_proveedores = {prov: [0]*len(semanas) for prov in proveedores_set}
+    proveedores = {r["proveedor"] for r in rows}
+    data = {p: [0]*len(semanas) for p in proveedores}
 
     for r in rows:
-        for i, (start, end) in enumerate(semana_map):
-            if start <= r["fecha_registro"] <= end:
-                data_proveedores[r["proveedor"]][i] += float(r["total"])
+        for i, s in enumerate(semanas):
+            if s["inicio"] <= r["fecha_registro"] <= s["fin"]:
+                data[r["proveedor"]][i] += float(r["total"])
                 break
 
     return jsonify({
-        "semanas": semanas,
-        "proveedores": data_proveedores
+        "semanas": [s["label"] for s in semanas],
+        "proveedores": data
     })
+
 
 
 
@@ -574,48 +580,40 @@ def api_ventas_por_semana():
     mes = request.args.get("mes", type=int)
     año = request.args.get("año", type=int)
 
-    inicio = date(año, mes, 1)
-    fin = date(año, mes, monthrange(año, mes)[1])
+    semanas = generar_semanas_mes(año, mes)
 
     conn = get_connection()
     cur = conn.cursor(dictionary=True)
 
     cur.execute("""
-        SELECT fecha_recibo
+        SELECT 
+            fecha_recibo,
+            COUNT(*) AS total
         FROM venta
-        WHERE fecha_recibo BETWEEN %s AND %s
-    """, (inicio, fin))
+        WHERE YEAR(fecha_recibo) = %s
+          AND MONTH(fecha_recibo) = %s
+        GROUP BY fecha_recibo
+    """, (año, mes))
 
     rows = cur.fetchall()
     cur.close()
     conn.close()
 
-    semanas = []
     valores = []
 
-    semana_actual = inicio
-    while semana_actual <= fin:
-        start = semana_actual
-        end = min(semana_actual + timedelta(days=6), fin)
-
+    for s in semanas:
         total = sum(
-            1 for r in rows
-            if start <= r["fecha_recibo"].date() <= end
+            r["total"]
+            for r in rows
+            if s["inicio"] <= r["fecha_recibo"].date() <= s["fin"]
         )
-
-        meses_nombres = ["", "Enero","Febrero","Marzo","Abril","Mayo","Junio",
-                 "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
-
-        semanas.append(f"{start.day}-{end.day} {meses_nombres[start.month]}")
-
         valores.append(total)
 
-        semana_actual = end + timedelta(days=1)
-
     return jsonify({
-        "semanas": semanas,
+        "semanas": [s["label"] for s in semanas],
         "totales": valores
     })
+
 
 
 @app.route("/api/estadisticas/unidades-semana")
@@ -623,50 +621,41 @@ def api_unidades_por_semana():
     mes = request.args.get("mes", type=int)
     año = request.args.get("año", type=int)
 
-    inicio = date(año, mes, 1)
-    fin = date(año, mes, monthrange(año, mes)[1])
+    semanas = generar_semanas_mes(año, mes)
 
     conn = get_connection()
     cur = conn.cursor(dictionary=True)
 
     cur.execute("""
-        SELECT v.fecha_recibo, COUNT(vz.id_venta_zapato) AS unidades
+        SELECT 
+            DATE(v.fecha_recibo) AS fecha,
+            COUNT(vz.id_venta_zapato) AS unidades
         FROM venta v
         JOIN venta_zapato vz ON v.id_venta = vz.id_venta
-        WHERE v.fecha_recibo BETWEEN %s AND %s
-        GROUP BY v.id_venta, v.fecha_recibo
-    """, (inicio, fin))
+        WHERE YEAR(v.fecha_recibo) = %s
+          AND MONTH(v.fecha_recibo) = %s
+        GROUP BY DATE(v.fecha_recibo)
+    """, (año, mes))
 
     rows = cur.fetchall()
     cur.close()
     conn.close()
 
-    semanas = []
     valores = []
 
-    semana_actual = inicio
-    while semana_actual <= fin:
-        start = semana_actual
-        end = min(semana_actual + timedelta(days=6), fin)
-
+    for s in semanas:
         total = sum(
-            r["unidades"] for r in rows
-            if start <= r["fecha_recibo"].date() <= end
+            r["unidades"]
+            for r in rows
+            if s["inicio"] <= r["fecha"] <= s["fin"]
         )
-
-        meses_nombres = ["", "Enero","Febrero","Marzo","Abril","Mayo","Junio",
-                 "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
-
-        semanas.append(f"{start.day}-{end.day} {meses_nombres[start.month]}")
-
         valores.append(total)
 
-        semana_actual = end + timedelta(days=1)
-
     return jsonify({
-        "semanas": semanas,
+        "semanas": [s["label"] for s in semanas],
         "totales": valores
     })
+
 
 
 
@@ -715,7 +704,6 @@ def guardar_venta():
 
     entrega_express = request.form.get("entrega_express") == "1"
 
-    # ✅ reconstruir zapatos
     zapatos = []
     i = 0
     while True:

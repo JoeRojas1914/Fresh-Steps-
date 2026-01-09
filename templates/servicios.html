@@ -85,19 +85,19 @@
         {% endif %}
 
         {% if inicio > 1 %}
-            <a href="{{ url_for('servicios_page', pagina=inicio-10, q=q) }}">«</a>
+            <a href="{{ url_for('servicios', pagina=inicio-10, q=q) }}">«</a>
         {% endif %}
 
         {% for p in range(inicio, fin + 1) %}
             {% if p == pagina %}
                 <strong>{{ p }}</strong>
             {% else %}
-                <a href="{{ url_for('servicios_page', pagina=p, q=q) }}">{{ p }}</a>
+                <a href="{{ url_for('servicios', pagina=p, q=q) }}">{{ p }}</a>
             {% endif %}
         {% endfor %}
 
         {% if fin < total_paginas %}
-            <a href="{{ url_for('servicios_page', pagina=inicio+10, q=q) }}">»</a>
+            <a href="{{ url_for('servicios', pagina=inicio+10, q=q) }}">»</a>
         {% endif %}
 
 

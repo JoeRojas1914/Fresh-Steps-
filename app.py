@@ -209,19 +209,21 @@ def ver_cliente(id_cliente):
 
 # ================= SERVICIOS =================
 @app.route("/servicios")
-def servicios_page():
-    q = request.args.get("q")
-    pagina = request.args.get("pagina", 1, type=int)  
-    servicios_por_pagina = 10
+def servicios():
+    q = request.args.get("q", "")
+    pagina = request.args.get("pagina", 1, type=int)
 
-    todos_servicios = obtener_servicios(q)
+    por_pagina = 10
+    offset = (pagina - 1) * por_pagina
 
-    total_servicios = len(todos_servicios)
-    total_paginas = (total_servicios + servicios_por_pagina - 1) // servicios_por_pagina
+    total_servicios = contar_servicios(q)
+    total_paginas = (total_servicios + por_pagina - 1) // por_pagina
 
-    inicio = (pagina - 1) * servicios_por_pagina
-    fin = inicio + servicios_por_pagina
-    servicios = todos_servicios[inicio:fin]
+    servicios = obtener_servicios(
+        q=q,
+        limit=por_pagina,
+        offset=offset
+    )
 
     return render_template(
         "servicios.html",
@@ -230,6 +232,7 @@ def servicios_page():
         pagina=pagina,
         total_paginas=total_paginas
     )
+
 
 
 

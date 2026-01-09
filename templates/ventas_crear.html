@@ -356,21 +356,6 @@ function validarFormulario() {
     const tipoPago = document.getElementById("tipo_pago").value;
     const prepago = document.getElementById("prepago").value;
     const monto = parseFloat(document.getElementById("monto_prepago")?.value || 0);
-    const aplicaDescuento = document.getElementById("aplica_descuento").value;
-    const porcentajeInput = document.getElementById("porcentaje_descuento");
-    const porcentaje = parseFloat(porcentajeInput?.value || 0);
-
-    if (aplicaDescuento === "si") {
-        if (isNaN(porcentaje) || porcentaje < 1 || porcentaje > 100) {
-            document.getElementById("errorDescuento").style.display = "block";
-            valido = false;
-        } else {
-            document.getElementById("errorDescuento").style.display = "none";
-        }
-    } else {
-        document.getElementById("errorDescuento").style.display = "none";
-    }
-
 
     let valido = cliente && tipoPago && prepago;
 
@@ -431,6 +416,9 @@ function actualizarTotal() {
     document.getElementById("totalVenta").innerText =
         `Total: $${total.toFixed(2)}`;
 }
+
+const aplicaDescuento = document.getElementById("aplica_descuento").value === "si";
+const porcentaje = parseFloat(document.getElementById("porcentaje_descuento")?.value || 0);
 
 
 </script>

@@ -1202,17 +1202,19 @@ button:disabled:hover {
 
 .form-row {
     display: flex;
-    gap: 20px;
-    align-items: flex-end; 
-    flex-wrap: wrap; 
+    gap: 24px;
+    align-items: flex-start;
+    flex-wrap: wrap;
 }
+
 
 .form-item {
     display: flex;
     flex-direction: column;
-    flex: 1;
-    min-width: 150px; 
+    gap: 6px;
+    min-width: 180px;
 }
+
 
 .form-item select,
 .form-item input {
@@ -1330,4 +1332,25 @@ button:disabled:hover {
 .venta-express td {
     color: #856404;
 }
+
+
+#montoPrepagoContainer input,
+#porcentajeDescuentoContainer input {
+    height: 34px;
+    padding: 6px 10px;
+    font-size: 14px;
+}
+
+#montoPrepagoContainer,
+#porcentajeDescuentoContainer {
+    margin-top: 8px;
+}
+
+
+#montoPrepagoContainer {
+    margin-bottom: 12px;
+}
+
+
+
 

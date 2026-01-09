@@ -19,6 +19,7 @@ from gastos import (
     actualizar_gasto,
     obtener_gastos,
     eliminar_gasto,
+    contar_gastos,
 )
 
 from servicios import (
@@ -749,26 +750,29 @@ def guardar_venta():
 @app.route("/gastos")
 def gastos():
     proveedor = request.args.get("proveedor", "")
-    pagina = request.args.get("pagina", 1, type=int)  
-    por_pagina = 10 
+    pagina = request.args.get("pagina", 1, type=int)
 
-    todos_los_gastos = obtener_gastos(proveedor)
+    por_pagina = 10
+    offset = (pagina - 1) * por_pagina
 
-    # Calcular total de páginas
-    total_gastos = len(todos_los_gastos)
+    total_gastos = contar_gastos(proveedor)
     total_paginas = (total_gastos + por_pagina - 1) // por_pagina
 
-    inicio = (pagina - 1) * por_pagina
-    fin = inicio + por_pagina
-    gastos_pagina = todos_los_gastos[inicio:fin]
+    # Gastos paginados
+    gastos = obtener_gastos(
+        q=proveedor,
+        limit=por_pagina,
+        offset=offset
+    )
 
     return render_template(
         "gastos.html",
-        gastos=gastos_pagina,
+        gastos=gastos,
         proveedor=proveedor,
         pagina=pagina,
         total_paginas=total_paginas
     )
+
 
 
 

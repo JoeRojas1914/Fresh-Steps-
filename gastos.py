@@ -42,7 +42,7 @@ def eliminar_gasto(id_gasto):
 
 
 
-def obtener_gastos(q=None):
+def obtener_gastos(q=None, limit=10, offset=0):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
@@ -52,19 +52,22 @@ def obtener_gastos(q=None):
             FROM gastos
             WHERE descripcion LIKE %s OR proveedor LIKE %s
             ORDER BY fecha_registro DESC
-        """, (f"%{q}%", f"%{q}%"))
+            LIMIT %s OFFSET %s
+        """, (f"%{q}%", f"%{q}%", limit, offset))
     else:
         cursor.execute("""
             SELECT id_gasto, descripcion, proveedor, total, fecha_registro
             FROM gastos
             ORDER BY fecha_registro DESC
-        """)
+            LIMIT %s OFFSET %s
+        """, (limit, offset))
 
     gastos = cursor.fetchall()
     cursor.close()
     conn.close()
-
     return gastos
+
+
 
 def obtener_gastos_por_proveedor(fecha_inicio, fecha_fin):
     conn = get_connection()
@@ -83,3 +86,21 @@ def obtener_gastos_por_proveedor(fecha_inicio, fecha_fin):
     conn.close()
     return resultados
 
+
+def contar_gastos(q=None):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    if q:
+        cursor.execute("""
+            SELECT COUNT(*)
+            FROM gastos
+            WHERE descripcion LIKE %s OR proveedor LIKE %s
+        """, (f"%{q}%", f"%{q}%"))
+    else:
+        cursor.execute("SELECT COUNT(*) FROM gastos")
+
+    total = cursor.fetchone()[0]
+    cursor.close()
+    conn.close()
+    return total

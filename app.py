@@ -600,35 +600,45 @@ def entregar_venta(id_venta):
 def guardar_venta():
     prepago = request.form.get("prepago") == "si"
     monto_prepago = request.form.get("monto_prepago") if prepago else None
+
+    aplica_descuento = request.form.get("aplica_descuento") == "si"
+    porcentaje_descuento = (
+        float(request.form.get("porcentaje_descuento"))
+        if aplica_descuento else None
+    )
+
     entrega_express = request.form.get("entrega_express") == "1"
 
+    # ✅ reconstruir zapatos
     zapatos = []
-    form = request.form.to_dict(flat=False)
     i = 0
+    while True:
+        id_zapato = request.form.get(f"zapatos[{i}][id_zapato]")
+        id_servicio = request.form.get(f"zapatos[{i}][id_servicio]")
 
-    while f"zapatos[{i}][id_zapato]" in form:
+        if not id_zapato or not id_servicio:
+            break
+
         zapatos.append({
-            "id_zapato": form[f"zapatos[{i}][id_zapato]"][0],
-            "id_servicio": form[f"zapatos[{i}][id_servicio]"][0],
+            "id_zapato": id_zapato,
+            "id_servicio": id_servicio
         })
         i += 1
 
-    try:
-        crear_venta(
-            id_cliente=request.form["id_cliente"],
-            tipo_pago=request.form["tipo_pago"],
-            prepago=prepago,
-            monto_prepago=monto_prepago,
-            entrega_express=entrega_express,
-            zapatos=zapatos
-        )
+    crear_venta(
+        request.form["id_cliente"],
+        request.form["tipo_pago"],
+        prepago,
+        monto_prepago,
+        entrega_express,
+        aplica_descuento,
+        porcentaje_descuento,
+        zapatos
+    )
 
-        flash("✅ Venta creada correctamente.", "success")
+    return redirect("/ventas")
 
-    except Exception as e:
-        flash(f"❌ Error al crear la venta: {str(e)}", "danger")
 
-    return redirect("/ventas/pendientes")
 
 
 

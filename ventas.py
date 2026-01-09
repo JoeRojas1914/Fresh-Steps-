@@ -4,7 +4,7 @@ from calendar import monthrange
 
 from db import get_connection
 
-def crear_venta(id_cliente, tipo_pago, prepago, monto_prepago, entrega_express, zapatos):
+def crear_venta(id_cliente, tipo_pago, prepago, monto_prepago, entrega_express, aplica_descuento, porcentaje_descuento, zapatos):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
@@ -16,15 +16,19 @@ def crear_venta(id_cliente, tipo_pago, prepago, monto_prepago, entrega_express, 
                 prepago,
                 monto_prepago,
                 entrega_express,
+                aplica_descuento,
+                porcentaje_descuento,
                 total
             )
-            VALUES (%s, %s, %s, %s, %s, 0)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, 0)
         """, (
             id_cliente,
             tipo_pago,
             prepago,
             monto_prepago,
-            entrega_express
+            entrega_express,
+            aplica_descuento,
+            porcentaje_descuento
         ))
 
         id_venta = cursor.lastrowid
@@ -61,6 +65,10 @@ def crear_venta(id_cliente, tipo_pago, prepago, monto_prepago, entrega_express, 
 
         if entrega_express:
             total += 50
+        
+        if aplica_descuento and porcentaje_descuento:
+            descuento = total * (porcentaje_descuento / 100)
+            total -= descuento
 
         cursor.execute(
             "UPDATE venta SET total=%s WHERE id_venta=%s",

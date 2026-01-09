@@ -3,19 +3,28 @@ from db import get_connection
 def crear_zapato(id_cliente, color_base, color_secundario, material, tipo, marca):
     conn = get_connection()
     cursor = conn.cursor()
-
-    sql = """
-    INSERT INTO zapato (id_cliente, color_base, color_secundario, material, tipo, marca)
-    VALUES (%s, %s, %s, %s, %s, %s)
-    """
-
-    cursor.execute(sql, (id_cliente, color_base, color_secundario, material, tipo, marca))
+    cursor.execute("""
+        INSERT INTO zapato (id_cliente, color_base, color_secundario, material, tipo, marca)
+        VALUES (%s, %s, %s, %s, %s, %s)
+    """, (id_cliente, color_base, color_secundario, material, tipo, marca))
     conn.commit()
-
     cursor.close()
     conn.close()
 
-def obtener_zapatos_cliente(id_cliente):
+
+def contar_zapatos_cliente(id_cliente):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT COUNT(*) FROM zapato WHERE id_cliente = %s
+    """, (id_cliente,))
+    total = cursor.fetchone()[0]
+    cursor.close()
+    conn.close()
+    return total
+
+
+def obtener_zapatos_cliente(id_cliente, limit=10, offset=0):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("""
@@ -23,7 +32,8 @@ def obtener_zapatos_cliente(id_cliente):
         FROM zapato
         WHERE id_cliente = %s
         ORDER BY fecha_registro DESC
-    """, (id_cliente,))
+        LIMIT %s OFFSET %s
+    """, (id_cliente, limit, offset))
     zapatos = cursor.fetchall()
     cursor.close()
     conn.close()
@@ -33,13 +43,11 @@ def obtener_zapatos_cliente(id_cliente):
 def actualizar_zapato(id_zapato, color_base, color_secundario, material, tipo, marca):
     conn = get_connection()
     cursor = conn.cursor()
-
     cursor.execute("""
         UPDATE zapato
         SET color_base=%s, color_secundario=%s, material=%s, tipo=%s, marca=%s
         WHERE id_zapato=%s
     """, (color_base, color_secundario, material, tipo, marca, id_zapato))
-
     conn.commit()
     cursor.close()
     conn.close()
@@ -48,10 +56,8 @@ def actualizar_zapato(id_zapato, color_base, color_secundario, material, tipo, m
 def eliminar_zapato(id_zapato):
     conn = get_connection()
     cursor = conn.cursor()
-
     cursor.execute("DELETE FROM zapato WHERE id_zapato=%s", (id_zapato,))
     conn.commit()
-
     cursor.close()
     conn.close()
 
@@ -59,23 +65,21 @@ def eliminar_zapato(id_zapato):
 def cliente_tiene_zapatos(id_cliente):
     conn = get_connection()
     cursor = conn.cursor()
-
     cursor.execute("""
-        SELECT COUNT(*) FROM zapato
-        WHERE id_cliente = %s
+        SELECT COUNT(*) FROM zapato WHERE id_cliente = %s
     """, (id_cliente,))
-
     cantidad = cursor.fetchone()[0]
-
     cursor.close()
     conn.close()
-
     return cantidad > 0
+
 
 def zapato_tiene_ventas(id_zapato):
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*) FROM venta_zapato WHERE id_zapato = %s", (id_zapato,))
+    cursor.execute("""
+        SELECT COUNT(*) FROM venta_zapato WHERE id_zapato = %s
+    """, (id_zapato,))
     resultado = cursor.fetchone()[0]
     cursor.close()
     conn.close()

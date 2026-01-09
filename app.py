@@ -33,7 +33,8 @@ from zapatos import (
     obtener_zapatos_cliente,
     crear_zapato,
     eliminar_zapato,
-    cliente_tiene_zapatos
+    cliente_tiene_zapatos,
+    contar_zapatos_cliente,
 )
 
 from ventas import (
@@ -275,7 +276,8 @@ def buscar_cliente_zapatos():
 @app.route("/zapatos/<int:id_cliente>")
 def zapatos_cliente(id_cliente):
     pagina = request.args.get("pagina", 1, type=int)
-    per_page = 10  
+    por_pagina = 10
+    offset = (pagina - 1) * por_pagina
 
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
@@ -284,21 +286,23 @@ def zapatos_cliente(id_cliente):
     cursor.close()
     conn.close()
 
-    zapatos = obtener_zapatos_cliente(id_cliente)
-    total_zapatos = len(zapatos)
-    total_paginas = (total_zapatos + per_page - 1) // per_page  
+    total_zapatos = contar_zapatos_cliente(id_cliente)
+    total_paginas = (total_zapatos + por_pagina - 1) // por_pagina
 
-    start = (pagina - 1) * per_page
-    end = start + per_page
-    zapatos_paginados = zapatos[start:end]
+    zapatos = obtener_zapatos_cliente(
+        id_cliente=id_cliente,
+        limit=por_pagina,
+        offset=offset
+    )
 
     return render_template(
         "zapatos_cliente.html",
-        zapatos=zapatos_paginados,
         cliente=cliente,
+        zapatos=zapatos,
         pagina=pagina,
         total_paginas=total_paginas
     )
+
 
 
 

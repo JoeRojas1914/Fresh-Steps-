@@ -236,15 +236,19 @@ def ver_cliente(id_cliente):
 @app.route("/servicios")
 def servicios():
     q = request.args.get("q", "")
+    id_negocio = request.args.get("id_negocio", type=int)
     pagina = request.args.get("pagina", 1, type=int)
 
     por_pagina = 10
     offset = (pagina - 1) * por_pagina
 
-    total_servicios = contar_servicios(q)
+    negocios = obtener_negocios()
+
+    total_servicios = contar_servicios(id_negocio=id_negocio, q=q)
     total_paginas = (total_servicios + por_pagina - 1) // por_pagina
 
     servicios = obtener_servicios(
+        id_negocio=id_negocio,
         q=q,
         limit=por_pagina,
         offset=offset
@@ -253,6 +257,8 @@ def servicios():
     return render_template(
         "servicios.html",
         servicios=servicios,
+        negocios=negocios,
+        id_negocio=id_negocio,
         q=q,
         pagina=pagina,
         total_paginas=total_paginas
@@ -260,12 +266,13 @@ def servicios():
 
 
 
-
 @app.route("/servicios/guardar", methods=["POST"])
 def guardar_servicio():
     id_servicio = request.form.get("id_servicio")
+    id_negocio = request.form["id_negocio"]
 
     datos = (
+        id_negocio,
         request.form["nombre"],
         request.form["precio"]
     )
@@ -282,89 +289,10 @@ def guardar_servicio():
 
 @app.route("/servicios/eliminar/<int:id_servicio>")
 def borrar_servicio(id_servicio):
-    from servicios import servicio_tiene_ventas
-
-    if servicio_tiene_ventas(id_servicio):
-        flash("❌ No se puede eliminar este servicio porque ya está asociado a una venta.", "error")
-        return redirect("/servicios")
 
     eliminar_servicio(id_servicio)
     flash("✅ Servicio eliminado correctamente.", "success")
     return redirect("/servicios")
-
-
-
-# ================= ZAPATOS =================
-@app.route("/zapatos")
-def buscar_cliente_zapatos():
-    q = request.args.get("q", "")
-    clientes = buscar_clientes_por_nombre(q) if q else []
-    return render_template("zapatos_buscar.html", clientes=clientes, q=q)
-
-
-@app.route("/zapatos/<int:id_cliente>")
-def zapatos_cliente(id_cliente):
-    pagina = request.args.get("pagina", 1, type=int)
-    por_pagina = 10
-    offset = (pagina - 1) * por_pagina
-
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM cliente WHERE id_cliente=%s", (id_cliente,))
-    cliente = cursor.fetchone()
-    cursor.close()
-    conn.close()
-
-    total_zapatos = contar_zapatos_cliente(id_cliente)
-    total_paginas = (total_zapatos + por_pagina - 1) // por_pagina
-
-    zapatos = obtener_zapatos_cliente(
-        id_cliente=id_cliente,
-        limit=por_pagina,
-        offset=offset
-    )
-
-    return render_template(
-        "zapatos_cliente.html",
-        cliente=cliente,
-        zapatos=zapatos,
-        pagina=pagina,
-        total_paginas=total_paginas
-    )
-
-
-
-
-@app.route("/zapatos/guardar", methods=["POST"])
-def guardar_zapato():
-
-    datos = (
-        request.form["id_cliente"],
-        request.form["color_base"],
-        request.form["color_secundario"],
-        request.form["material"],
-        request.form["tipo"],
-        request.form["marca"]
-    )
-
-
-    crear_zapato(*datos)
-    flash("✅ Zapato añadido correctamente.", "success")
-
-    return redirect(f"/zapatos/{datos[0]}")
-
-
-@app.route("/zapatos/eliminar/<int:id_zapato>/<int:id_cliente>")
-def borrar_zapato(id_zapato, id_cliente):
-    from zapatos import zapato_tiene_ventas
-
-    if zapato_tiene_ventas(id_zapato):
-        flash("❌ No se puede eliminar este calzado porque ya está asociado a una venta.", "error")
-        return redirect(f"/zapatos/{id_cliente}")
-
-    eliminar_zapato(id_zapato)
-    flash("✅ Zapato eliminado correctamente.", "success")
-    return redirect(f"/zapatos/{id_cliente}")
 
 
 
@@ -657,7 +585,6 @@ def api_unidades_por_semana():
         "semanas": [s["label"] for s in semanas],
         "totales": valores
     })
-
 
 
 

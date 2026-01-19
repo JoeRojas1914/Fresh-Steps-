@@ -14,14 +14,20 @@
 {% endwith %}
 
 <form method="GET" action="/servicios" class="search-bar">
-    <input 
-        type="text" 
-        name="q" 
-        placeholder="Buscar servicio por nombre"
-        value="{{ q or '' }}"
-    >
-    <button type="submit">Buscar</button>
+    <select name="id_negocio" onchange="this.form.submit()">
+        <option value="">Todos los negocios</option>
+        {% for n in negocios %}
+            <option value="{{ n.id_negocio }}"
+                {% if id_negocio and id_negocio|int == n.id_negocio %}
+                    selected
+                {% endif %}
+            >
+                {{ n.nombre }}
+            </option>
+        {% endfor %}
+    </select>
 </form>
+
 
 
 <button onclick="abrirModal()">➕ Agregar servicio</button>
@@ -36,6 +42,12 @@
         <form method="POST" action="/servicios/guardar">
             <input type="hidden" name="id_servicio" id="id_servicio">
 
+            <select name="id_negocio" id="id_negocio" required>
+                <option value="">Seleccione un negocio</option>
+                {% for n in negocios %}
+                    <option value="{{ n.id_negocio }}">{{ n.nombre }}</option>
+                {% endfor %}
+            </select>
             <input type="text" name="nombre" placeholder="Nombre" required>
             <input type="number" step="0.01" name="precio" placeholder="Precio" required>
 
@@ -49,6 +61,7 @@
 <table border="1">
     <thead>
         <tr>
+            <th>Negocio</th>
             <th>Servicio</th>
             <th>Precio</th>
             <th>Acciones</th>
@@ -57,15 +70,18 @@
     <tbody>
         {% for s in servicios %}
         <tr>
+            <td>{{ s.negocio }}</td>
             <td>{{ s.nombre }}</td>
             <td>${{ s.precio }}</td>
             <td>
-                <button class="btn-edit" onclick="editarServicio(
-                    {{ s.id_servicio }},
-                    '{{ s.nombre }}',
-                    {{ s.precio }}
-                )">Editar</button>
-
+            <button class="btn-edit"
+                data-id="{{ s.id_servicio }}"
+                data-negocio="{{ s.id_negocio }}"
+                data-nombre="{{ s.nombre }}"
+                data-precio="{{ s.precio }}"
+                onclick="editarServicio(this)">
+                Editar
+            </button>
                 <a href="/servicios/eliminar/{{ s.id_servicio }}" class="btn-delete"
                    onclick="return confirm('¿Seguro que desea eliminar el servicio?')">Delete</a>
             </td>
@@ -85,45 +101,59 @@
         {% endif %}
 
         {% if inicio > 1 %}
-            <a href="{{ url_for('servicios', pagina=inicio-10, q=q) }}">«</a>
+            <a href="{{ url_for('servicios',
+                pagina=inicio-10,
+                q=q,
+                id_negocio=id_negocio
+            ) }}">«</a>
         {% endif %}
 
         {% for p in range(inicio, fin + 1) %}
             {% if p == pagina %}
                 <strong>{{ p }}</strong>
             {% else %}
-                <a href="{{ url_for('servicios', pagina=p, q=q) }}">{{ p }}</a>
+                <a href="{{ url_for('servicios',
+                    pagina=p,
+                    q=q,
+                    id_negocio=id_negocio
+                ) }}">{{ p }}</a>
             {% endif %}
         {% endfor %}
 
         {% if fin < total_paginas %}
-            <a href="{{ url_for('servicios', pagina=inicio+10, q=q) }}">»</a>
+            <a href="{{ url_for('servicios',
+                pagina=inicio+10,
+                q=q,
+                id_negocio=id_negocio
+            ) }}">»</a>
         {% endif %}
-
 
     {% endif %}
 </div>
 
+
 <script>
-function abrirModal() {
-    document.getElementById("modal").style.display = "block";
-    document.getElementById("tituloModal").innerText = "Agregar servicio";
-    document.getElementById("id_servicio").value = "";
-}
+    function abrirModal() {
+        document.getElementById("modal").style.display = "block";
+        document.getElementById("tituloModal").innerText = "Agregar servicio";
+        document.getElementById("id_servicio").value = "";
+    }
 
-function cerrarModal() {
-    document.getElementById("modal").style.display = "none";
-}
+    function cerrarModal() {
+        document.getElementById("modal").style.display = "none";
+    }
 
-function editarServicio(id, nombre, precio) {
-    abrirModal();
-    document.getElementById("tituloModal").innerText = "Editar servicio";
+    function editarServicio(btn) {
+        abrirModal();
+        document.getElementById("tituloModal").innerText = "Editar servicio";
 
-    document.getElementById("id_servicio").value = id;
-    document.querySelector("[name=nombre]").value = nombre;
-    document.querySelector("[name=precio]").value = precio;
-}
+        document.getElementById("id_servicio").value = btn.dataset.id;
+        document.getElementById("id_negocio").value = btn.dataset.negocio;
+        document.querySelector("[name=nombre]").value = btn.dataset.nombre;
+        document.querySelector("[name=precio]").value = btn.dataset.precio;
+    }
 </script>
+
 
 
 {% endblock %}

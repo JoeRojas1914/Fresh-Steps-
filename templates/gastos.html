@@ -30,7 +30,12 @@
 
         <form method="POST" action="/gastos/guardar">
             <input type="hidden" name="id_gasto" id="id_gasto">
-
+            <select name="id_negocio" id="id_negocio" required>
+                <option value="">Seleccione un negocio</option>
+                {% for n in negocios %}
+                    <option value="{{ n.id_negocio }}">{{ n.nombre }}</option>
+                {% endfor %}
+            </select>
             <input type="text" name="descripcion" placeholder="Descripción" required>
             <input type="text" name="proveedor" placeholder="Proveedor" required>
             <input type="number" name="total" placeholder="Total" required>
@@ -47,6 +52,7 @@
 <table border="1">
     <thead>
         <tr>
+            <th>Negocio</th>
             <th>Descripción</th>
             <th>Proveedor</th>
             <th>Total</th>
@@ -57,13 +63,15 @@
     <tbody>
         {% for g in gastos %}
         <tr>
+            <td>{{ g.negocio }}</td>
             <td>{{ g.descripcion }}</td>
             <td>{{ g.proveedor }}</td>
             <td>{{ g.total }}</td>
             <td>{{ g.fecha_registro }}</td>
             <td>
             <button class="btn-edit"
-                    onclick='editarGasto({{ g.id_gasto }}, {{ g.descripcion|tojson }}, {{ g.proveedor|tojson }}, {{ g.total|tojson }}, "{{ g.fecha_registro.strftime("%Y-%m-%d") if g.fecha_registro else "" }}")'>
+                onclick='editarGasto(
+                    {{ g.id_gasto }}, {{ g.id_negocio }}, {{ g.descripcion|tojson }}, {{ g.proveedor|tojson }}, {{ g.total|tojson }}, "{{ g.fecha_registro.strftime("%Y-%m-%d") if g.fecha_registro else "" }}")'>
                 Edit
             </button>
 
@@ -121,11 +129,12 @@
         document.getElementById("modal").style.display = "none";
     }
 
-    function editarGasto(id, descripcion, proveedor, total, fecha_registro) {
+    function editarGasto(id, id_negocio, descripcion, proveedor, total, fecha_registro) {
         abrirModal();
         document.getElementById("modalTitulo").innerText = "Editar gasto";
 
         document.getElementById("id_gasto").value = id;
+        document.getElementById("id_negocio").value = id_negocio;
         document.querySelector("[name=descripcion]").value = descripcion;
         document.querySelector("[name=proveedor]").value = proveedor;
         document.querySelector("[name=total]").value = total;

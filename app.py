@@ -47,6 +47,8 @@ from ventas import (
     obtener_ingresos_por_semana
 )
 
+from negocio import obtener_negocios
+
 # ================= APP =================
 load_dotenv()
 app = Flask(__name__)
@@ -746,11 +748,13 @@ def gastos():
     por_pagina = 10
     offset = (pagina - 1) * por_pagina
 
-    total_gastos = contar_gastos(proveedor)
+    negocios = obtener_negocios()
+
+    total_gastos = contar_gastos(None, proveedor)
     total_paginas = (total_gastos + por_pagina - 1) // por_pagina
 
-    # Gastos paginados
     gastos = obtener_gastos(
+        id_negocio=None,
         q=proveedor,
         limit=por_pagina,
         offset=offset
@@ -759,6 +763,7 @@ def gastos():
     return render_template(
         "gastos.html",
         gastos=gastos,
+        negocios=negocios,
         proveedor=proveedor,
         pagina=pagina,
         total_paginas=total_paginas
@@ -771,8 +776,10 @@ def gastos():
 @app.route("/gastos/guardar", methods=["POST"])
 def guardar_gasto():
     id_gasto = request.form.get("id_gasto")
+    id_negocio = request.form["id_negocio"]
 
     datos = (
+        id_negocio,
         request.form["descripcion"],
         request.form["proveedor"],
         request.form["total"],
@@ -787,6 +794,8 @@ def guardar_gasto():
         flash("✅ Gasto creado correctamente.", "success")
 
     return redirect("/gastos")
+
+
 
 @app.route("/gastos/eliminar/<int:id_gasto>")
 def borrar_gasto(id_gasto):
@@ -824,3 +833,4 @@ def estadisticas():
 # ================= RUN =================
 if __name__ == "__main__":
     app.run(debug=True)
+    

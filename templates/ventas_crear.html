@@ -17,7 +17,6 @@
     <div class="results-list" id="listaClientes"></div>
 </div>
 
-<hr>
 
 <div id="modalCliente" class="modal" style="display:none;">
     <div class="modal-content">
@@ -29,33 +28,11 @@
             <input type="text" name="apellido" placeholder="Apellido" required>
             <input type="email" name="correo" placeholder="Correo">
             <input type="text" name="telefono" placeholder="Teléfono">
-            <input type="text" name="direccion" placeholder="Dirección">
-
+            <input type="text" name="codigo_postal" placeholder="Código postal">
             <button type="submit">Guardar</button>
         </form>
     </div>
 </div>
-
-
-<div id="modalZapato" class="modal" style="display:none;">
-    <div class="modal-content">
-        <span class="close" onclick="cerrarModalZapato()">&times;</span>
-        <h2>Nuevo calzado</h2>
-
-        <form id="formNuevoZapato">
-            <input type="hidden" name="id_cliente" id="id_cliente_modal">
-            <input type="text" name="marca" placeholder="Marca" required>
-            <input type="text" name="tipo" placeholder="Tipo" required>
-            <input type="text" name="material" placeholder="Material" required>
-            <input type="text" name="color_base" placeholder="Color base" required>
-            <input type="text" name="color_secundario" placeholder="Color secundario" required>
-
-            <button type="submit">Guardar</button>
-        </form>
-    </div>
-</div>
-
-
 
 <form method="POST" action="/ventas/guardar" id="formVenta" style="display:none;">
     <input type="hidden" name="id_cliente" id="id_cliente">
@@ -67,9 +44,36 @@
 
     <hr>
 
+    <div class="form-group form-row">
+        <div class="form-item">
+            <label class="form-label">Negocio</label>
+            <select name="id_negocio" id="id_negocio" onchange="seleccionarNegocio()">
+                <option value="">-- Selecciona --</option>
+                <option value="1">Fresh Steps</option>
+                <option value="2">Fer's Shop (Confección)</option>
+                <option value="3">Fer's Shop (Maquila)</option>
+            </select>
 
-    <div id="zapatosContainer"></div>
-    <button type="button" onclick="agregarZapato()">➕ Agregar Articulo</button>
+            <div id="errorNegocio" style="color:red; font-size:0.9em; display:none;">
+                No puedes cambiar el negocio si ya agregaste artículos. Borra todos primero.
+            </div>
+        </div>
+
+        <div class="form-item">
+            <label class="form-label">Fecha estimada de entrega</label>
+            <input type="date" name="fecha_estimada" id="fecha_estimada" onchange="validarFormulario()">
+
+            <div id="errorFecha" style="color:red; font-size:0.9em; display:none;">
+                La fecha estimada no puede ser menor a hoy.
+            </div>
+        </div>
+    </div>
+
+
+    <hr>
+
+    <div id="articulosContainer"></div>
+    <button type="button" onclick="agregarArticulo()">➕ Agregar Artículo</button>
 
     <hr>
 
@@ -94,70 +98,45 @@
 
         <div class="form-item" id="montoPrepagoContainer" style="display:none;">
             <label class="form-label">Monto prepago</label>
-                <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    name="monto_prepago"
-                    id="monto_prepago"
-                    placeholder="0.00"
-                    oninput="validarFormulario(); actualizarTotal()"
-                >
+            <input
+                type="number"
+                min="0"
+                step="1"
+                name="monto_prepago"
+                id="monto_prepago"
+                placeholder="0"
+                oninput="validarFormulario(); actualizarTotal()"
+            >
             <div id="errorPrepago" style="color:red; font-size:0.9em; display:none;">
                 El prepago no puede ser mayor al total ni menor a 0.
             </div>
         </div>
 
-
         <div class="form-item">
             <label class="form-label">¿Aplicar descuento?</label>
-            <select
-                name="aplica_descuento"
-                id="aplica_descuento"
-                onchange="toggleDescuento(); actualizarTotal()"
-            >
+            <select name="aplica_descuento" id="aplica_descuento" onchange="toggleDescuento(); actualizarTotal()">
                 <option value="">-- Selecciona --</option>
                 <option value="si">Sí</option>
                 <option value="no">No</option>
             </select>
         </div>
 
-        <div class="form-item" id="porcentajeDescuentoContainer" style="display:none;">
-            <label class="form-label">Porcentaje de descuento</label>
-                <input
-                    type="number"
-                    min="1"
-                    max="100"
-                    step="0.01"
-                    name="porcentaje_descuento"
-                    id="porcentaje_descuento"
-                    placeholder="10"
-                    oninput="validarFormulario(); actualizarTotal()"
-                >
-                <div id="errorDescuento" style="color:red; font-size:0.9em; display:none;">
-                    El descuento debe estar entre 1% y 100%.
-                </div>
+        <div class="form-item" id="cantidadDescuentoContainer" style="display:none;">
+            <label class="form-label">Descuento ($)</label>
+            <input
+                type="number"
+                min="0"
+                step="1"
+                name="cantidad_descuento"
+                id="cantidad_descuento"
+                placeholder="0"
+                oninput="validarFormulario(); actualizarTotal()"
+            >
         </div>
-
-
-        <div class="form-item checkbox-item">
-            <label class="form-label">Entrega</label>
-            <label class="custom-checkbox">
-                <input
-                    type="checkbox"
-                    id="entregaExpress"
-                    name="entrega_express"
-                    value="1"
-                    onchange="actualizarTotal()"
-                >
-                <span class="checkmark"></span>
-                Entrega Express (+$50)
-            </label>
-        </div>
-
     </div>
-    
+
     <hr>
+
     <div class="form-group form-row total-row">
         <div id="totalVenta" class="total-amount">
             Total: $0.00
@@ -167,27 +146,34 @@
             Crear recibo
         </button>
     </div>
-
 </form>
 
 <script>
-let contadorZapatos = 0;
+let contadorArticulos = 0;
 let serviciosGlobales = [];
-let zapatosCliente = [];
-let selectActual = null; 
+let negocioSeleccionado = "";
 
-
-document.addEventListener("DOMContentLoaded", async () => {
-    await cargarServicios();
-
+document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("buscarCliente").addEventListener("input", buscarClientes);
     document.getElementById("btnCambiarCliente").addEventListener("click", () => location.reload());
     document.getElementById("btnNuevoCliente").addEventListener("click", () => {
         document.getElementById("modalCliente").style.display = "block";
     });
     document.getElementById("formNuevoCliente").addEventListener("submit", crearCliente);
-    document.getElementById("formNuevoZapato").addEventListener("submit", crearZapato);
+
+    bloquearFechaMinima();
+    validarFormulario();
 });
+
+function bloquearFechaMinima() {
+    const input = document.getElementById("fecha_estimada");
+    const hoy = new Date();
+    const yyyy = hoy.getFullYear();
+    const mm = String(hoy.getMonth() + 1).padStart(2, "0");
+    const dd = String(hoy.getDate()).padStart(2, "0");
+    const todayStr = `${yyyy}-${mm}-${dd}`;
+    input.min = todayStr;
+}
 
 async function buscarClientes() {
     const q = this.value.trim();
@@ -220,7 +206,6 @@ function seleccionarCliente(cliente) {
     document.getElementById("listaClientes").innerHTML = "";
     document.getElementById("formVenta").style.display = "block";
 
-    cargarZapatosCliente(cliente.id_cliente);
     validarFormulario();
 }
 
@@ -238,144 +223,416 @@ async function crearCliente(e) {
 }
 
 async function cargarServicios() {
-    const res = await fetch("/api/servicios");
+    const idNegocio = document.getElementById("id_negocio").value;
+
+    if (!idNegocio) {
+        serviciosGlobales = [];
+        return;
+    }
+
+    const res = await fetch(`/api/servicios?id_negocio=${idNegocio}`);
     serviciosGlobales = await res.json();
 }
 
-async function cargarZapatosCliente(idCliente) {
-    const res = await fetch(`/api/clientes/${idCliente}/zapatos`);
-    zapatosCliente = await res.json();
+async function seleccionarNegocio() {
+    const select = document.getElementById("id_negocio");
+    const nuevoNegocio = select.value;
+
+    const hayArticulos = document.querySelectorAll(".articulo-item").length > 0;
+
+    if (hayArticulos && negocioSeleccionado && nuevoNegocio !== negocioSeleccionado) {
+        select.value = negocioSeleccionado;
+        document.getElementById("errorNegocio").style.display = "block";
+        return;
+    }
+
+    document.getElementById("errorNegocio").style.display = "none";
+    negocioSeleccionado = nuevoNegocio;
+
+    await cargarServicios();
+
+    if (!hayArticulos) {
+        document.getElementById("articulosContainer").innerHTML = "";
+        contadorArticulos = 0;
+        actualizarTotal();
+        validarFormulario();
+    }
 }
 
-function agregarZapato() {
-    const index = contadorZapatos;
+function agregarArticulo() {
+    const idNegocio = document.getElementById("id_negocio").value;
+    if (!idNegocio) {
+        alert("Primero selecciona un negocio.");
+        return;
+    }
+
+    const index = contadorArticulos;
+    const tipoArticulo = obtenerTipoArticuloPorNegocio(idNegocio);
 
     const div = document.createElement("div");
-    div.className = "zapato-item";
+    div.className = "articulo-item";
     div.innerHTML = `
         <div class="zapato-header">
             <div class="zapato-titulo">🧾 Artículo ${index + 1}</div>
-            <button type="button" class="btn-eliminar-zapato" onclick="eliminarZapato(this)">✕</button>
+            <button type="button" class="btn-eliminar-zapato" onclick="eliminarArticulo(this)">✕</button>
         </div>
-        ${crearSelectZapatos(index)}
-        ${crearSelectServicios(index)}
+
+        <input type="hidden" name="articulos[${index}][tipo_articulo]" value="${tipoArticulo}">
+
+        ${crearCamposArticulo(index, tipoArticulo)}
     `;
 
-    document.getElementById("zapatosContainer").appendChild(div);
-    contadorZapatos++;
+    document.getElementById("articulosContainer").appendChild(div);
+    contadorArticulos++;
+
+    actualizarOpcionesServiciosDelArticulo(index);
     validarFormulario();
+    actualizarTotal();
 }
 
-function eliminarZapato(btn) {
-    btn.closest(".zapato-item").remove();
-    renumerarArticulos();               
-    validarFormulario();              
-    actualizarTotal();                   
+function eliminarArticulo(btn) {
+    btn.closest(".articulo-item").remove();
+    renumerarArticulos();
+    validarFormulario();
+    actualizarTotal();
 }
-
 
 function renumerarArticulos() {
-    document.querySelectorAll(".zapato-item").forEach((item, i) => {
+    document.querySelectorAll(".articulo-item").forEach((item, i) => {
         item.querySelector(".zapato-titulo").innerText = `🧾 Artículo ${i + 1}`;
     });
-    contadorZapatos = document.querySelectorAll(".zapato-item").length;
+    contadorArticulos = document.querySelectorAll(".articulo-item").length;
+
+    if (contadorArticulos === 0) {
+        document.getElementById("errorNegocio").style.display = "none";
+    }
 }
 
-function crearSelectZapatos(index) {
-    let opciones = `<option value="">Selecciona zapato</option>
-                    <option value="nuevo">➕ Registrar nuevo calzado</option>`;
-    zapatosCliente.forEach(z => {
-        opciones += `<option value="${z.id_zapato}">
-            ${z.marca} / ${z.tipo} / ${z.material} / ${z.color_base}-${z.color_secundario}
+function obtenerTipoArticuloPorNegocio(idNegocio) {
+    if (idNegocio === "1") return "calzado";
+    if (idNegocio === "2") return "confeccion";
+    if (idNegocio === "3") return "maquila";
+    return "";
+}
+
+function inputConLabel(label, name, placeholder = "", required = false, type = "text", extra = "") {
+    return `
+        <div class="campo-item">
+            <label class="form-label">${label}</label>
+            <input 
+                type="${type}" 
+                name="${name}" 
+                placeholder="${placeholder}" 
+                ${required ? "required" : ""} 
+                ${extra}
+                oninput="validarFormulario(); actualizarTotal()"
+            >
+        </div>
+    `;
+}
+
+
+function crearCamposArticulo(index, tipoArticulo) {
+    if (tipoArticulo === "calzado") {
+        return `
+            <div class="form-group form-row articulo-row">
+                ${inputConLabel("Tipo", `articulos[${index}][tipo]`, "Tenis, Bota...", true)}
+                ${inputConLabel("Marca", `articulos[${index}][marca]`, "Nike, Puma...", true)}
+                ${inputConLabel("Material", `articulos[${index}][material]`, "Gamuza, Piel...", true)}
+                ${inputConLabel("Color base", `articulos[${index}][color_base]`, "Negro, Blanco...", true)}
+                ${inputConLabel("Color secundario", `articulos[${index}][color_secundario]`, "(opcional)", false)}
+                ${inputConLabel("Color agujetas", `articulos[${index}][color_agujetas]`, "Negro, Blanco...", false)}
+            </div>
+
+            ${crearServiciosSelect(index)}
+
+            ${inputConLabel("Comentario", `articulos[${index}][comentario]`, "(opcional)", false)}
+        `;
+    }
+
+    if (tipoArticulo === "confeccion") {
+        return `
+            <div class="form-group form-row articulo-row">
+                ${inputConLabel("Tipo", `articulos[${index}][tipo]`, "Pantalón, Falda...", true)}
+                ${inputConLabel("Marca", `articulos[${index}][marca]`, "Zara, Levis...", true)}
+                ${inputConLabel("Material", `articulos[${index}][material]`, "Mezclilla, Gamuza...", true)}
+                ${inputConLabel("Color base", `articulos[${index}][color_base]`, "Negro, Blanco...", true)}
+                ${inputConLabel("Color secundario", `articulos[${index}][color_secundario]`, "(opcional)", false)}
+                ${inputConLabel("Cantidad", `articulos[${index}][cantidad]`, "1,2...", true, "number", `min="1"`)}
+
+            </div>
+
+            ${crearServiciosSelect(index)}
+
+            ${inputConLabel("Comentario", `articulos[${index}][comentario]`, "(opcional)", false)}
+        `;
+    }
+
+    return `
+        <div class="form-group form-row articulo-row">
+            ${inputConLabel("Tipo", `articulos[${index}][tipo]`, "Mandil, Bata...", true)}
+            ${inputConLabel("Cantidad", `articulos[${index}][cantidad]`, "1,2...", true, "number", `min="1"`)}
+
+            ${inputConLabel("Precio unitario", `articulos[${index}][precio_unitario]`, "$10.00", true, "number", `min="0"`)}
+
+        </div>
+
+        ${inputConLabel("Comentario", `articulos[${index}][comentario]`, "(opcional)", false)}
+    `;
+}
+
+function crearServiciosSelect(indexArticulo) {
+    let opciones = `<option value="">-- Selecciona servicio --</option>`;
+    serviciosGlobales.forEach(s => {
+        const precio = s.precio_base ?? s.precio ?? 0;
+        opciones += `<option value="${s.id_servicio}" data-precio="${precio}">
+            ${s.nombre} ($${precio})
         </option>`;
     });
 
-    return `<select name="zapatos[${index}][id_zapato]" onchange="seleccionarZapato(this)">
-        ${opciones}
-    </select>`;
+    return `
+        <div class="form-group servicios-box" data-articulo="${indexArticulo}">
+            
+            <div class="servicios-header">
+                <label class="form-label">Servicios</label>
+
+                <button type="button" class="btn-agregar-servicio"
+                        onclick="agregarServicio(${indexArticulo})">
+                    ➕ Agregar servicio
+                </button>
+            </div>
+
+            <div class="servicios-lista" id="serviciosLista_${indexArticulo}">
+                ${crearFilaServicio(indexArticulo, 0, opciones)}
+            </div>
+        </div>
+    `;
 }
 
-function crearSelectServicios(index) {
-    let opciones = `<option value="">Selecciona servicio</option>`;
+function crearFilaServicio(indexArticulo, indexServicio, opcionesHTML) {
+    return `
+        <div class="servicio-item" data-index-servicio="${indexServicio}"
+             style="display:flex; gap:10px; align-items:center; margin-bottom:8px;">
+
+            <select name="articulos[${indexArticulo}][servicios][${indexServicio}][id_servicio]"
+                    onchange="onChangeServicio(this, ${indexArticulo}); validarFormulario(); actualizarTotal()">
+                ${opcionesHTML}
+            </select>
+
+            <input type="number"
+                   min="0"
+                   step="1"
+                   class="precio-aplicado"
+                   name="articulos[${indexArticulo}][servicios][${indexServicio}][precio_aplicado]"
+                   placeholder="Precio aplicado"
+                   value=""
+                   disabled
+                   data-editado="0"
+                   oninput="marcarPrecioEditado(this); validarFormulario(); actualizarTotal()"
+                   style="width:150px;">
+
+            <button type="button" onclick="eliminarServicioPro(this, ${indexArticulo})"
+                    style="padding:6px 10px;">
+                ✕
+            </button>
+        </div>
+    `;
+}
+
+function marcarPrecioEditado(input) {
+    input.dataset.editado = "1";
+}
+
+function agregarServicio(indexArticulo) {
+    const contenedor = document.getElementById(`serviciosLista_${indexArticulo}`);
+
+    let opciones = `<option value="">-- Selecciona servicio --</option>`;
     serviciosGlobales.forEach(s => {
-        opciones += `<option value="${s.id_servicio}">${s.nombre} ($${s.precio})</option>`;
+        const precio = s.precio_base ?? s.precio ?? 0;
+        opciones += `<option value="${s.id_servicio}" data-precio="${precio}">
+            ${s.nombre} ($${precio})
+        </option>`;
     });
 
-    return `<select name="zapatos[${index}][id_servicio]" onchange="validarFormulario(); actualizarTotal()">
-        ${opciones}
-    </select>`;
-}
+    const indexServicio = contenedor.querySelectorAll(".servicio-item").length;
+    contenedor.insertAdjacentHTML("beforeend", crearFilaServicio(indexArticulo, indexServicio, opciones));
 
-function seleccionarZapato(select) {
-    if (select.value === "nuevo") {
-        selectActual = select;
-        document.getElementById("id_cliente_modal").value = document.getElementById("id_cliente").value;
-        document.getElementById("modalZapato").style.display = "block";
-    }
-}
-
-function cerrarModalZapato() {
-    document.getElementById("modalZapato").style.display = "none";
-    document.getElementById("formNuevoZapato").reset();
-}
-
-async function crearZapato(e) {
-    e.preventDefault();
-
-    const formData = new FormData(e.target);
-    const res = await fetch("/api/zapatos/crear", { method: "POST", body: formData });
-    const nuevoZapato = await res.json();
-
-    zapatosCliente.push(nuevoZapato);
-
-    if (selectActual) {
-        selectActual.innerHTML = `
-            <option value="">Selecciona zapato</option>
-            <option value="nuevo">➕ Registrar nuevo calzado</option>
-            ${zapatosCliente.map(z => `
-                <option value="${z.id_zapato}" ${z.id_zapato == nuevoZapato.id_zapato ? "selected" : ""}>
-                    ${z.marca} / ${z.tipo} / ${z.material} / ${z.color_base}-${z.color_secundario}
-                </option>
-            `).join("")}
-        `;
-        selectActual = null;
-    }
-
-    cerrarModalZapato();
+    actualizarOpcionesServiciosDelArticulo(indexArticulo);
     validarFormulario();
+    actualizarTotal();
+}
+
+function eliminarServicioPro(btn, indexArticulo) {
+    const fila = btn.closest(".servicio-item");
+    const contenedor = fila.parentElement;
+
+    fila.remove();
+
+    if (contenedor.querySelectorAll(".servicio-item").length === 0) {
+        let opciones = `<option value="">-- Selecciona servicio --</option>`;
+        serviciosGlobales.forEach(s => {
+            const precio = s.precio_base ?? s.precio ?? 0;
+            opciones += `<option value="${s.id_servicio}" data-precio="${precio}">
+                ${s.nombre} ($${precio})
+            </option>`;
+        });
+
+        contenedor.insertAdjacentHTML("beforeend", crearFilaServicio(indexArticulo, 0, opciones));
+    }
+
+    actualizarOpcionesServiciosDelArticulo(indexArticulo);
+    validarFormulario();
+    actualizarTotal();
+}
+
+function onChangeServicio(select, indexArticulo) {
+    const fila = select.closest(".servicio-item");
+    const inputPrecio = fila.querySelector(".precio-aplicado");
+    const opt = select.selectedOptions[0];
+
+    if (!opt || !opt.value) {
+        inputPrecio.value = "";
+        inputPrecio.disabled = true;
+        inputPrecio.dataset.editado = "0";
+        actualizarOpcionesServiciosDelArticulo(indexArticulo);
+        return;
+    }
+
+    inputPrecio.disabled = false;
+
+    if (inputPrecio.dataset.editado !== "1") {
+        inputPrecio.value = parseFloat(opt.dataset.precio || 0);
+    }
+
+    if (hayServicioRepetidoEnArticulo(indexArticulo)) {
+        alert("⚠️ No puedes repetir el mismo servicio en el mismo artículo.");
+        select.value = "";
+        inputPrecio.value = "";
+        inputPrecio.disabled = true;
+        inputPrecio.dataset.editado = "0";
+    }
+
+    actualizarOpcionesServiciosDelArticulo(indexArticulo);
+}
+
+function hayServicioRepetidoEnArticulo(indexArticulo) {
+    const contenedor = document.getElementById(`serviciosLista_${indexArticulo}`);
+    const selects = contenedor.querySelectorAll("select");
+
+    const vistos = new Set();
+    for (const sel of selects) {
+        if (sel.value) {
+            if (vistos.has(sel.value)) return true;
+            vistos.add(sel.value);
+        }
+    }
+    return false;
+}
+
+function actualizarOpcionesServiciosDelArticulo(indexArticulo) {
+    const contenedor = document.getElementById(`serviciosLista_${indexArticulo}`);
+    if (!contenedor) return;
+
+    const selects = contenedor.querySelectorAll("select");
+
+    const usados = new Set();
+    selects.forEach(sel => {
+        if (sel.value) usados.add(sel.value);
+    });
+
+    selects.forEach(sel => {
+        const valorActual = sel.value;
+
+        Array.from(sel.options).forEach(opt => {
+            if (!opt.value) return;
+
+            if (usados.has(opt.value) && opt.value !== valorActual) {
+                opt.disabled = true;
+            } else {
+                opt.disabled = false;
+            }
+        });
+    });
 }
 
 function togglePrepago() {
     const val = document.getElementById("prepago").value;
     document.getElementById("montoPrepagoContainer").style.display = val === "si" ? "block" : "none";
-    validarFormulario();
 }
+
+function toggleDescuento() {
+    const val = document.getElementById("aplica_descuento").value;
+    document.getElementById("cantidadDescuentoContainer").style.display = val === "si" ? "block" : "none";
+}
+
+function articulosCompletos() {
+    const articulos = document.querySelectorAll(".articulo-item");
+    if (articulos.length === 0) return false;
+
+    for (const art of articulos) {
+        const requeridos = art.querySelectorAll("input[required], select[required], textarea[required]");
+
+        for (const campo of requeridos) {
+            if (campo.offsetParent === null) continue;
+
+            if (!campo.value || campo.value.trim() === "") {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+
 
 function validarFormulario() {
     const cliente = document.getElementById("id_cliente").value;
+    const negocio = document.getElementById("id_negocio").value;
+    const fechaEstimada = document.getElementById("fecha_estimada").value;
     const tipoPago = document.getElementById("tipo_pago").value;
     const prepago = document.getElementById("prepago").value;
+
+    let valido = cliente && negocio && fechaEstimada && tipoPago && prepago;
+
+    const articulos = document.querySelectorAll(".articulo-item");
+    if (articulos.length === 0) valido = false;
+    if (!articulosCompletos()) valido = false;
+
+    const inputFecha = document.getElementById("fecha_estimada");
+    const minFecha = inputFecha.min;
+    if (fechaEstimada && minFecha && fechaEstimada < minFecha) {
+        document.getElementById("errorFecha").style.display = "block";
+        valido = false;
+    } else {
+        document.getElementById("errorFecha").style.display = "none";
+    }
+
+    if (negocio === "1" || negocio === "2") {
+        document.querySelectorAll(".servicios-box").forEach(box => {
+            const filas = box.querySelectorAll(".servicio-item");
+            let tieneUno = false;
+
+            filas.forEach(fila => {
+                const sel = fila.querySelector("select");
+                if (sel && sel.value) tieneUno = true;
+            });
+
+            if (!tieneUno) valido = false;
+        });
+    }
+
     const monto = parseFloat(document.getElementById("monto_prepago")?.value || 0);
-
-    let valido = cliente && tipoPago && prepago;
-
-    const selects = document.querySelectorAll("#zapatosContainer select");
-    if (selects.length === 0) valido = false;
-    selects.forEach(s => { if (!s.value) valido = false; });
-
-    let total = 0;
-    document.querySelectorAll("#zapatosContainer select[name$='[id_servicio]']").forEach(select => {
-        const idServicio = select.value;
-        if (idServicio) {
-            const servicio = serviciosGlobales.find(s => s.id_servicio == idServicio);
-            if (servicio) total += parseFloat(servicio.precio);
-        }
-    });
+    const total = calcularTotal();
 
     if (prepago === "si") {
         if (!monto || monto <= 0) valido = false;
-        if (monto > total) document.getElementById("errorPrepago").style.display = "block";
-        else document.getElementById("errorPrepago").style.display = "none";
+        if (monto > total) {
+            document.getElementById("errorPrepago").style.display = "block";
+            valido = false;
+        } else {
+            document.getElementById("errorPrepago").style.display = "none";
+        }
     } else {
         document.getElementById("errorPrepago").style.display = "none";
     }
@@ -383,45 +640,44 @@ function validarFormulario() {
     document.getElementById("btnCrear").disabled = !valido;
 }
 
-function toggleDescuento() {
-    const val = document.getElementById("aplica_descuento").value;
-    document.getElementById("porcentajeDescuentoContainer").style.display =
-        val === "si" ? "block" : "none";
-}
-
-
-function actualizarTotal() {
+function calcularTotal() {
+    const negocio = document.getElementById("id_negocio").value;
     let total = 0;
 
-    document.querySelectorAll("#zapatosContainer select[name$='[id_servicio]']").forEach(select => {
-        const idServicio = select.value;
-        if (idServicio) {
-            const servicio = serviciosGlobales.find(s => s.id_servicio == idServicio);
-            if (servicio) total += parseFloat(servicio.precio);
-        }
-    });
+    if (negocio === "1" || negocio === "2") {
+        document.querySelectorAll(".servicio-item").forEach(fila => {
+            const sel = fila.querySelector("select");
+            const precio = fila.querySelector(".precio-aplicado");
 
-    if (document.getElementById("entregaExpress").checked) {
-        total += 50;
+            if (sel && sel.value) {
+                total += parseFloat(precio?.value || 0);
+            }
+        });
     }
 
-    const aplicaDescuento = document.getElementById("aplica_descuento")?.value === "si";
-    const porcentaje = parseFloat(document.getElementById("porcentaje_descuento")?.value || 0);
-
-    if (aplicaDescuento && porcentaje > 0) {
-        const descuento = total * (porcentaje / 100);
-        total -= descuento;
+    if (negocio === "3") {
+        document.querySelectorAll(".articulo-item").forEach(item => {
+            const cantidad = parseFloat(item.querySelector("input[name$='[cantidad]']")?.value || 0);
+            const precio = parseFloat(item.querySelector("input[name$='[precio_unitario]']")?.value || 0);
+            total += cantidad * precio;
+        });
     }
 
-    document.getElementById("totalVenta").innerText =
-        `Total: $${total.toFixed(2)}`;
+    const aplicaDesc = document.getElementById("aplica_descuento").value === "si";
+    const desc = parseFloat(document.getElementById("cantidad_descuento")?.value || 0);
+
+    if (aplicaDesc && desc > 0) {
+        total -= desc;
+        if (total < 0) total = 0;
+    }
+
+    return total;
 }
 
-const aplicaDescuento = document.getElementById("aplica_descuento").value === "si";
-const porcentaje = parseFloat(document.getElementById("porcentaje_descuento")?.value || 0);
-
-
+function actualizarTotal() {
+    const total = calcularTotal();
+    document.getElementById("totalVenta").innerText = `Total: $${total.toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
 </script>
-
 
 {% endblock %}

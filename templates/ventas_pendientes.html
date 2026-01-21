@@ -5,7 +5,7 @@
 
 {% if ventas %}
 <div style="margin-bottom: 20px;">
-    <input type="text" id="buscador-cliente" placeholder="Buscar por nombre del cliente..." 
+    <input type="text" id="buscador-cliente" placeholder="Buscar por nombre del cliente..."
            style="padding:5px 10px; width:250px; border-radius:5px; border:1px solid #ccc;">
 </div>
 
@@ -19,12 +19,20 @@
   {% endif %}
 {% endwith %}
 
+<style>
+.entrega-hoy {
+    background-color: #fff3cd;  
+}
+</style>
+
 <table border="1" id="tabla-ventas">
     <thead>
         <tr>
             <th>Recibo</th>
+            <th>Negocio</th>
             <th>Cliente</th>
             <th>Fecha</th>
+            <th>Fecha estimada</th>
             <th>Prepago</th>
             <th>Total</th>
             <th>Monto prepago</th>
@@ -38,24 +46,13 @@
         {% set total = v.total | float(0) %}
         {% set prepago = v.monto_prepago | float(0) %}
         {% set deuda = total - prepago %}
-        <tr class="{% if v.entrega_express == 1 %}venta-express{% endif %}">
+
+        <tr class="{% if v.fecha_estimada == hoy %}entrega-hoy{% endif %}">
             <td>#{{ v.id_venta }}</td>
-            <td>
-                {{ v.nombre }} {{ v.apellido }}
-                {% if v.entrega_express == 1 %}
-                    <span style="
-                        background:#dc3545;
-                        color:white;
-                        padding:2px 6px;
-                        border-radius:5px;
-                        font-size:0.75rem;
-                        margin-left:6px;
-                    ">
-                        EXPRESS
-                    </span>
-                {% endif %}
-            </td>
+            <td>{{ v.negocio or "-" }}</td>
+            <td>{{ v.nombre }} {{ v.apellido }}</td>
             <td>{{ v.fecha_recibo }}</td>
+            <td>{{ v.fecha_estimada }}</td>
             <td>{{ 'Sí' if v.prepago else 'No' }}</td>
             <td>${{ total | round(2) }}</td>
             <td>${{ prepago | round(2) }}</td>
@@ -72,28 +69,76 @@
                 </a>
             </td>
         </tr>
+
         <tr id="detalles-{{ v.id_venta }}" class="detalles-venta" style="display:none;">
-            <td colspan="9">
+            <td colspan="11">
                 <div class="detalles-box">
                     <div class="detalles-title">🧾 Detalles de la venta</div>
+
                     <ul class="detalles-list">
                         {% for item in v.detalles %}
                             <li class="detalle-item">
-                                <div class="detalle-zapato">
-                                    👟 {{ item.zapato.tipo }} {{ item.zapato.marca }}
-                                    <span class="detalle-color">
-                                        {{ item.zapato.color_base }}{% if item.zapato.color_secundario %}/{{ item.zapato.color_secundario }}{% endif %}
-                                    </span>
-                                </div>
-                                <div class="detalle-servicio">
-                                    {{ item.servicio.nombre }}
-                                    <span class="detalle-precio">
-                                        ${{ "{:.2f}".format(item.servicio.precio) }}
-                                    </span>
-                                </div>
+
+                                {% if item.tipo_articulo == "calzado" %}
+                                    <div class="detalle-zapato">
+                                        👟 {{ item.datos.tipo }} {{ item.datos.marca }}
+                                        <span class="detalle-color">
+                                            {{ item.datos.color_base }}
+                                            {% if item.datos.color_secundario %}/{{ item.datos.color_secundario }}{% endif %}
+                                        </span>
+                                    </div>
+
+                                    {% for s in item.servicios %}
+                                        <div class="detalle-servicio">
+                                            {{ s.nombre }}
+                                            <span class="detalle-precio">
+                                                ${{ "{:.2f}".format(s.precio_aplicado) }}
+                                            </span>
+                                        </div>
+                                    {% endfor %}
+
+                                {% elif item.tipo_articulo == "confeccion" %}
+                                    <div class="detalle-zapato">
+                                        🧵 {{ item.datos.tipo }} {{ item.datos.marca }}
+                                        <span class="detalle-color">
+                                            {{ item.datos.color_base }}
+                                            {% if item.datos.color_secundario %}/{{ item.datos.color_secundario }}{% endif %}
+                                        </span>
+                                    </div>
+
+                                    <div style="margin-top:4px;">
+                                        Cantidad: <b>{{ item.datos.cantidad }}</b> 
+                                    </div>
+
+                                    {% for s in item.servicios %}
+                                        <div class="detalle-servicio">
+                                            {{ s.nombre }}
+                                            <span class="detalle-precio">
+                                                ${{ "{:.2f}".format(s.precio_aplicado) }}
+                                            </span>
+                                        </div>
+                                    {% endfor %}
+
+                                {% elif item.tipo_articulo == "maquila" %}
+                                    <div class="detalle-zapato">
+                                        🏭 {{ item.datos.tipo }}
+                                    </div>
+                                    <div style="margin-top:4px;">
+                                        Cantidad: <b>{{ item.datos.cantidad }}</b> |
+                                        Precio unitario: <b>${{ "{:.2f}".format(item.datos.precio_unitario) }}</b>
+                                    </div>
+                                {% endif %}
+
+                                {% if item.comentario %}
+                                    <div style="margin-top:6px; font-style:italic; opacity:0.8;">
+                                        💬 {{ item.comentario }}
+                                    </div>
+                                {% endif %}
+
                             </li>
                         {% endfor %}
                     </ul>
+
                 </div>
             </td>
         </tr>
@@ -137,13 +182,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
         filas.forEach(fila => {
             if (!fila.classList.contains('detalles-venta')) {
-                const nombreCliente = fila.cells[1].textContent.toLowerCase();
+                const nombreCliente = fila.cells[2].textContent.toLowerCase(); 
                 fila.style.display = nombreCliente.includes(filtro) ? '' : 'none';
 
-                const idVenta = fila.querySelector('.btn-info').dataset.id;
-                const filaDetalle = document.getElementById(`detalles-${idVenta}`);
-                if (filaDetalle) {
-                    filaDetalle.style.display = 'none';
+                const btnInfo = fila.querySelector('.btn-info');
+                if (btnInfo) {
+                    const idVenta = btnInfo.dataset.id;
+                    const filaDetalle = document.getElementById(`detalles-${idVenta}`);
+                    if (filaDetalle) {
+                        filaDetalle.style.display = 'none';
+                    }
                 }
             }
         });

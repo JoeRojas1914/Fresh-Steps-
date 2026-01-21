@@ -30,22 +30,14 @@ from servicios import (
     eliminar_servicio,
 )
 
-from zapatos import (
-    obtener_zapatos_cliente,
-    crear_zapato,
-    eliminar_zapato,
-    cliente_tiene_zapatos,
-    contar_zapatos_cliente,
-)
-
 from ventas import (
-    contar_entregas_pendientes,
     crear_venta,
     obtener_ventas_pendientes,
-    marcar_entregada,
     obtener_detalles_venta,
-    obtener_ingresos_por_semana
+    marcar_entregada,
+    contar_entregas_pendientes,
 )
+
 
 from negocio import obtener_negocios
 
@@ -97,10 +89,9 @@ def generar_semanas_mes(año, mes):
 # ================= HOME =================
 @app.route("/")
 def index():
-    return render_template(
-        "index.html",
-        total_entregas=contar_entregas_pendientes()  
-    )
+    total_entregas = contar_entregas_pendientes()
+    return render_template("index.html", total_entregas=total_entregas)
+
 
 
 
@@ -158,10 +149,6 @@ def guardar_cliente():
 
 @app.route("/clientes/eliminar/<int:id_cliente>")
 def eliminar_cliente(id_cliente):
-    if cliente_tiene_zapatos(id_cliente):
-        flash("❌ No se puede eliminar el cliente porque tiene zapatos registrados.", "error")
-        return redirect(url_for("clientes"))
-
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("DELETE FROM cliente WHERE id_cliente = %s", (id_cliente,))
@@ -176,7 +163,11 @@ def eliminar_cliente(id_cliente):
 def ver_cliente(id_cliente):
     pagina = request.args.get("pagina", 1, type=int)
     pedidos_por_pagina = 5
+    inicio = (pagina - 1) * pedidos_por_pagina
 
+    # =========================
+    # 1) Obtener cliente
+    # =========================
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("""
@@ -188,6 +179,9 @@ def ver_cliente(id_cliente):
     cursor.close()
     conn.close()
 
+    # =========================
+    # 2) Total pedidos del cliente
+    # =========================
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT COUNT(*) FROM venta WHERE id_cliente = %s", (id_cliente,))
@@ -197,8 +191,9 @@ def ver_cliente(id_cliente):
 
     total_paginas = (total_pedidos + pedidos_por_pagina - 1) // pedidos_por_pagina
 
-    inicio = (pagina - 1) * pedidos_por_pagina
-
+    # =========================
+    # 3) Traer ventas + negocio
+    # =========================
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("""
@@ -207,8 +202,10 @@ def ver_cliente(id_cliente):
             v.fecha_recibo, 
             v.fecha_entrega,
             v.total, 
-            v.tipo_pago
+            v.tipo_pago,
+            n.nombre AS negocio
         FROM venta v
+        LEFT JOIN negocio n ON v.id_negocio = n.id_negocio
         WHERE v.id_cliente = %s
         ORDER BY v.fecha_recibo DESC
         LIMIT %s OFFSET %s
@@ -217,8 +214,11 @@ def ver_cliente(id_cliente):
     cursor.close()
     conn.close()
 
+    # =========================
+    # 4) Detalles por venta (ARTÍCULOS)
+    # =========================
     for p in pedidos:
-        p['detalles'] = obtener_detalles_venta(p['id_venta'])
+        p["detalles"] = obtener_detalles_venta(p["id_venta"])
 
     return render_template(
         "cliente_perfil.html",
@@ -320,30 +320,12 @@ def api_crear_cliente():
     })
 
 
-@app.route("/api/clientes/<int:id_cliente>/zapatos")
-def api_zapatos_cliente(id_cliente):
-    return jsonify(obtener_zapatos_cliente(id_cliente))
-
 
 @app.route("/api/servicios")
 def api_servicios():
-    return jsonify(obtener_servicios())
+    id_negocio = request.args.get("id_negocio", type=int)
+    return jsonify(obtener_servicios(id_negocio=id_negocio, limit=1000, offset=0))
 
-@app.route("/api/zapatos/crear", methods=["POST"])
-def api_crear_zapato():
-    id_cliente = request.form["id_cliente"]
-    color_base = request.form["color_base"]
-    color_secundario = request.form["color_secundario"]
-    material = request.form["material"]
-    tipo = request.form["tipo"]
-    marca = request.form["marca"]
-
-    crear_zapato(id_cliente, color_base, color_secundario, material, tipo, marca)
-
-    zapatos = obtener_zapatos_cliente(id_cliente)
-    nuevo_zapato = zapatos[-1]
-
-    return jsonify(nuevo_zapato)
 
 
 @app.route("/api/estadisticas/gastos")
@@ -597,69 +579,213 @@ def ventas():
 
 @app.route("/ventas/pendientes")
 def ventas_pendientes():
-    ventas = obtener_ventas_pendientes()
-    ventas_con_detalles = []
+    id_negocio = request.args.get("id_negocio") or None
+    ventas = obtener_ventas_pendientes(id_negocio)
 
+    ventas_con_detalles = []
     for v in ventas:
-        detalles = obtener_detalles_venta(v['id_venta'])
-        v['detalles'] = detalles
+        detalles = obtener_detalles_venta(v["id_venta"])
+        v["detalles"] = detalles
+
+        v["monto_prepago"] = v.get("monto_prepago", 0) or 0
+        v["prepago"] = v.get("prepago", 0) or 0
+        v["total"] = v.get("total", 0) or 0
+
         ventas_con_detalles.append(v)
 
     return render_template(
         "ventas_pendientes.html",
-        ventas=ventas_con_detalles
+        ventas=ventas_con_detalles,
+        hoy=date.today()
     )
 
 
 
 @app.route("/ventas/entregar/<int:id_venta>")
 def entregar_venta(id_venta):
-    marcar_entregada(id_venta)
-    flash("✅ Venta entregada correctamente.", "success")
+    ok = marcar_entregada(id_venta)
+
+    if ok:
+        flash("✅ Venta entregada correctamente.", "success")
+    else:
+        flash("⚠️ No se pudo entregar (ya estaba entregada o no existe).", "warning")
 
     return redirect("/ventas/pendientes")
 
 
 @app.route("/ventas/guardar", methods=["POST"])
 def guardar_venta():
-    prepago = request.form.get("prepago") == "si"
-    monto_prepago = request.form.get("monto_prepago") if prepago else None
+    try:
 
-    aplica_descuento = request.form.get("aplica_descuento") == "si"
-    porcentaje_descuento = (
-        float(request.form.get("porcentaje_descuento"))
-        if aplica_descuento else None
-    )
+        id_negocio = int(request.form["id_negocio"])
+        id_cliente = request.form.get("id_cliente") or None
+        fecha_estimada = request.form.get("fecha_estimada") or None
+        tipo_pago = request.form.get("tipo_pago")
 
-    entrega_express = request.form.get("entrega_express") == "1"
+        prepago = request.form.get("prepago") == "si"
+        monto_prepago = request.form.get("monto_prepago") if prepago else None
 
-    zapatos = []
-    i = 0
-    while True:
-        id_zapato = request.form.get(f"zapatos[{i}][id_zapato]")
-        id_servicio = request.form.get(f"zapatos[{i}][id_servicio]")
+        aplica_descuento = request.form.get("aplica_descuento") == "si"
+        cantidad_descuento = int(request.form.get("cantidad_descuento") or 0) if aplica_descuento else 0
 
-        if not id_zapato or not id_servicio:
-            break
+        tipos_por_negocio = {
+            1: "calzado",      
+            2: "confeccion",  
+            3: "maquila"      
+        }
+        tipo_permitido = tipos_por_negocio.get(id_negocio)
 
-        zapatos.append({
-            "id_zapato": id_zapato,
-            "id_servicio": id_servicio
-        })
-        i += 1
 
-    crear_venta(
-        request.form["id_cliente"],
-        request.form["tipo_pago"],
-        prepago,
-        monto_prepago,
-        entrega_express,
-        aplica_descuento,
-        porcentaje_descuento,
-        zapatos
-    )
+        articulos = []
+        i = 0
 
-    return redirect("/ventas")
+        while True:
+            tipo_articulo = request.form.get(f"articulos[{i}][tipo_articulo]")
+            if not tipo_articulo:
+                break
+
+            if tipo_permitido and tipo_articulo != tipo_permitido:
+                flash(f"❌ Este negocio solo permite artículos tipo: {tipo_permitido}", "danger")
+                return redirect("/ventas")
+
+            comentario = request.form.get(f"articulos[{i}][comentario]")
+
+
+            if tipo_articulo == "calzado":
+                datos = {
+                    "tipo": request.form.get(f"articulos[{i}][tipo]"),
+                    "marca": request.form.get(f"articulos[{i}][marca]"),
+                    "material": request.form.get(f"articulos[{i}][material]"),
+                    "color_base": request.form.get(f"articulos[{i}][color_base]"),
+                    "color_secundario": request.form.get(f"articulos[{i}][color_secundario]"),
+                    "color_agujetas": request.form.get(f"articulos[{i}][color_agujetas]")
+                }
+
+                servicios = []
+                j = 0
+                while True:
+                    id_serv = request.form.get(f"articulos[{i}][servicios][{j}][id_servicio]")
+                    if not id_serv:
+                        break
+
+                    precio_ap = request.form.get(f"articulos[{i}][servicios][{j}][precio_aplicado]") or 0
+
+                    servicios.append({
+                        "id_servicio": int(id_serv),
+                        "precio_aplicado": float(precio_ap)
+                    })
+
+                    j += 1
+
+                articulos.append({
+                    "tipo_articulo": "calzado",
+                    "datos": datos,
+                    "servicios": servicios,
+                    "comentario": comentario
+                })
+
+
+            elif tipo_articulo == "confeccion":
+                datos = {
+                    "tipo": request.form.get(f"articulos[{i}][tipo]"),
+                    "marca": request.form.get(f"articulos[{i}][marca]"),
+                    "material": request.form.get(f"articulos[{i}][material]"),
+                    "color_base": request.form.get(f"articulos[{i}][color_base]"),
+                    "color_secundario": request.form.get(f"articulos[{i}][color_secundario]"),
+                    "cantidad": int(request.form.get(f"articulos[{i}][cantidad]") or 1),
+                    "agujetas": request.form.get(f"articulos[{i}][agujetas]") == "1"
+                }
+
+                servicios = []
+                j = 0
+                while True:
+                    id_serv = request.form.get(f"articulos[{i}][servicios][{j}][id_servicio]")
+                    if not id_serv:
+                        break
+
+                    precio_ap = request.form.get(f"articulos[{i}][servicios][{j}][precio_aplicado]") or 0
+
+                    servicios.append({
+                        "id_servicio": int(id_serv),
+                        "precio_aplicado": float(precio_ap)
+                    })
+
+                    j += 1
+
+                articulos.append({
+                    "tipo_articulo": "confeccion",
+                    "datos": datos,
+                    "servicios": servicios,
+                    "comentario": comentario
+                })
+
+
+            elif tipo_articulo == "maquila":
+                datos = {
+                    "tipo": request.form.get(f"articulos[{i}][tipo]"),
+                    "cantidad": int(request.form.get(f"articulos[{i}][cantidad]") or 1),
+                    "precio_unitario": float(request.form.get(f"articulos[{i}][precio_unitario]") or 0),
+                }
+
+                articulos.append({
+                    "tipo_articulo": "maquila",
+                    "datos": datos,
+                    "comentario": comentario
+                })
+
+            i += 1
+
+
+        if not id_cliente or not tipo_pago or not fecha_estimada:
+            flash("❌ Faltan datos obligatorios (cliente, negocio, fecha estimada o tipo de pago).", "danger")
+            return redirect("/ventas")
+
+        if len(articulos) == 0:
+            flash("❌ Debes agregar al menos 1 artículo.", "danger")
+            return redirect("/ventas")
+
+        if id_negocio in (1, 2):
+            for a in articulos:
+                if not a.get("servicios") or len(a["servicios"]) == 0:
+                    flash("❌ Cada artículo debe tener al menos 1 servicio.", "danger")
+                    return redirect("/ventas")
+
+                for s in a["servicios"]:
+                    if not s.get("id_servicio"):
+                        flash("❌ Servicio inválido (sin id).", "danger")
+                        return redirect("/ventas")
+
+                    if float(s.get("precio_aplicado") or 0) <= 0:
+                        flash("❌ El precio aplicado debe ser mayor a 0.", "danger")
+                        return redirect("/ventas")
+
+        if id_negocio == 3:
+            for a in articulos:
+                if a.get("servicios"):
+                    flash("❌ Maquila no permite servicios.", "danger")
+                    return redirect("/ventas")
+
+
+        crear_venta(
+            id_negocio=id_negocio,
+            id_cliente=id_cliente,
+            fecha_estimada=fecha_estimada,
+            tipo_pago=tipo_pago,
+            prepago=prepago,
+            monto_prepago=monto_prepago,
+            aplica_descuento=aplica_descuento,
+            cantidad_descuento=cantidad_descuento,
+            articulos=articulos
+        )
+
+        flash("✅ Venta registrada correctamente.", "success")
+        return redirect("/ventas/pendientes")
+
+    except Exception as e:
+        flash(f"❌ Error al guardar venta: {str(e)}", "danger")
+        return redirect("/ventas")
+
+
 
 
 

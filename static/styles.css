@@ -1481,3 +1481,27 @@ button:disabled:hover {
 .negocio-fresh { background-color: #1e7fd6; }      
 .negocio-confeccion { background-color: #F1A7B1; } 
 .negocio-maquila { background-color: #89C8D4; }   
+
+.badge-hoy {
+    background: #ff9800;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    margin-left: 6px;
+    font-weight: bold;
+}
+
+.badge-atrasado {
+    background: #e53935;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    margin-left: 6px;
+    font-weight: bold;
+}
+
+.entrega-atrasada {
+    background-color: #fdecea;  
+}

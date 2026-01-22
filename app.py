@@ -62,27 +62,59 @@ def buscar_clientes_por_nombre(texto):
     conn.close()
     return resultados
 
-def generar_semanas_mes(año, mes):
-    inicio = date(año, mes, 1)
-    fin = date(año, mes, monthrange(año, mes)[1])
+def generar_semanas_rango(inicio: date, fin: date):
+    inicio = inicio - timedelta(days=inicio.weekday())
 
     semanas = []
     actual = inicio
 
-    meses_nombres = ["", "Enero","Febrero","Marzo","Abril","Mayo","Junio",
-                     "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
-
     while actual <= fin:
-        end = min(actual + timedelta(days=6), fin)
-        label = f"{actual.day}-{end.day} {meses_nombres[actual.month]}"
+        semana_fin = actual + timedelta(days=6)
+
+        label = f"{actual.strftime('%d/%m')} - {semana_fin.strftime('%d/%m')}"
+
         semanas.append({
             "inicio": actual,
-            "fin": end,
+            "fin": semana_fin,
             "label": label
         })
-        actual = end + timedelta(days=1)
+
+        actual += timedelta(days=7)
 
     return semanas
+
+
+
+
+# ================= API =================
+@app.route("/api/clientes")
+def api_clientes():
+    q = request.args.get("q", "")
+    return jsonify(buscar_clientes_por_nombre(q)) if q else jsonify([])
+
+
+@app.route("/api/clientes/crear", methods=["POST"])
+def api_crear_cliente():
+    id_cliente = crear_cliente(
+        request.form["nombre"],
+        request.form["apellido"],
+        request.form.get("correo"),
+        request.form.get("telefono"),
+        request.form.get("direccion")
+    )
+
+    return jsonify({
+        "id_cliente": id_cliente,
+        "nombre": request.form["nombre"],
+        "apellido": request.form["apellido"]
+    })
+
+
+
+@app.route("/api/servicios")
+def api_servicios():
+    id_negocio = request.args.get("id_negocio", type=int)
+    return jsonify(obtener_servicios(id_negocio=id_negocio, limit=1000, offset=0))
 
 
 
@@ -296,282 +328,6 @@ def borrar_servicio(id_servicio):
     eliminar_servicio(id_servicio)
     flash("✅ Servicio eliminado correctamente.", "success")
     return redirect("/servicios")
-
-
-
-# ================= API =================
-@app.route("/api/clientes")
-def api_clientes():
-    q = request.args.get("q", "")
-    return jsonify(buscar_clientes_por_nombre(q)) if q else jsonify([])
-
-
-@app.route("/api/clientes/crear", methods=["POST"])
-def api_crear_cliente():
-    id_cliente = crear_cliente(
-        request.form["nombre"],
-        request.form["apellido"],
-        request.form.get("correo"),
-        request.form.get("telefono"),
-        request.form.get("direccion")
-    )
-
-    return jsonify({
-        "id_cliente": id_cliente,
-        "nombre": request.form["nombre"],
-        "apellido": request.form["apellido"]
-    })
-
-
-
-@app.route("/api/servicios")
-def api_servicios():
-    id_negocio = request.args.get("id_negocio", type=int)
-    return jsonify(obtener_servicios(id_negocio=id_negocio, limit=1000, offset=0))
-
-
-
-@app.route("/api/estadisticas/gastos")
-def api_estadisticas_gastos():
-    mes = request.args.get("mes", type=int)
-    año = request.args.get("año", type=int)
-
-    semanas = generar_semanas_mes(año, mes)
-
-    conn = get_connection()
-    cur = conn.cursor(dictionary=True)
-
-    cur.execute("""
-        SELECT proveedor, fecha_registro, SUM(total) AS total
-        FROM gastos
-        WHERE YEAR(fecha_registro) = %s
-          AND MONTH(fecha_registro) = %s
-        GROUP BY proveedor, fecha_registro
-    """, (año, mes))
-
-    rows = cur.fetchall()
-    cur.close()
-    conn.close()
-
-    proveedores = {r["proveedor"] for r in rows}
-    data = {p: [0]*len(semanas) for p in proveedores}
-
-    for r in rows:
-        for i, s in enumerate(semanas):
-            if s["inicio"] <= r["fecha_registro"] <= s["fin"]:
-                data[r["proveedor"]][i] += float(r["total"])
-                break
-
-    return jsonify({
-        "semanas": [s["label"] for s in semanas],
-        "proveedores": data
-    })
-
-
-
-
-
-@app.route("/api/estadisticas/ingresos")
-def api_estadisticas_ingresos():
-    hoy = date.today()
-    mes = request.args.get("mes", hoy.month, type=int)
-    año = request.args.get("año", hoy.year, type=int)
-
-    return jsonify(obtener_ingresos_por_semana(mes, año))
-
-@app.route("/api/estadisticas/gastos/años")
-def años_gastos():
-    conn = get_connection()
-    cur = conn.cursor(dictionary=True)
-    cur.execute("""
-        SELECT DISTINCT YEAR(fecha_registro) AS año
-        FROM gastos
-        ORDER BY año DESC
-    """)
-    data = [r["año"] for r in cur.fetchall()]
-    cur.close()
-    conn.close()
-    return jsonify(data)
-
-
-
-@app.route("/api/estadisticas/gastos/meses")
-def meses_gastos():
-    año = request.args.get("año", type=int)
-
-    conn = get_connection()
-    cur = conn.cursor(dictionary=True)
-    cur.execute("""
-        SELECT DISTINCT MONTH(fecha_registro) AS mes
-        FROM gastos
-        WHERE YEAR(fecha_registro) = %s
-        ORDER BY mes
-    """, (año,))
-    data = [r["mes"] for r in cur.fetchall()]
-    cur.close()
-    conn.close()
-    return jsonify(data)
-
-
-
-@app.route("/api/estadisticas/ingresos/años")
-def años_ingresos():
-    conn = get_connection()
-    cur = conn.cursor(dictionary=True)
-    cur.execute("""
-        SELECT DISTINCT YEAR(fecha_recibo) AS año
-        FROM venta
-        ORDER BY año DESC
-    """)
-    data = [r["año"] for r in cur.fetchall()]
-    cur.close()
-    conn.close()
-    return jsonify(data)
-
-
-
-@app.route("/api/estadisticas/ingresos/meses")
-def meses_ingresos():
-    año = request.args.get("año", type=int)
-
-    conn = get_connection()
-    cur = conn.cursor(dictionary=True)
-    cur.execute("""
-        SELECT DISTINCT MONTH(fecha_recibo) AS mes
-        FROM venta
-        WHERE YEAR(fecha_recibo) = %s
-        ORDER BY mes
-    """, (año,))
-    data = [r["mes"] for r in cur.fetchall()]
-    cur.close()
-    conn.close()
-    return jsonify(data)
-
-
-@app.route("/api/estadisticas/totales-mes")
-def totales_mes():
-    mes = request.args.get("mes", type=int)
-    año = request.args.get("año", type=int)
-
-    if not mes:
-        mes = date.today().month
-    if not año:
-        año = date.today().year
-
-    inicio = date(año, mes, 1)
-    fin = date(año, mes, monthrange(año, mes)[1])
-
-    conn = get_connection()
-    cur = conn.cursor(dictionary=True)
-
-    cur.execute("""
-        SELECT IFNULL(SUM(total),0) AS total_ventas
-        FROM venta
-        WHERE fecha_recibo BETWEEN %s AND %s
-    """, (inicio, fin))
-    total_ventas = cur.fetchone()["total_ventas"]
-
-    cur.execute("""
-        SELECT IFNULL(SUM(total),0) AS total_gastos
-        FROM gastos
-        WHERE fecha_registro BETWEEN %s AND %s
-    """, (inicio, fin))
-    total_gastos = cur.fetchone()["total_gastos"]
-
-    cur.close()
-    conn.close()
-
-    ganancia = total_ventas - total_gastos
-
-    return jsonify({
-        "ventas": total_ventas,
-        "gastos": total_gastos,
-        "ganancia": ganancia
-    })
-
-
-@app.route("/api/estadisticas/ventas-semana")
-def api_ventas_por_semana():
-    mes = request.args.get("mes", type=int)
-    año = request.args.get("año", type=int)
-
-    semanas = generar_semanas_mes(año, mes)
-
-    conn = get_connection()
-    cur = conn.cursor(dictionary=True)
-
-    cur.execute("""
-        SELECT 
-            fecha_recibo,
-            COUNT(*) AS total
-        FROM venta
-        WHERE YEAR(fecha_recibo) = %s
-          AND MONTH(fecha_recibo) = %s
-        GROUP BY fecha_recibo
-    """, (año, mes))
-
-    rows = cur.fetchall()
-    cur.close()
-    conn.close()
-
-    valores = []
-
-    for s in semanas:
-        total = sum(
-            r["total"]
-            for r in rows
-            if s["inicio"] <= r["fecha_recibo"].date() <= s["fin"]
-        )
-        valores.append(total)
-
-    return jsonify({
-        "semanas": [s["label"] for s in semanas],
-        "totales": valores
-    })
-
-
-
-@app.route("/api/estadisticas/unidades-semana")
-def api_unidades_por_semana():
-    mes = request.args.get("mes", type=int)
-    año = request.args.get("año", type=int)
-
-    semanas = generar_semanas_mes(año, mes)
-
-    conn = get_connection()
-    cur = conn.cursor(dictionary=True)
-
-    cur.execute("""
-        SELECT 
-            DATE(v.fecha_recibo) AS fecha,
-            COUNT(vz.id_venta_zapato) AS unidades
-        FROM venta v
-        JOIN venta_zapato vz ON v.id_venta = vz.id_venta
-        WHERE YEAR(v.fecha_recibo) = %s
-          AND MONTH(v.fecha_recibo) = %s
-        GROUP BY DATE(v.fecha_recibo)
-    """, (año, mes))
-
-    rows = cur.fetchall()
-    cur.close()
-    conn.close()
-
-    valores = []
-
-    for s in semanas:
-        total = sum(
-            r["unidades"]
-            for r in rows
-            if s["inicio"] <= r["fecha"] <= s["fin"]
-        )
-        valores.append(total)
-
-    return jsonify({
-        "semanas": [s["label"] for s in semanas],
-        "totales": valores
-    })
-
-
 
 
 # ================= VENTAS =================
@@ -871,20 +627,14 @@ def borrar_gasto(id_gasto):
 @app.route("/estadisticas")
 def estadisticas():
     hoy = date.today()
-    meses = {
-        1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril",
-        5: "Mayo", 6: "Junio", 7: "Julio", 8: "Agosto",
-        9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre"
-    }
+    negocios = obtener_negocios() 
 
     return render_template(
         "estadisticas.html",
-        meses=meses,
-        año_actual=hoy.year,
-        mes_gastos=hoy.month,
-        mes_ingresos=hoy.month,
         total_clientes=contar_clientes(),
-        total_servicios=contar_servicios()
+        total_servicios=contar_servicios(),
+        negocios=negocios,
+        hoy=hoy
     )
 
 

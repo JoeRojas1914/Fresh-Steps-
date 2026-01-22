@@ -25,13 +25,25 @@
 
 <div class="date-selector" style="margin: 20px 0;">
     <form onsubmit="return false;" style="display:flex; gap:15px; align-items:center;">
-        <label>Año:</label>
-        <select id="año_general"></select>
+        <label>Desde:</label>
+        <input type="date" id="fecha_inicio" value="{{ hoy }}">
 
-        <label>Mes:</label>
-        <select id="mes_general"></select>
+        <label>Hasta:</label>
+        <input type="date" id="fecha_fin" value="{{ hoy }}">
+
+        <label>Negocio:</label>
+        <select id="negocio_select">
+            <option value="all">Todos</option>
+            {% for n in negocios %}
+                <option value="{{ n.id_negocio }}">{{ n.nombre }}</option>
+            {% endfor %}
+        </select>
+
+        <button onclick="cargarDashboard()">Aplicar</button>
     </form>
 </div>
+
+
 
 <div class="monthly-cards">
     <div class="monthly-card ventas">
@@ -80,21 +92,18 @@
 <script>
 let gastosChart;
 let ingresosChart;
-
-const nombresMeses = [
-    "", "Enero","Febrero","Marzo","Abril","Mayo","Junio",
-    "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
-];
+let ventasSemanaChart;
+let unidadesSemanaChart;
 
 const redPalette = [
-    "#b91c1c", "#dc2626", "#ef4444", "#f87171", "#fca5a5", "#fecaca", "#fee2e2",
+    "#b91c1c", "#dc2626", "#ef4444", "#f87171",
+    "#fca5a5", "#fecaca", "#fee2e2",
 ];
 
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
     initCharts();
-    await cargarAños();
-    await cargarMeses();
-    cargarTodasLasGraficas();
+
+    cargarDashboard();
 });
 
 function initCharts() {
@@ -113,140 +122,72 @@ function initCharts() {
 
     ingresosChart = new Chart(document.getElementById("ingresosChart"), {
         type: "bar",
-        data: { labels: [], datasets: [{ label: "Ingresos ($)", data: [], backgroundColor: "#22c55e", borderRadius: 8 }] },
+        data: {
+            labels: [],
+            datasets: [{
+                label: "Ingresos ($)",
+                data: [],
+                borderRadius: 8
+            }]
+        },
         options: { scales: { y: { beginAtZero: true } } }
     });
 
+    ventasSemanaChart = new Chart(document.getElementById("ventasSemanaChart"), {
+        type: "bar",
+        data: {
+            labels: [],
+            datasets: [{
+                label: "Ventas",
+                data: [],
+                borderRadius: 8
+            }]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
+    });
 
-    ventasSemanaChart = new Chart(
-        document.getElementById("ventasSemanaChart"), {
-            type: "bar",
-            data: {
-                labels: [],
-                datasets: [{
-                    label: "Ventas",
-                    data: [],
-                    backgroundColor: "#3b82f6",
-                    borderRadius: 8
-                }]
-            },
-            options: {
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
-        }
-    );
-
-
-    unidadesSemanaChart = new Chart(
-        document.getElementById("unidadesSemanaChart"), {
-            type: "bar",
-            data: {
-                labels: [],
-                datasets: [{
-                    label: "Unidades",
-                    data: [],
-                    backgroundColor: "#a855f7",
-                    borderRadius: 8
-                }]
-            },
-            options: { scales: { y: { beginAtZero: true } } }
-        }
-    );
-
-}
-
-async function cargarAños() {
-    const añosGastos = await fetchJSON("/api/estadisticas/gastos/años");
-    const añosIngresos = await fetchJSON("/api/estadisticas/ingresos/años");
-    const años = Array.from(new Set([...añosGastos, ...añosIngresos]));
-    llenarSelect("año_general", años);
-}
-
-async function cargarMeses() {
-    const año = document.getElementById("año_general").value;
-    const mesesGastos = await fetchJSON(`/api/estadisticas/gastos/meses?año=${año}`);
-    const mesesIngresos = await fetchJSON(`/api/estadisticas/ingresos/meses?año=${año}`);
-    const meses = Array.from(new Set([...mesesGastos, ...mesesIngresos]));
-    llenarSelect("mes_general", meses, true);
-}
-
-function cargarTodasLasGraficas() {
-    const mes = document.getElementById("mes_general").value;
-    const año = document.getElementById("año_general").value;
-
-    if (!mes || !año) return;
-
-    fetch(`/api/estadisticas/gastos?mes=${mes}&año=${año}`)
-        .then(r => r.json())
-        .then(data => {
-            gastosChart.data.labels = data.semanas;
-            gastosChart.data.datasets = Object.keys(data.proveedores).map((prov, i) => ({
-                label: prov,
-                data: data.proveedores[prov],
-                backgroundColor: redPalette[i % redPalette.length]
-            }));
-            gastosChart.update();
-        });
-
-    fetch(`/api/estadisticas/ingresos?mes=${mes}&año=${año}`)
-        .then(r => r.json())
-        .then(data => {
-            ingresosChart.data.labels = data.rangos;
-            ingresosChart.data.datasets[0].data = data.totales;
-            ingresosChart.update();
-        });
-
-    fetch(`/api/estadisticas/totales-mes?mes=${mes}&año=${año}`)
-        .then(r => r.json())
-        .then(data => {
-            document.getElementById("ventasMes").textContent = `$${Number(data.ventas).toLocaleString()}`;
-            document.getElementById("gastosMes").textContent = `$${Number(data.gastos).toLocaleString()}`;
-            document.getElementById("gananciaMes").textContent = `$${Number(data.ganancia).toLocaleString()}`;
-        });
-
-    fetch(`/api/estadisticas/ventas-semana?mes=${mes}&año=${año}`)
-        .then(r => r.json())
-        .then(data => {
-            ventasSemanaChart.data.labels = data.semanas;
-            ventasSemanaChart.data.datasets[0].data = data.totales;
-            ventasSemanaChart.update();
-        });
-
-    fetch(`/api/estadisticas/unidades-semana?mes=${mes}&año=${año}`)
-        .then(r => r.json())
-        .then(data => {
-            unidadesSemanaChart.data.labels = data.semanas;
-            unidadesSemanaChart.data.datasets[0].data = data.totales;
-            unidadesSemanaChart.update();
-        });
-
-}
-
-function llenarSelect(id, valores, esMes=false) {
-    const select = document.getElementById(id);
-    select.innerHTML = "";
-    valores.forEach(v => {
-        const opt = document.createElement("option");
-        opt.value = v;
-        opt.text = esMes ? nombresMeses[v] : v;
-        select.appendChild(opt);
+    unidadesSemanaChart = new Chart(document.getElementById("unidadesSemanaChart"), {
+        type: "bar",
+        data: {
+            labels: [],
+            datasets: [{
+                label: "Unidades",
+                data: [],
+                borderRadius: 8
+            }]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
     });
 }
 
-async function fetchJSON(url) {
+async function cargarDashboard() {
+    const inicio = document.getElementById("fecha_inicio").value;
+    const fin = document.getElementById("fecha_fin").value;
+    const negocio = document.getElementById("negocio_select").value;
+
+    if (!inicio || !fin) {
+        console.warn("Fechas incompletas");
+        return;
+    }
+
+    const url = `/api/estadisticas/dashboard?inicio=${inicio}&fin=${fin}&id_negocio=${negocio}`;
+
     const res = await fetch(url);
-    return res.json();
+    const data = await res.json();
+
+    document.getElementById("ventasMes").textContent =
+        `$${Number(data.kpis.ventas).toLocaleString()}`;
+
+    document.getElementById("gastosMes").textContent =
+        `$${Number(data.kpis.gastos).toLocaleString()}`;
+
+    document.getElementById("gananciaMes").textContent =
+        `$${Number(data.kpis.ganancia).toLocaleString()}`;
+
+    console.log("Dashboard data:", data);
 }
-
-document.getElementById("año_general").onchange = async () => {
-    await cargarMeses();
-    cargarTodasLasGraficas();
-};
-
-document.getElementById("mes_general").onchange = cargarTodasLasGraficas;
 </script>
+
 
 
 

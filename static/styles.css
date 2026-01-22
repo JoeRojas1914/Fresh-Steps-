@@ -1069,23 +1069,15 @@ button:disabled:hover {
     border: 1px solid #facc15;
 }
 
-.date-selector {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 30px;
-    padding: 16px 20px;
-    background: linear-gradient(135deg, #2fa4ff, #2fa4ff);
-    border-radius: 16px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+.date-selector{
+    background: #e6f3ff;
+    border: 2px solid #2fa4ff;
+    padding: 14px 18px;
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(47, 164, 255, 0.25);
 }
 
-.date-selector label {
-    font-size: 14px;
-    font-weight: 600;
-    color: #0b3c5d;
-}
+
 
 .date-selector select {
     padding: 10px 14px;
@@ -1093,9 +1085,19 @@ button:disabled:hover {
     border: 1px solid #cfd8e3;
     font-size: 14px;
     cursor: pointer;
-    background: white;
+
+    background-color: #f8fafc;  
+    color: #1f2933;            
+    text-align: center;         
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+
     transition: border 0.3s ease, box-shadow 0.3s ease, transform 0.15s ease;
     min-width: 140px;
+}
+
+.date-selector select option {
+    text-align: center;  
+    padding: 6px 10px;
 }
 
 .date-selector select:focus {

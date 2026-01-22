@@ -47,17 +47,17 @@
 
 <div class="monthly-cards">
     <div class="monthly-card ventas">
-        <h4>💰 Ingresos del mes</h4>
+        <h4>💰 Ingresos</h4>
         <p id="ventasMes">$0</p>
     </div>
 
     <div class="monthly-card gastos">
-        <h4>💸 Gastos del mes</h4>
+        <h4>💸 Gastos</h4>
         <p id="gastosMes">$0</p>
     </div>
 
     <div class="monthly-card ganancia">
-        <h4>📈 Ganancia del mes</h4>
+        <h4>📈 Ganancia</h4>
         <p id="gananciaMes">$0</p>
     </div>
 </div>
@@ -109,7 +109,14 @@ document.addEventListener("DOMContentLoaded", () => {
 function initCharts() {
     gastosChart = new Chart(document.getElementById("gastosChart"), {
         type: "bar",
-        data: { labels: [], datasets: [] },
+        data: {
+            labels: [],
+            datasets: [{
+                label: "Gastos ($)",
+                data: [],
+                borderRadius: 8
+            }]
+        },
         options: {
             responsive: true,
             plugins: { legend: { position: "top" } },

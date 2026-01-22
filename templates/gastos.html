@@ -30,21 +30,44 @@
 
         <h2 id="modalTitulo">Agregar gasto</h2>
 
-        <form method="POST" action="/gastos/guardar">
+        <form method="POST" action="/gastos/guardar" class="modal-form">
             <input type="hidden" name="id_gasto" id="id_gasto">
-            <select name="id_negocio" id="id_negocio" required>
-                <option value="">Seleccione un negocio</option>
-                {% for n in negocios %}
-                    <option value="{{ n.id_negocio }}">{{ n.nombre }}</option>
-                {% endfor %}
-            </select>
-            <input type="text" name="descripcion" placeholder="Descripción" required>
-            <input type="text" name="proveedor" placeholder="Proveedor" required>
-            <input type="number" name="total" placeholder="Total" required>
-            <input type="date" name="fecha_registro" placeholder="Fecha de registro">
 
-            <button type="submit">Guardar</button>
+            <div class="modal-field">
+                <label for="id_negocio">Negocio</label>
+                <select name="id_negocio" id="id_negocio" required>
+                    <option value="">Seleccione un negocio</option>
+                    {% for n in negocios %}
+                        <option value="{{ n.id_negocio }}">{{ n.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="modal-field">
+                <label for="gasto_descripcion">Descripción</label>
+                <input id="gasto_descripcion" type="text" name="descripcion" required>
+            </div>
+
+            <div class="modal-field">
+                <label for="gasto_proveedor">Proveedor</label>
+                <input id="gasto_proveedor" type="text" name="proveedor" required>
+            </div>
+
+            <div class="modal-field">
+                <label for="gasto_total">Total</label>
+                <input id="gasto_total" type="number" name="total" required>
+            </div>
+
+            <div class="modal-field">
+                <label for="gasto_fecha">Fecha de registro</label>
+                <input id="gasto_fecha" type="date" name="fecha_registro">
+            </div>
+
+            <button type="submit" class="btn-guardar-modal">
+                Guardar gasto
+            </button>
         </form>
+
     </div>
 </div>
 

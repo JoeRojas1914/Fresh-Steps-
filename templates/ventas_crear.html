@@ -23,14 +23,39 @@
         <span class="close" onclick="cerrarModalCliente()">&times;</span>
         <h2>Nuevo cliente</h2>
 
-        <form id="formNuevoCliente">
-            <input type="text" name="nombre" placeholder="Nombre" required>
-            <input type="text" name="apellido" placeholder="Apellido" required>
-            <input type="email" name="correo" placeholder="Correo">
-            <input type="text" name="telefono" placeholder="Teléfono">
-            <input type="text" name="codigo_postal" placeholder="Código postal">
-            <button type="submit">Guardar</button>
+        <form id="formNuevoCliente" class="modal-form">
+
+            <div class="modal-field">
+                <label for="cliente_nombre">Nombre</label>
+                <input id="cliente_nombre" type="text" name="nombre" required>
+            </div>
+
+            <div class="modal-field">
+                <label for="cliente_apellido">Apellido</label>
+                <input id="cliente_apellido" type="text" name="apellido" required>
+            </div>
+
+            <div class="modal-field">
+                <label for="cliente_correo">Correo</label>
+                <input id="cliente_correo" type="email" name="correo">
+            </div>
+
+            <div class="modal-field">
+                <label for="cliente_telefono">Teléfono</label>
+                <input id="cliente_telefono" type="text" name="telefono">
+            </div>
+
+            <div class="modal-field">
+                <label for="cliente_cp">Código postal</label>
+                <input id="cliente_cp" type="text" name="codigo_postal">
+            </div>
+
+            <button type="submit" class="btn-guardar-modal">
+                Guardar cliente
+            </button>
+
         </form>
+
     </div>
 </div>
 
@@ -209,6 +234,13 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("clienteBox").style.display = "none";
     document.getElementById("busquedaCliente").style.display = "block";
 
+    window.addEventListener("click", function(event) {
+        const modal = document.getElementById("modalCliente");
+        if (event.target === modal) {
+            cerrarModalCliente();
+        }
+    });
+
     bloquearFechaMinima();
     validarFormulario();
 });
@@ -256,6 +288,13 @@ function seleccionarCliente(cliente) {
     document.getElementById("busquedaCliente").style.display = "none";
 
     validarFormulario();
+}
+
+function cerrarModalCliente() {
+    const modal = document.getElementById("modalCliente");
+    modal.style.display = "none";
+
+    document.getElementById("formNuevoCliente").reset();
 }
 
 

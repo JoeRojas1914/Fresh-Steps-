@@ -41,19 +41,31 @@
 
         <h2 id="tituloModal">Agregar servicio</h2>
 
-        <form method="POST" action="/servicios/guardar">
+        <form method="POST" action="/servicios/guardar" class="modal-form">
             <input type="hidden" name="id_servicio" id="id_servicio">
+            <div class="modal-field">
+                <label for="id_negocio">Negocio</label>
+                <select name="id_negocio" id="id_negocio" required>
+                    <option value="">Seleccione un negocio</option>
+                    {% for n in negocios %}
+                        <option value="{{ n.id_negocio }}">{{ n.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-            <select name="id_negocio" id="id_negocio" required>
-                <option value="">Seleccione un negocio</option>
-                {% for n in negocios %}
-                    <option value="{{ n.id_negocio }}">{{ n.nombre }}</option>
-                {% endfor %}
-            </select>
-            <input type="text" name="nombre" placeholder="Nombre" required>
-            <input type="number" step="0.01" name="precio" placeholder="Precio" required>
+            <div class="modal-field">
+                <label for="servicio_nombre">Nombre del servicio</label>
+                <input id="servicio_nombre" type="text" name="nombre" required>
+            </div>
 
-            <button type="submit">Guardar</button>
+            <div class="modal-field">
+                <label for="servicio_precio">Precio</label>
+                <input id="servicio_precio" type="number" step="0.01" name="precio" required>
+            </div>
+
+            <button type="submit" class="btn-guardar-modal">
+                Guardar servicio
+            </button>
         </form>
     </div>
 </div>

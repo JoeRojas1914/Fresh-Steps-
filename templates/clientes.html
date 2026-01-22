@@ -33,17 +33,39 @@
 
         <h2 id="modalTitulo">Agregar cliente</h2>
 
-        <form method="POST" action="/clientes/guardar">
+        <form method="POST" action="/clientes/guardar" class="modal-form">
             <input type="hidden" name="id_cliente" id="id_cliente">
 
-            <input type="text" name="nombre" placeholder="Nombre" required>
-            <input type="text" name="apellido" placeholder="Apellido" required>
-            <input type="email" name="correo" placeholder="Correo">
-            <input type="text" name="telefono" placeholder="Teléfono">
-            <input type="text" name="direccion" placeholder="Dirección">
+            <div class="modal-field">
+                <label for="cliente_nombre">Nombre</label>
+                <input id="cliente_nombre" type="text" name="nombre" required>
+            </div>
 
-            <button type="submit">Guardar</button>
+            <div class="modal-field">
+                <label for="cliente_apellido">Apellido</label>
+                <input id="cliente_apellido" type="text" name="apellido" required>
+            </div>
+
+            <div class="modal-field">
+                <label for="cliente_correo">Correo</label>
+                <input id="cliente_correo" type="email" name="correo">
+            </div>
+
+            <div class="modal-field">
+                <label for="cliente_telefono">Teléfono</label>
+                <input id="cliente_telefono" type="text" name="telefono">
+            </div>
+
+            <div class="modal-field">
+                <label for="cliente_direccion">Dirección</label>
+                <input id="cliente_direccion" type="text" name="direccion">
+            </div>
+
+            <button type="submit" class="btn-guardar-modal">
+                Guardar cliente
+            </button>
         </form>
+
     </div>
 </div>
 

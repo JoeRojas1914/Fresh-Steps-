@@ -244,6 +244,8 @@ button:active {
 
 /* ====== TABLAS ====== */
 table {
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+    font-size: 13.5px;
     width: 100%;
     max-width: 100%;
     border-collapse: collapse;
@@ -253,6 +255,7 @@ table {
     overflow: hidden;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
     font-size: 14px;
+    border-radius: 16px;
 }
 
 
@@ -262,18 +265,24 @@ thead {
 }
 
 th {
-    padding: 14px;
+    padding: 14px 16px;
     text-align: left;
-    font-weight: 600;
-    letter-spacing: 0.3px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    font-size: 12px;
+    opacity: 0.95;
 }
+
 
 
 td {
-    padding: 12px 14px;
-    border-bottom: 1px solid #e5e7eb;
+    padding: 12px 16px;
+    border-bottom: 1px solid #edf2f7;
     color: #1f2933;
+    vertical-align: middle;
 }
+
 
 
 tbody tr:last-child td {
@@ -288,8 +297,10 @@ tbody tr:nth-child(even) {
 
 tbody tr:hover {
     background-color: #e6f3ff;
-    transition: background-color 0.2s ease;
+    transform: scale(1.002);
+    transition: all 0.15s ease;
 }
+
 
 
 .btn-edit,
@@ -433,14 +444,6 @@ td .btn-delete {
     margin-top: 0; 
 }
 
-.results-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    max-width: 600px;
-    padding-left: 0%;
-}
-
 
 .result-item {
     display: flex;
@@ -497,34 +500,6 @@ td .btn-delete {
     height: 36px;         
 }
 
-
-.results-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    max-width: 500px;
-    margin-top: 10px;
-}
-
-.result-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 14px;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    cursor: pointer;
-    font-weight: 500;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
-}
-
-.result-item:hover {
-    background: #e6f3ff;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-}
-
-
 .results-list {
     display: flex;
     flex-direction: column;
@@ -533,27 +508,6 @@ td .btn-delete {
     margin-top: 6px;
     margin-bottom: 12px;
 }
-
-
-.result-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 14px;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    cursor: pointer;
-    font-weight: 500;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
-}
-
-#clienteSeleccionadoContainer {
-    display: block !important;
-    padding: 10px;
-    margin-top: 10px;
-}
-
 
 .zapato-item {
     padding: 12px 14px;
@@ -1347,18 +1301,6 @@ button:disabled:hover {
 
 #montoPrepagoContainer {
     margin-bottom: 12px;
-}
-
-.form-row {
-    display: flex;
-    gap: 24px;
-    align-items: flex-start;
-    flex-wrap: wrap;
-}
-
-.form-item {
-    min-width: 220px;
-    flex: 1;
 }
 
 .campo-item {

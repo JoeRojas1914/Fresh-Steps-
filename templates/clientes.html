@@ -47,17 +47,17 @@
             </div>
 
             <div class="modal-field">
-                <label for="cliente_correo">Correo</label>
+                <label for="cliente_telefono">Teléfono</label>
+                <input id="cliente_telefono" type="text" name="telefono" required pattern="[0-9]{10}" title="Debe contener 10 dígitos">
+            </div>
+
+            <div class="modal-field">
+                <label for="cliente_correo">Correo (opcional)</label>
                 <input id="cliente_correo" type="email" name="correo">
             </div>
 
             <div class="modal-field">
-                <label for="cliente_telefono">Teléfono</label>
-                <input id="cliente_telefono" type="text" name="telefono">
-            </div>
-
-            <div class="modal-field">
-                <label for="cliente_direccion">Dirección</label>
+                <label for="cliente_direccion">Dirección(opcional)</label>
                 <input id="cliente_direccion" type="text" name="direccion">
             </div>
 
@@ -134,6 +134,23 @@
 
 
 <script>
+    document.querySelector(".modal-form").addEventListener("submit", function(e) {
+        const nombre = document.querySelector("[name=nombre]").value.trim();
+        const apellido = document.querySelector("[name=apellido]").value.trim();
+        const telefono = document.querySelector("[name=telefono]").value.trim();
+
+        if (!nombre || !apellido || !telefono) {
+            alert("⚠️ Nombre, apellido y teléfono son obligatorios.");
+            e.preventDefault();
+            return;
+        }
+
+        if (!/^\d{10}$/.test(telefono)) {
+            alert("📱 El teléfono debe tener exactamente 10 dígitos.");
+            e.preventDefault();
+        }
+    });
+
     function abrirModal() {
         document.getElementById("modal").style.display = "block";
         document.getElementById("modalTitulo").innerText = "Agregar cliente";
@@ -155,6 +172,7 @@
         document.querySelector("[name=telefono]").value = telefono;
         document.querySelector("[name=direccion]").value = direccion;
     }
+
     </script>
     
 {% endblock %}

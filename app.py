@@ -129,13 +129,21 @@ def clientes():
 def guardar_cliente():
     id_cliente = request.form.get("id_cliente")
 
-    datos = (
-        request.form["nombre"],
-        request.form["apellido"],
-        request.form["correo"],
-        request.form["telefono"],
-        request.form["direccion"]
-    )
+    nombre = request.form.get("nombre", "").strip()
+    apellido = request.form.get("apellido", "").strip()
+    correo = request.form.get("correo", "").strip()
+    telefono = request.form.get("telefono", "").strip()
+    direccion = request.form.get("direccion", "").strip()
+
+    if not nombre or not apellido or not telefono:
+        flash("❌ Nombre, apellido y teléfono son obligatorios.", "alert-error")
+        return redirect(url_for("clientes"))
+
+    if not telefono.isdigit() or len(telefono) != 10:
+        flash("❌ El teléfono debe contener exactamente 10 números.", "alert-error")
+        return redirect(url_for("clientes"))
+
+    datos = (nombre, apellido, correo, telefono, direccion)
 
     if id_cliente:
         actualizar_cliente(id_cliente, *datos)
@@ -145,6 +153,7 @@ def guardar_cliente():
         flash("✅ Cliente creado correctamente.", "success")
 
     return redirect(url_for("clientes"))
+
 
 
 @app.route("/clientes/eliminar/<int:id_cliente>")
@@ -158,6 +167,7 @@ def eliminar_cliente(id_cliente):
 
     flash("✅ Cliente eliminado correctamente.", "success")
     return redirect(url_for("clientes"))
+
 
 @app.route("/clientes/<int:id_cliente>")
 def ver_cliente(id_cliente):

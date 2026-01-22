@@ -574,6 +574,7 @@ def ventas():
 def ventas_pendientes():
     id_negocio = request.args.get("id_negocio") or None
     ventas = obtener_ventas_pendientes(id_negocio)
+    negocios = obtener_negocios()  
 
     ventas_con_detalles = []
     for v in ventas:
@@ -589,8 +590,10 @@ def ventas_pendientes():
     return render_template(
         "ventas_pendientes.html",
         ventas=ventas_con_detalles,
+        negocios=negocios,  
         hoy=date.today()
     )
+
 
 
 

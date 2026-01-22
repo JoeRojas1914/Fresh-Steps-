@@ -1,13 +1,28 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h1>📦 Entregas pendientes</h1>
+<h1>🧾 Entregas pendientes</h1>
 
 {% if ventas %}
-<div style="margin-bottom: 20px;">
-    <input type="text" id="buscador-cliente" placeholder="Buscar por nombre del cliente..."
-           style="padding:5px 10px; width:250px; border-radius:5px; border:1px solid #ccc;">
+<div style="margin-bottom: 20px; display:flex; gap:10px; align-items:center;">
+
+    <!-- Buscador por cliente -->
+    <input type="text" id="buscador-cliente" 
+           placeholder="🔍 Buscar cliente..."
+           style="padding:6px 10px; width:250px; border-radius:5px; border:1px solid #ccc;">
+
+    <select id="filtro-negocio"
+            style="padding:6px 10px; border-radius:5px; border:1px solid #ccc;">
+        <option value="">Todos los negocios</option>
+        {% for n in negocios %}
+            <option value="{{ n.nombre | lower }}">
+                {{ n.nombre }}
+            </option>
+        {% endfor %}
+    </select>
+
 </div>
+
 
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
@@ -169,6 +184,7 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
+
     function toggleDetalles(idVenta) {
         const fila = document.getElementById(`detalles-${idVenta}`);
         fila.style.display = fila.style.display === "none" ? "table-row" : "none";
@@ -181,14 +197,25 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     const inputBuscador = document.getElementById('buscador-cliente');
-    inputBuscador.addEventListener('keyup', () => {
-        const filtro = inputBuscador.value.toLowerCase();
+    const selectNegocio  = document.getElementById('filtro-negocio');
+
+    function aplicarFiltros() {
+        const filtroNombre  = inputBuscador.value.toLowerCase();
+        const filtroNegocio = selectNegocio.value.toLowerCase();
+
         const filas = document.querySelectorAll('#tabla-ventas tbody tr');
 
         filas.forEach(fila => {
             if (!fila.classList.contains('detalles-venta')) {
+
                 const nombreCliente = fila.cells[2].textContent.toLowerCase(); 
-                fila.style.display = nombreCliente.includes(filtro) ? '' : 'none';
+                const negocio       = fila.cells[1].textContent.toLowerCase();
+
+                const coincideNombre  = nombreCliente.includes(filtroNombre);
+                const coincideNegocio = filtroNegocio === "" || negocio.includes(filtroNegocio);
+
+                const mostrar = coincideNombre && coincideNegocio;
+                fila.style.display = mostrar ? '' : 'none';
 
                 const btnInfo = fila.querySelector('.btn-info');
                 if (btnInfo) {
@@ -200,8 +227,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
         });
-    });
+    }
+
+    inputBuscador.addEventListener('keyup', aplicarFiltros);
+    selectNegocio.addEventListener('change', aplicarFiltros);
+
 });
 </script>
+
 
 {% endblock %}

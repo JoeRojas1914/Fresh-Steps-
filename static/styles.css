@@ -1466,3 +1466,24 @@ button:disabled:hover {
 .form-row .form-item:last-child {
     flex: 0 0 260px;
 }
+
+
+.negocio-A {
+    border-left: 6px solid #0d6efd;
+}
+.negocio-B {
+    border-left: 6px solid #198754;
+}
+.negocio-C {
+    border-left: 6px solid #dc3545;
+}
+.badge-negocio {
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: white;
+}
+.bg-A { background:#0d6efd; }
+.bg-B { background:#198754; }
+.bg-C { background:#dc3545; }

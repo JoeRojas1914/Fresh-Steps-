@@ -1,0 +1,18 @@
+{% macro badge_negocio(nombre) %}
+    {% set negocio = (nombre or '')
+        | lower
+        | replace('ó','o')
+        | replace('é','e')
+        | replace('í','i')
+        | replace('á','a')
+        | replace('ú','u')
+    %}
+
+    {% if 'fresh' in negocio %}
+        <span class="badge-negocio negocio-fresh">Fresh Steps</span>
+    {% elif 'confeccion' in negocio %}
+        <span class="badge-negocio negocio-confeccion">Confección</span>
+    {% elif 'maquila' in negocio %}
+        <span class="badge-negocio negocio-maquila">Maquila</span> 
+    {% endif %}
+{% endmacro %}

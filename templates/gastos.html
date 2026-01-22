@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
+{% from "macros/badges.html" import badge_negocio %}
+
 
 <h1>💸 Gastos</h1>
 
@@ -63,7 +65,7 @@
     <tbody>
         {% for g in gastos %}
         <tr>
-            <td>{{ g.negocio }}</td>
+            <td>{{ badge_negocio(g.negocio) }}</td>
             <td>{{ g.descripcion }}</td>
             <td>{{ g.proveedor }}</td>
             <td>{{ g.total }}</td>

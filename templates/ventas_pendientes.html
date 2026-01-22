@@ -1,23 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
+{% from "macros/badges.html" import badge_negocio %}
 
-<style>
-    .badge-negocio {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: white;
-    white-space: nowrap;
-}
-
-
-.negocio-fresh { background-color: #1e7fd6; }      
-.negocio-confeccion { background-color: #F1A7B1; } 
-.negocio-maquila { background-color: #89C8D4; }   
-
-</style>
 
 <h1>🧾 Entregas pendientes</h1>
 
@@ -86,23 +70,7 @@
 
         <tr class="{% if v.fecha_estimada == hoy %}entrega-hoy{% endif %}">
             <td>#{{ v.id_venta }}</td>
-            <td>
-                {% set negocio = (v.negocio or '')
-                    | lower
-                    | replace('ó','o')
-                    | replace('é','e')
-                    | replace('í','i')
-                    | replace('á','a')
-                    | replace('ú','u')
-                %}
-                {% if 'fresh' in negocio %}
-                    <span class="badge-negocio negocio-fresh">Fresh Steps</span>
-                {% elif 'confeccion' in negocio %}
-                    <span class="badge-negocio negocio-confeccion">Confección</span>
-                {% elif 'maquila' in negocio %}
-                    <span class="badge-negocio negocio-maquila">Maquila</span>
-                {% endif %}
-            </td>
+            <td>{{ badge_negocio(v.negocio) }}</td>
             <td>{{ v.nombre }} {{ v.apellido }}</td>
             <td>{{ v.fecha_recibo.day }} {{ meses[v.fecha_recibo.month] }}</td>
             <td>{{ v.fecha_estimada.day }} {{ meses[v.fecha_estimada.month] }}</td>

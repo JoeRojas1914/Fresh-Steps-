@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h1>🧾 Entregas pendientes</h1>
+<h1>📦 Entregas pendientes</h1>
 
 {% if ventas %}
 <div style="margin-bottom: 20px;">
@@ -42,6 +42,11 @@
         </tr>
     </thead>
     <tbody>
+    {% set meses = {
+        1:'enero', 2:'febrero', 3:'marzo', 4:'abril',
+        5:'mayo', 6:'junio', 7:'julio', 8:'agosto',
+        9:'septiembre', 10:'octubre', 11:'noviembre', 12:'diciembre'
+        } %}
     {% for v in ventas %}
         {% set total = v.total | float(0) %}
         {% set prepago = v.monto_prepago | float(0) %}
@@ -51,8 +56,8 @@
             <td>#{{ v.id_venta }}</td>
             <td>{{ v.negocio or "-" }}</td>
             <td>{{ v.nombre }} {{ v.apellido }}</td>
-            <td>{{ v.fecha_recibo }}</td>
-            <td>{{ v.fecha_estimada }}</td>
+            <td>{{ v.fecha_recibo.day }} {{ meses[v.fecha_recibo.month] }}</td>
+            <td>{{ v.fecha_estimada.day }} {{ meses[v.fecha_estimada.month] }}</td>
             <td>{{ 'Sí' if v.prepago else 'No' }}</td>
             <td>${{ total | round(2) }}</td>
             <td>${{ prepago | round(2) }}</td>

@@ -17,19 +17,9 @@
 
 <section class="dashboard-cards">
 
-    <a href="/estadisticas" class="card card-link card-gradient">
-        <h3>📊 Estadísticas</h3>
-        <p class="card-number">Ver reportes</p>
-    </a>
-
-    <a href="/clientes" class="card card-link card-gradient">
-        <h3>👥 Clientes</h3>
-        <p class="card-number">Gestión de Clientes</p>
-    </a>
-
-    <a href="/servicios" class="card card-link card-gradient">
-        <h3>🧼 Servicios</h3>
-        <p class="card-number">Servicios Disponibles</p>
+    <a href="/ventas/pendientes" class="card card-link card-gradient">
+        <h3>📦 Entregas pendientes</h3>
+        <p class="card-number">{{ total_entregas }}</p>
     </a>
 
     <a href="/ventas" class="card card-link card-gradient">
@@ -42,11 +32,20 @@
         <p class="card-number">Registrar Gasto</p>
     </a>
 
-    <a href="/ventas/pendientes" class="card card-link card-gradient">
-        <h3>👟 Entregas pendientes</h3>
-        <p class="card-number">{{ total_entregas }}</p>
+    <a href="/estadisticas" class="card card-link card-gradient">
+        <h3>📊 Estadísticas</h3>
+        <p class="card-number">Ver reportes</p>
     </a>
 
+    <a href="/clientes" class="card card-link card-gradient">
+        <h3>👥 Clientes</h3>
+        <p class="card-number">Gestión de Clientes</p>
+    </a>
+
+    <a href="/servicios" class="card card-link card-gradient">
+        <h3>🏬 Servicios</h3>
+        <p class="card-number">Gestión de Servicios</p>
+    </a>
 
 </section>
 

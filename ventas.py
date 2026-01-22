@@ -533,6 +533,8 @@ def obtener_ventas_pendientes(id_negocio=None):
             v.fecha_recibo,
             v.fecha_estimada,
             v.total,
+            v.prepago,             
+            v.monto_prepago, 
             c.nombre,
             c.apellido,
             n.nombre AS negocio

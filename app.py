@@ -165,9 +165,7 @@ def ver_cliente(id_cliente):
     pedidos_por_pagina = 5
     inicio = (pagina - 1) * pedidos_por_pagina
 
-    # =========================
-    # 1) Obtener cliente
-    # =========================
+
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("""
@@ -179,9 +177,7 @@ def ver_cliente(id_cliente):
     cursor.close()
     conn.close()
 
-    # =========================
-    # 2) Total pedidos del cliente
-    # =========================
+
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT COUNT(*) FROM venta WHERE id_cliente = %s", (id_cliente,))
@@ -191,9 +187,7 @@ def ver_cliente(id_cliente):
 
     total_paginas = (total_pedidos + pedidos_por_pagina - 1) // pedidos_por_pagina
 
-    # =========================
-    # 3) Traer ventas + negocio
-    # =========================
+
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("""
@@ -203,6 +197,7 @@ def ver_cliente(id_cliente):
             v.fecha_entrega,
             v.total, 
             v.tipo_pago,
+            v.cantidad_descuento,
             n.nombre AS negocio
         FROM venta v
         LEFT JOIN negocio n ON v.id_negocio = n.id_negocio
@@ -214,9 +209,7 @@ def ver_cliente(id_cliente):
     cursor.close()
     conn.close()
 
-    # =========================
-    # 4) Detalles por venta (ARTÍCULOS)
-    # =========================
+
     for p in pedidos:
         p["detalles"] = obtener_detalles_venta(p["id_venta"])
 

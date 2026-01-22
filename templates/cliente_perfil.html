@@ -39,12 +39,12 @@
 
         {% if p.negocio %}
           <p style="margin-top:4px;">
-            <strong>Negocio:</strong> {{ p.negocio }}
+            <strong style="color:#1e3a8a;">Negocio:</strong> {{ p.negocio }}
           </p>
         {% endif %}
 
         <p style="margin-top:4px;">
-          <strong>Status:</strong>
+          <strong style="color:#1e3a8a;">Status:</strong>
           {% if p.fecha_entrega %}
             <span class="status status-completado">✔ Completado</span>
           {% else %}
@@ -133,12 +133,22 @@
           </tbody>
         </table>
 
+        {% set descuento = (p.cantidad_descuento | float(0)) %}
+
         <p style="margin-top:12px;">
-          <strong>Total:</strong> ${{ "{:.2f}".format(p.total) }}
+          <strong style="color:#1e3a8a;">Total:</strong>
+          ${{ "{:.2f}".format(p.total) }}
+
+          {% if descuento > 0 %}
+            <span style="margin-left:6px; font-weight:600; color:#1e3a8a;">
+              (-${{ "{:.2f}".format(descuento) }}) Descuento
+            </span>
+          {% endif %}
         </p>
 
+
         <p>
-          <strong>Tipo de pago:</strong> {{ p.tipo_pago }}
+          <strong style="color:#1e3a8a;">Tipo de pago:</strong> {{ p.tipo_pago }}
         </p>
 
       </div>

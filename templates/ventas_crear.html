@@ -34,12 +34,16 @@
     </div>
 </div>
 
-<form method="POST" action="/ventas/guardar" id="formVenta" style="display:none;">
+<form method="POST" action="/ventas/guardar" id="formVenta">
     <input type="hidden" name="id_cliente" id="id_cliente">
 
-    <div id="clienteBox">
+    <div id="clienteBox" style="display:none;">
         <strong id="clienteSeleccionado"></strong>
         <button type="button" id="btnCambiarCliente">Cambiar cliente</button>
+    </div>
+
+    <div id="errorCliente" style="color:red; font-size:0.9em; display:none; margin-top:5px;">
+        Debes seleccionar un cliente
     </div>
 
     <hr>
@@ -50,8 +54,8 @@
             <select name="id_negocio" id="id_negocio" onchange="seleccionarNegocio()">
                 <option value="">-- Selecciona --</option>
                 <option value="1">Fresh Steps</option>
-                <option value="2">Fer's Shop (Confección)</option>
-                <option value="3">Fer's Shop (Maquila)</option>
+                <option value="2">Confección</option>
+                <option value="3">Maquila</option>
             </select>
 
             <div id="errorNegocio" style="color:red; font-size:0.9em; display:none;">
@@ -155,15 +159,42 @@ let negocioSeleccionado = "";
 
 document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("buscarCliente").addEventListener("input", buscarClientes);
-    document.getElementById("btnCambiarCliente").addEventListener("click", () => location.reload());
+
+    document.getElementById("btnCambiarCliente").addEventListener("click", () => {
+        document.getElementById("id_cliente").value = "";
+        document.getElementById("clienteSeleccionado").innerText = "";
+
+        document.getElementById("clienteBox").style.display = "none";
+
+        document.getElementById("busquedaCliente").style.display = "block";
+
+        document.getElementById("buscarCliente").value = "";
+        document.getElementById("listaClientes").innerHTML = "";
+
+        validarFormulario();
+    });
+
     document.getElementById("btnNuevoCliente").addEventListener("click", () => {
         document.getElementById("modalCliente").style.display = "block";
     });
+
     document.getElementById("formNuevoCliente").addEventListener("submit", crearCliente);
+
+    document.getElementById("formVenta").addEventListener("submit", function(e) {
+        const cliente = document.getElementById("id_cliente").value;
+        if (!cliente) {
+            e.preventDefault();
+            alert("⚠️ Debes seleccionar un cliente antes de crear el recibo.");
+        }
+    });
+
+    document.getElementById("clienteBox").style.display = "none";
+    document.getElementById("busquedaCliente").style.display = "block";
 
     bloquearFechaMinima();
     validarFormulario();
 });
+
 
 function bloquearFechaMinima() {
     const input = document.getElementById("fecha_estimada");
@@ -200,18 +231,15 @@ function seleccionarCliente(cliente) {
     document.getElementById("id_cliente").value = cliente.id_cliente;
     document.getElementById("clienteSeleccionado").innerText =
         `Cliente: ${cliente.nombre} ${cliente.apellido}`;
-
-    document.getElementById("tituloNuevaVenta").style.display = "none";
-    document.getElementById("busquedaCliente").style.display = "none";
     document.getElementById("listaClientes").innerHTML = "";
-    document.getElementById("formVenta").style.display = "block";
+
+    document.getElementById("clienteBox").style.display = "flex";
+
+    document.getElementById("busquedaCliente").style.display = "none";
 
     validarFormulario();
 }
 
-function cerrarModalCliente() {
-    document.getElementById("modalCliente").style.display = "none";
-}
 
 async function crearCliente(e) {
     e.preventDefault();
@@ -495,6 +523,7 @@ function onChangeServicio(select, indexArticulo) {
         inputPrecio.disabled = true;
         inputPrecio.dataset.editado = "0";
         actualizarOpcionesServiciosDelArticulo(indexArticulo);
+        actualizarTotal(); 
         return;
     }
 
@@ -513,6 +542,7 @@ function onChangeServicio(select, indexArticulo) {
     }
 
     actualizarOpcionesServiciosDelArticulo(indexArticulo);
+    actualizarTotal(); 
 }
 
 function hayServicioRepetidoEnArticulo(indexArticulo) {
@@ -594,6 +624,15 @@ function validarFormulario() {
     const prepago = document.getElementById("prepago").value;
 
     let valido = cliente && negocio && fechaEstimada && tipoPago && prepago;
+
+    const buscando = document.getElementById("busquedaCliente").style.display !== "none";
+
+    if (!cliente && !buscando) {
+        document.getElementById("errorCliente").style.display = "block";
+        valido = false;
+    } else {
+        document.getElementById("errorCliente").style.display = "none";
+    }
 
     const articulos = document.querySelectorAll(".articulo-item");
     if (articulos.length === 0) valido = false;

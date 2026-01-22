@@ -68,17 +68,22 @@
         {% set prepago = v.monto_prepago | float(0) %}
         {% set deuda = total - prepago %}
 
-        <tr class="{% if v.fecha_estimada < hoy %}entrega-atrasada{% elif v.fecha_estimada == hoy %}entrega-hoy{% endif %}">
+        <tr class="{% if v.fecha_estimada.date() < hoy %}entrega-atrasada{% elif v.fecha_estimada.date() == hoy %}entrega-hoy{% endif %}">
             <td>#{{ v.id_venta }}</td>
             <td>{{ badge_negocio(v.negocio) }}</td>
             <td>{{ v.nombre }} {{ v.apellido }}</td>
-            <td>{{ v.fecha_recibo.day }} {{ meses[v.fecha_recibo.month] }}</td>
+            <td>
+                {{ v.fecha_recibo.day }} {{ meses[v.fecha_recibo.month] }}
+                {{ "%02d:%02d"|format(v.fecha_recibo.hour, v.fecha_recibo.minute) }}
+            </td>
+
             <td>
                 {{ v.fecha_estimada.day }} {{ meses[v.fecha_estimada.month] }}
+                {{ "%02d:%02d"|format(v.fecha_estimada.hour, v.fecha_estimada.minute) }}
 
-                {% if v.fecha_estimada < hoy %}
+                {% if v.fecha_estimada.date() < hoy %}
                     <span class="badge-atrasado">ATRASADO</span>
-                {% elif v.fecha_estimada == hoy %}
+                {% elif v.fecha_estimada.date() == hoy %}
                     <span class="badge-hoy">HOY</span>
                 {% endif %}
             </td>

@@ -64,8 +64,26 @@
         </div>
 
         <div class="form-item">
-            <label class="form-label">Fecha estimada de entrega</label>
-            <input type="date" name="fecha_estimada" id="fecha_estimada" onchange="validarFormulario()">
+            <label class="form-label">Fecha y hora estimada</label>
+
+            <div style="display:flex; gap:10px;">
+                <input
+                    type="date"
+                    id="fecha_estimada_fecha"
+                    onchange="validarFormulario(); actualizarFechaEstimadaCompleta(); "
+                    style="flex:1;"
+                >
+
+                <input
+                    type="time"
+                    id="fecha_estimada_hora"
+                    onchange="validarFormulario(); actualizarFechaEstimadaCompleta(); "
+                    style="width:120px;"
+                >
+            </div>
+
+            <input type="hidden" name="fecha_estimada" id="fecha_estimada">
+
 
             <div id="errorFecha" style="color:red; font-size:0.9em; display:none;">
                 La fecha estimada no puede ser menor a hoy.
@@ -197,7 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 function bloquearFechaMinima() {
-    const input = document.getElementById("fecha_estimada");
+    const input = document.getElementById("fecha_estimada_fecha");
     const hoy = new Date();
     const yyyy = hoy.getFullYear();
     const mm = String(hoy.getMonth() + 1).padStart(2, "0");
@@ -638,9 +656,10 @@ function validarFormulario() {
     if (articulos.length === 0) valido = false;
     if (!articulosCompletos()) valido = false;
 
-    const inputFecha = document.getElementById("fecha_estimada");
-    const minFecha = inputFecha.min;
-    if (fechaEstimada && minFecha && fechaEstimada < minFecha) {
+    const fechaSolo = document.getElementById("fecha_estimada_fecha").value;
+    const minFecha = document.getElementById("fecha_estimada_fecha").min;
+
+    if (fechaSolo && minFecha && fechaSolo < minFecha) {
         document.getElementById("errorFecha").style.display = "block";
         valido = false;
     } else {
@@ -717,6 +736,18 @@ function actualizarTotal() {
     const total = calcularTotal();
     document.getElementById("totalVenta").innerText = `Total: $${total.toLocaleString("es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
+
+function actualizarFechaEstimadaCompleta() {
+    const fecha = document.getElementById("fecha_estimada_fecha").value;
+    const hora = document.getElementById("fecha_estimada_hora").value;
+
+    if (fecha && hora) {
+        document.getElementById("fecha_estimada").value = `${fecha} ${hora}:00`;
+    } else {
+        document.getElementById("fecha_estimada").value = "";
+    }
+}
+
 </script>
 
 {% endblock %}

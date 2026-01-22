@@ -35,7 +35,7 @@ def crear_venta(
         """, (
             id_negocio,
             id_cliente,
-            date.today(),
+            datetime.now(),
             fecha_estimada,
             tipo_pago,
             prepago,

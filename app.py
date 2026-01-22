@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from calendar import monthrange
 import os
 from dotenv import load_dotenv
@@ -617,6 +617,7 @@ def guardar_venta():
         id_cliente = request.form.get("id_cliente") or None
         fecha_estimada = request.form.get("fecha_estimada") or None
         tipo_pago = request.form.get("tipo_pago")
+        fecha_recibo = datetime.now()
 
         prepago = request.form.get("prepago") == "si"
         monto_prepago = request.form.get("monto_prepago") if prepago else None

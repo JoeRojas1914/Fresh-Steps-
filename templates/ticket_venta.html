@@ -54,7 +54,7 @@
     }
 
     .entrega-estimada {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: bold;
       margin-top: 3px;
     }
@@ -109,8 +109,15 @@
       <div class="ticket-numero">Ticket #{{ venta.id_venta }}</div>
 
       <div class="entrega-estimada">
-        Entrega estimada: {{ venta.fecha_estimada.strftime("%Y-%m-%d %H:%M") if venta.fecha_estimada else "" }}
+        Entrega estimada:
+        {% if venta.fecha_estimada %}
+          {{ venta.fecha_estimada.day }}
+          {{ ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"][venta.fecha_estimada.month - 1] }}
+          {{ venta.fecha_estimada.year }}
+          {{ venta.fecha_estimada.strftime("%H:%M") }}
+        {% endif %}
       </div>
+
     </div>
 
     <hr>
@@ -119,8 +126,15 @@
       <div><b>Cliente:</b> {{ venta.nombre_cliente or "" }}</div>
 
       <div style="margin-top:6px;">
-        <b>Fecha de recibo:</b> {{ venta.fecha_recibo.strftime("%Y-%m-%d %H:%M") if venta.fecha_recibo else "" }}
+        <b>Fecha de recibo:</b>
+        {% if venta.fecha_recibo %}
+          {{ venta.fecha_recibo.day }}
+          {{ ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"][venta.fecha_recibo.month - 1] }}
+          {{ venta.fecha_recibo.year }}
+          {{ venta.fecha_recibo.strftime("%H:%M") }}
+        {% endif %}
       </div>
+
     </div>
 
     <hr>
@@ -248,8 +262,15 @@
       <div class="ticket-numero">Ticket #{{ venta.id_venta }}</div>
 
       <div class="entrega-estimada">
-        Entrega estimada: {{ venta.fecha_estimada.strftime("%Y-%m-%d %H:%M") if venta.fecha_estimada else "" }}
+        Entrega estimada:
+        {% if venta.fecha_estimada %}
+          {{ venta.fecha_estimada.day }}
+          {{ ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"][venta.fecha_estimada.month - 1] }}
+          {{ venta.fecha_estimada.year }}
+          {{ venta.fecha_estimada.strftime("%H:%M") }}
+        {% endif %}
       </div>
+
     </div>
 
     <hr>
@@ -258,8 +279,15 @@
       <div><b>Cliente:</b> {{ venta.nombre_cliente or "" }}</div>
 
       <div style="margin-top:6px;">
-        <b>Fecha de recibo:</b> {{ venta.fecha_recibo.strftime("%Y-%m-%d %H:%M") if venta.fecha_recibo else "" }}
+        <b>Fecha de recibo:</b>
+        {% if venta.fecha_recibo %}
+          {{ venta.fecha_recibo.day }}
+          {{ ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"][venta.fecha_recibo.month - 1] }}
+          {{ venta.fecha_recibo.year }}
+          {{ venta.fecha_recibo.strftime("%H:%M") }}
+        {% endif %}
       </div>
+
     </div>
 
     <hr>

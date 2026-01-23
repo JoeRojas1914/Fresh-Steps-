@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ticket</title>
+
+  <style>
+    body { font-family: monospace; padding: 10px; }
+    .ticket { width: 280px; margin: auto; }
+
+    .logo { text-align: center; margin-bottom: 8px; }
+    .logo img{
+      max-width: 140px;
+      height: auto;
+      filter: contrast(1);
+    }
+
+    .center { text-align: center; }
+
+    .linea {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .seccion { margin-top: 8px; margin-bottom: 8px; }
+
+    .titulo-articulo {
+      margin-top: 6px;
+      margin-bottom: 4px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .subtexto { font-size: 12px; color: #111; }
+
+    hr {
+      border: none;
+      border-top: 1px dashed #000;
+      margin: 10px 0;
+    }
+
+    .totales { margin-top: 6px; font-size: 13px; }
+
+    .total-final {
+      font-size: 15px;
+      font-weight: bold;
+      margin-top: 6px;
+    }
+
+    .ticket-numero {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .entrega-estimada {
+      font-size: 14px;
+      font-weight: bold;
+      margin-top: 3px;
+    }
+
+    @media print {
+      button { display: none; }
+    }
+
+    .info-local{
+      margin-top: 10px;
+      font-size: 11px;
+      text-align: center;
+      line-height: 1.35;
+    }
+
+    .info-local .titulo{
+      font-weight: bold;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+
+    .copia-titulo{
+      text-align: center;
+      font-weight: bold;
+      font-size: 12px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .separador-copias{
+      margin: 14px 0;
+      border-top: 2px dashed #000;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ================= COPIA CLIENTE ================= -->
+  <div class="ticket">
+    <div class="copia-titulo">COPIA CLIENTE</div>
+
+    <div class="logo">
+      {% if (venta.id_negocio | int) == 1 %}
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Fresh Steps">
+      {% else %}
+        <img src="{{ url_for('static', filename='logo1.png') }}" alt="Confección / Maquila">
+      {% endif %}
+    </div>
+
+    <div class="center">
+      <div class="ticket-numero">Ticket #{{ venta.id_venta }}</div>
+
+      <div class="entrega-estimada">
+        Entrega estimada: {{ venta.fecha_estimada.strftime("%Y-%m-%d %H:%M") if venta.fecha_estimada else "" }}
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="seccion">
+      <div><b>Cliente:</b> {{ venta.nombre_cliente or "" }}</div>
+
+      <div style="margin-top:6px;">
+        <b>Fecha de recibo:</b> {{ venta.fecha_recibo.strftime("%Y-%m-%d %H:%M") if venta.fecha_recibo else "" }}
+      </div>
+    </div>
+
+    <hr>
+
+    {% for art in detalles %}
+      <div class="titulo-articulo">Artículo {{ loop.index }} - {{ art.tipo_articulo|capitalize }}</div>
+
+      {% if art.tipo_articulo == "calzado" %}
+        <div class="subtexto">
+          {{ art.datos.tipo }} | {{ art.datos.marca }} | {{ art.datos.material }}
+        </div>
+        <div class="subtexto">
+          Base: {{ art.datos.color_base }}
+          {% if art.datos.color_secundario %} | Sec: {{ art.datos.color_secundario }}{% endif %}
+          {% if art.datos.color_agujetas %} | Agujetas: {{ art.datos.color_agujetas }}{% endif %}
+        </div>
+      {% endif %}
+
+      {% if art.tipo_articulo == "confeccion" %}
+        <div class="subtexto">
+          {{ art.datos.tipo }} | {{ art.datos.marca }} | {{ art.datos.material }}
+        </div>
+        <div class="subtexto">
+          Base: {{ art.datos.color_base }}
+          {% if art.datos.color_secundario %} | Sec: {{ art.datos.color_secundario }}{% endif %}
+          | Cant: {{ art.datos.cantidad }}
+        </div>
+      {% endif %}
+
+      {% if art.tipo_articulo == "maquila" %}
+        <div class="subtexto">
+          {{ art.datos.tipo }} | Cant: {{ art.datos.cantidad }} | P.U: ${{ "%.2f"|format(art.datos.precio_unitario or 0) }}
+        </div>
+      {% endif %}
+
+      {% if art.tipo_articulo in ["calzado", "confeccion"] %}
+        {% for s in art.servicios %}
+          <div class="linea">
+            <span>{{ s.nombre }}</span>
+            <span>${{ "%.2f"|format(s.precio_aplicado) }}</span>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      {% if art.tipo_articulo == "maquila" %}
+        <div class="linea">
+          <span><b>Subtotal</b></span>
+          <span><b>${{ "%.2f"|format(art.datos.subtotal or 0) }}</b></span>
+        </div>
+      {% endif %}
+
+      {% if art.comentario %}
+        <div class="subtexto" style="margin-top:4px;">
+          <b>Comentario:</b> {{ art.comentario }}
+        </div>
+      {% endif %}
+
+      <hr>
+    {% endfor %}
+
+    <div class="totales">
+
+      {% if venta.aplica_descuento and (venta.cantidad_descuento or 0) > 0 %}
+        <div class="linea">
+          <span>Descuento</span>
+          <span>- ${{ "%.2f"|format(venta.cantidad_descuento) }}</span>
+        </div>
+      {% endif %}
+
+      <div class="linea total-final">
+        <span>TOTAL</span>
+        <span>$ {{ "%.2f"|format(venta.total) }}</span>
+      </div>
+
+      {% if venta.prepago and (venta.monto_prepago or 0) > 0 %}
+        <div class="linea" style="margin-top:6px;">
+          <span>Prepago</span>
+          <span>$ {{ "%.2f"|format(venta.monto_prepago) }}</span>
+        </div>
+
+        <div class="linea" style="font-weight:bold;">
+          <span>Restante</span>
+          <span>
+            $ {{ "%.2f"|format((venta.total or 0) - (venta.monto_prepago or 0)) }}
+          </span>
+        </div>
+      {% endif %}
+
+    </div>
+
+    <div class="info-local">
+
+      <div><b>Dirección:</b> Alfredo M. Terrazas #935 A</div>
+      <div><b>Horario:</b> Lunes a Viernes 9:00 AM - 7:00 PM  Sabado: 9:00 AM - 2:00 PM</div>
+
+      {% if (venta.id_negocio | int) == 1 %}
+        <div><b>Tel:</b> 440 200 0320</div>
+        <div><b>Correo:</b> freshsteps.terrazas@gmail.com</div>
+      {% else %}
+        <div><b>Tel:</b> 440 200 0317</div>
+        <div><b>Correo:</b> fersshop.terrazas@gmail.com</div>
+          {% endif %}
+        </div>
+
+        <div class="center subtexto" style="margin-top:10px;">
+          <b>GRACIAS POR SU PREFERENCIA</b>
+        </div>
+    </div>
+
+  <div class="separador-copias"></div>
+
+  <!-- ================= COPIA LOCAL ================= -->
+  <div class="ticket">
+    <div class="copia-titulo">COPIA LOCAL</div>
+
+    <div class="logo">
+      {% if (venta.id_negocio | int) == 1 %}
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Fresh Steps">
+      {% else %}
+        <img src="{{ url_for('static', filename='logo1.png') }}" alt="Confección / Maquila">
+      {% endif %}
+    </div>
+
+    <div class="center">
+      <div class="ticket-numero">Ticket #{{ venta.id_venta }}</div>
+
+      <div class="entrega-estimada">
+        Entrega estimada: {{ venta.fecha_estimada.strftime("%Y-%m-%d %H:%M") if venta.fecha_estimada else "" }}
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="seccion">
+      <div><b>Cliente:</b> {{ venta.nombre_cliente or "" }}</div>
+
+      <div style="margin-top:6px;">
+        <b>Fecha de recibo:</b> {{ venta.fecha_recibo.strftime("%Y-%m-%d %H:%M") if venta.fecha_recibo else "" }}
+      </div>
+    </div>
+
+    <hr>
+
+    {% for art in detalles %}
+      <div class="titulo-articulo">Artículo {{ loop.index }} - {{ art.tipo_articulo|capitalize }}</div>
+
+      {% if art.tipo_articulo == "calzado" %}
+        <div class="subtexto">
+          {{ art.datos.tipo }} | {{ art.datos.marca }} | {{ art.datos.material }}
+        </div>
+        <div class="subtexto">
+          Base: {{ art.datos.color_base }}
+          {% if art.datos.color_secundario %} | Sec: {{ art.datos.color_secundario }}{% endif %}
+          {% if art.datos.color_agujetas %} | Agujetas: {{ art.datos.color_agujetas }}{% endif %}
+        </div>
+      {% endif %}
+
+      {% if art.tipo_articulo == "confeccion" %}
+        <div class="subtexto">
+          {{ art.datos.tipo }} | {{ art.datos.marca }} | {{ art.datos.material }}
+        </div>
+        <div class="subtexto">
+          Base: {{ art.datos.color_base }}
+          {% if art.datos.color_secundario %} | Sec: {{ art.datos.color_secundario }}{% endif %}
+          | Cant: {{ art.datos.cantidad }}
+        </div>
+      {% endif %}
+
+      {% if art.tipo_articulo == "maquila" %}
+        <div class="subtexto">
+          {{ art.datos.tipo }} | Cant: {{ art.datos.cantidad }} | P.U: ${{ "%.2f"|format(art.datos.precio_unitario or 0) }}
+        </div>
+      {% endif %}
+
+      {% if art.tipo_articulo in ["calzado", "confeccion"] %}
+        {% for s in art.servicios %}
+          <div class="linea">
+            <span>{{ s.nombre }}</span>
+            <span>${{ "%.2f"|format(s.precio_aplicado) }}</span>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      {% if art.tipo_articulo == "maquila" %}
+        <div class="linea">
+          <span><b>Subtotal</b></span>
+          <span><b>${{ "%.2f"|format(art.datos.subtotal or 0) }}</b></span>
+        </div>
+      {% endif %}
+
+      {% if art.comentario %}
+        <div class="subtexto" style="margin-top:4px;">
+          <b>Comentario:</b> {{ art.comentario }}
+        </div>
+      {% endif %}
+
+      <hr>
+    {% endfor %}
+
+    <div class="totales">
+
+      {% if venta.aplica_descuento and (venta.cantidad_descuento or 0) > 0 %}
+        <div class="linea">
+          <span>Descuento</span>
+          <span>- ${{ "%.2f"|format(venta.cantidad_descuento) }}</span>
+        </div>
+      {% endif %}
+
+      <div class="linea total-final">
+        <span>TOTAL</span>
+        <span>$ {{ "%.2f"|format(venta.total) }}</span>
+      </div>
+
+      {% if venta.prepago and (venta.monto_prepago or 0) > 0 %}
+        <div class="linea" style="margin-top:6px;">
+          <span>Prepago</span>
+          <span>$ {{ "%.2f"|format(venta.monto_prepago) }}</span>
+        </div>
+
+        <div class="linea" style="font-weight:bold;">
+          <span>Restante</span>
+          <span>
+            $ {{ "%.2f"|format((venta.total or 0) - (venta.monto_prepago or 0)) }}
+          </span>
+        </div>
+      {% endif %}
+
+    </div>
+
+    <div class="info-local">
+
+      <div><b>Dirección:</b> Alfredo M. Terrazas #935 A</div>
+      <div><b>Horario:</b> Lunes a Viernes 9:00 AM - 7:00 PM  Sabado: 9:00 AM - 2:00 PM</div>
+
+      {% if (venta.id_negocio | int) == 1 %}
+        <div><b>Tel:</b> 440 200 0320</div>
+        <div><b>Correo:</b> freshsteps.terrazas@gmail.com</div>
+      {% else %}
+        <div><b>Tel:</b> 440 200 0317</div>
+        <div><b>Correo:</b> fersshop.terrazas@gmail.com</div>
+          {% endif %}
+        </div>
+
+        <div class="center subtexto" style="margin-top:10px;">
+          <b>GRACIAS POR SU PREFERENCIA</b>
+        </div>
+    </div>
+  </div>
+
+  <script>
+    window.addEventListener("load", () => {
+      setTimeout(() => {
+        window.print();
+      }, 300);
+    });
+  </script>
+
+</body>
+</html>

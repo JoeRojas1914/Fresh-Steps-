@@ -554,3 +554,30 @@ def obtener_ventas_pendientes(id_negocio=None):
     return ventas
 
 
+def obtener_venta(id_venta):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT 
+            v.id_venta,
+            v.id_negocio,
+            v.total,
+            v.fecha_recibo,
+            v.fecha_estimada,
+            v.prepago,
+            v.monto_prepago,
+            v.aplica_descuento,
+            v.cantidad_descuento,
+            CONCAT(c.nombre, ' ', c.apellido) AS nombre_cliente
+        FROM venta v
+        JOIN cliente c ON c.id_cliente = v.id_cliente
+        WHERE v.id_venta = %s
+        LIMIT 1
+    """, (id_venta,))
+
+    venta = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+    return venta

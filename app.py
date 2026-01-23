@@ -32,6 +32,7 @@ from servicios import (
 
 from ventas import (
     crear_venta,
+    obtener_venta,
     obtener_ventas_pendientes,
     obtener_detalles_venta,
     marcar_entregada,
@@ -378,7 +379,6 @@ def entregar_venta(id_venta):
 @app.route("/ventas/guardar", methods=["POST"])
 def guardar_venta():
     try:
-
         id_negocio = int(request.form["id_negocio"])
         id_cliente = request.form.get("id_cliente") or None
         fecha_estimada = request.form.get("fecha_estimada") or None
@@ -392,12 +392,11 @@ def guardar_venta():
         cantidad_descuento = int(request.form.get("cantidad_descuento") or 0) if aplica_descuento else 0
 
         tipos_por_negocio = {
-            1: "calzado",      
-            2: "confeccion",  
-            3: "maquila"      
+            1: "calzado",
+            2: "confeccion",
+            3: "maquila"
         }
         tipo_permitido = tipos_por_negocio.get(id_negocio)
-
 
         articulos = []
         i = 0
@@ -408,12 +407,14 @@ def guardar_venta():
                 break
 
             if tipo_permitido and tipo_articulo != tipo_permitido:
-                flash(f"❌ Este negocio solo permite artículos tipo: {tipo_permitido}", "danger")
-                return redirect("/ventas")
+                return jsonify({
+                    "ok": False,
+                    "error": f"Este negocio solo permite artículos tipo: {tipo_permitido}"
+                }), 400
 
             comentario = request.form.get(f"articulos[{i}][comentario]")
 
-
+            # =================== CALZADO ===================
             if tipo_articulo == "calzado":
                 datos = {
                     "tipo": request.form.get(f"articulos[{i}][tipo]"),
@@ -447,7 +448,7 @@ def guardar_venta():
                     "comentario": comentario
                 })
 
-
+            # =================== CONFECCIÓN ===================
             elif tipo_articulo == "confeccion":
                 datos = {
                     "tipo": request.form.get(f"articulos[{i}][tipo]"),
@@ -482,7 +483,7 @@ def guardar_venta():
                     "comentario": comentario
                 })
 
-
+            # =================== MAQUILA ===================
             elif tipo_articulo == "maquila":
                 datos = {
                     "tipo": request.form.get(f"articulos[{i}][tipo]"),
@@ -498,38 +499,50 @@ def guardar_venta():
 
             i += 1
 
-
+        # =================== VALIDACIONES ===================
         if not id_cliente or not tipo_pago or not fecha_estimada:
-            flash("❌ Faltan datos obligatorios (cliente, negocio, fecha estimada o tipo de pago).", "danger")
-            return redirect("/ventas")
+            return jsonify({
+                "ok": False,
+                "error": "Faltan datos obligatorios (cliente, negocio, fecha estimada o tipo de pago)."
+            }), 400
 
         if len(articulos) == 0:
-            flash("❌ Debes agregar al menos 1 artículo.", "danger")
-            return redirect("/ventas")
+            return jsonify({
+                "ok": False,
+                "error": "Debes agregar al menos 1 artículo."
+            }), 400
 
         if id_negocio in (1, 2):
             for a in articulos:
                 if not a.get("servicios") or len(a["servicios"]) == 0:
-                    flash("❌ Cada artículo debe tener al menos 1 servicio.", "danger")
-                    return redirect("/ventas")
+                    return jsonify({
+                        "ok": False,
+                        "error": "Cada artículo debe tener al menos 1 servicio."
+                    }), 400
 
                 for s in a["servicios"]:
                     if not s.get("id_servicio"):
-                        flash("❌ Servicio inválido (sin id).", "danger")
-                        return redirect("/ventas")
+                        return jsonify({
+                            "ok": False,
+                            "error": "Servicio inválido (sin id)."
+                        }), 400
 
                     if float(s.get("precio_aplicado") or 0) <= 0:
-                        flash("❌ El precio aplicado debe ser mayor a 0.", "danger")
-                        return redirect("/ventas")
+                        return jsonify({
+                            "ok": False,
+                            "error": "El precio aplicado debe ser mayor a 0."
+                        }), 400
 
         if id_negocio == 3:
             for a in articulos:
                 if a.get("servicios"):
-                    flash("❌ Maquila no permite servicios.", "danger")
-                    return redirect("/ventas")
+                    return jsonify({
+                        "ok": False,
+                        "error": "Maquila no permite servicios."
+                    }), 400
 
-
-        crear_venta(
+        # =================== GUARDAR VENTA ===================
+        id_venta = crear_venta(
             id_negocio=id_negocio,
             id_cliente=id_cliente,
             fecha_estimada=fecha_estimada,
@@ -541,17 +554,24 @@ def guardar_venta():
             articulos=articulos
         )
 
-        flash("✅ Venta registrada correctamente.", "success")
-        return redirect("/ventas/pendientes")
+        return jsonify({
+            "ok": True,
+            "id_venta": id_venta
+        }), 200
 
     except Exception as e:
-        flash(f"❌ Error al guardar venta: {str(e)}", "danger")
-        return redirect("/ventas")
+        return jsonify({
+            "ok": False,
+            "error": f"Error al guardar venta: {str(e)}"
+        }), 500
 
 
+@app.route("/ventas/ticket/<int:id_venta>")
+def venta_ticket(id_venta):
+    venta = obtener_venta(id_venta) 
+    detalles = obtener_detalles_venta(id_venta)
 
-
-
+    return render_template("ticket_venta.html", venta=venta, detalles=detalles)
 
 
 

@@ -414,7 +414,6 @@ def guardar_venta():
 
             comentario = request.form.get(f"articulos[{i}][comentario]")
 
-            # =================== CALZADO ===================
             if tipo_articulo == "calzado":
                 datos = {
                     "tipo": request.form.get(f"articulos[{i}][tipo]"),
@@ -448,7 +447,6 @@ def guardar_venta():
                     "comentario": comentario
                 })
 
-            # =================== CONFECCIÓN ===================
             elif tipo_articulo == "confeccion":
                 datos = {
                     "tipo": request.form.get(f"articulos[{i}][tipo]"),
@@ -483,7 +481,6 @@ def guardar_venta():
                     "comentario": comentario
                 })
 
-            # =================== MAQUILA ===================
             elif tipo_articulo == "maquila":
                 datos = {
                     "tipo": request.form.get(f"articulos[{i}][tipo]"),
@@ -499,7 +496,6 @@ def guardar_venta():
 
             i += 1
 
-        # =================== VALIDACIONES ===================
         if not id_cliente or not tipo_pago or not fecha_estimada:
             return jsonify({
                 "ok": False,
@@ -541,7 +537,6 @@ def guardar_venta():
                         "error": "Maquila no permite servicios."
                     }), 400
 
-        # =================== GUARDAR VENTA ===================
         id_venta = crear_venta(
             id_negocio=id_negocio,
             id_cliente=id_cliente,

@@ -88,8 +88,8 @@
             <td>{{ c.correo }}</td>
             <td>{{ c.telefono }}</td>
             <td>
-                <button class="btn-edit"
-                    onclick='editarCliente({{ c.id_cliente }},{{ c.nombre|tojson }}, {{ c.apellido|tojson }}, {{ c.correo|tojson }}, {{ c.telefono|tojson }}, {{ c.direccion|tojson }})'>
+                <button type="button" class="btn-edit"
+                    onclick='editarCliente(event, {{ c.id_cliente }}, {{ c.nombre|tojson }}, {{ c.apellido|tojson }}, {{ c.correo|tojson }}, {{ c.telefono|tojson }}, {{ c.direccion|tojson }})'>
                     Edit
                 </button>
 
@@ -161,7 +161,8 @@
         document.getElementById("modal").style.display = "none";
     }
 
-    function editarCliente(id, nombre, apellido, correo, telefono, direccion) {
+    function editarCliente(e, id, nombre, apellido, correo, telefono, direccion) {
+        e.stopPropagation(); 
         abrirModal();
         document.getElementById("modalTitulo").innerText = "Editar cliente";
 

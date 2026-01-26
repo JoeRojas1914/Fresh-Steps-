@@ -39,6 +39,12 @@ from ventas import (
     contar_entregas_pendientes,
 )
 
+from estadisticas import (
+    generar_semanas_rango,
+    contar_ventas_por_semana,
+    obtener_gastos_por_semana_y_proveedor,
+    obtener_total_gastos
+)
 
 from negocio import obtener_negocios
 
@@ -62,29 +68,6 @@ def buscar_clientes_por_nombre(texto):
     cursor.close()
     conn.close()
     return resultados
-
-def generar_semanas_rango(inicio: date, fin: date):
-    inicio = inicio - timedelta(days=inicio.weekday())
-
-    semanas = []
-    actual = inicio
-
-    while actual <= fin:
-        semana_fin = actual + timedelta(days=6)
-
-        label = f"{actual.strftime('%d/%m')} - {semana_fin.strftime('%d/%m')}"
-
-        semanas.append({
-            "inicio": actual,
-            "fin": semana_fin,
-            "label": label
-        })
-
-        actual += timedelta(days=7)
-
-    return semanas
-
-
 
 
 # ================= API =================
@@ -651,6 +634,40 @@ def estadisticas():
         negocios=negocios,
         hoy=hoy
     )
+
+
+@app.route("/api/estadisticas/dashboard")
+def api_estadisticas_dashboard():
+    inicio_str = request.args.get("inicio")
+    fin_str = request.args.get("fin")
+    id_negocio = request.args.get("id_negocio", "all")
+
+    if not inicio_str or not fin_str:
+        return jsonify({"error": "Faltan fechas"}), 400
+
+    inicio = datetime.strptime(inicio_str, "%Y-%m-%d").date()
+    fin = datetime.strptime(fin_str, "%Y-%m-%d").date()
+
+    if fin < inicio:
+        return jsonify({"error": "La fecha fin no puede ser menor a inicio"}), 400
+
+    ventas_semanales = contar_ventas_por_semana(inicio, fin, id_negocio)
+    gastos_semanales = obtener_gastos_por_semana_y_proveedor(inicio, fin, id_negocio)
+    total_gastos = obtener_total_gastos(inicio, fin, id_negocio)
+
+
+
+    return jsonify({
+        "ventas_semanales": ventas_semanales,
+        "gastos_semanales": gastos_semanales,
+        "kpis": {
+            "ventas": 0,
+            "gastos": total_gastos,
+            "ganancia": 0
+        }
+    })
+
+
 
 
 

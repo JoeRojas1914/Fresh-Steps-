@@ -76,7 +76,7 @@
 
 <div class="stats-page">
     <div class="card stats-card">
-        <h2 class="stats-title">Ventas</h2>
+        <h2 class="stats-title">Numero de Ventas</h2>
         <canvas id="ventasSemanaChart"></canvas>
     </div>
 
@@ -96,9 +96,24 @@ let ventasSemanaChart;
 let unidadesSemanaChart;
 
 const redPalette = [
-    "#b91c1c", "#dc2626", "#ef4444", "#f87171",
-    "#fca5a5", "#fecaca", "#fee2e2",
+    "#7f1d1d", 
+    "#991b1b",
+    "#b91c1c",
+    "#dc2626",
+    "#ef4444",
+    "#f87171",
+    "#fecaca"
 ];
+
+function aplicarColoresRojos(datasets) {
+    return datasets.map((ds, i) => ({
+        ...ds,
+        backgroundColor: redPalette[i % redPalette.length],
+        borderColor: redPalette[i % redPalette.length],
+        borderWidth: 1,
+        borderRadius: 6
+    }));
+}
 
 document.addEventListener("DOMContentLoaded", () => {
     initCharts();
@@ -111,21 +126,43 @@ function initCharts() {
         type: "bar",
         data: {
             labels: [],
-            datasets: [{
-                label: "Gastos ($)",
-                data: [],
-                borderRadius: 8
-            }]
+            datasets: []
         },
         options: {
             responsive: true,
-            plugins: { legend: { position: "top" } },
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: {
+                        generateLabels(chart) {
+                            return [{
+                                text: "Gastos ($)",       
+                                fillStyle: "#b91c1c",     
+                                strokeStyle: "#7f1d1d",
+                                lineWidth: 1,
+                                hidden: false
+                            }];
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label(context) {
+                            const proveedor = context.dataset.label;
+                            const valor = context.raw || 0;
+                            return `${proveedor}: $${valor.toLocaleString()}`;
+                        }
+                    }
+                }
+            },
             scales: {
                 x: { stacked: true },
                 y: { stacked: true, beginAtZero: true }
             }
         }
     });
+
+
 
     ingresosChart = new Chart(document.getElementById("ingresosChart"), {
         type: "bar",
@@ -145,13 +182,17 @@ function initCharts() {
         data: {
             labels: [],
             datasets: [{
-                label: "Ventas",
+                label: "Numero de Ventas",
                 data: [],
+                backgroundColor: "#1d4ed8",  
+                borderColor: "#1e40af",
+                borderWidth: 1,
                 borderRadius: 8
             }]
         },
         options: { scales: { y: { beginAtZero: true } } }
     });
+
 
     unidadesSemanaChart = new Chart(document.getElementById("unidadesSemanaChart"), {
         type: "bar",
@@ -191,8 +232,22 @@ async function cargarDashboard() {
     document.getElementById("gananciaMes").textContent =
         `$${Number(data.kpis.ganancia).toLocaleString()}`;
 
+    const labels = data.ventas_semanales.map(x => x.label);
+    const valores = data.ventas_semanales.map(x => x.total);
+
+    ventasSemanaChart.data.labels = labels;
+    ventasSemanaChart.data.datasets[0].data = valores;
+    ventasSemanaChart.update();
+
+    gastosChart.data.labels = data.gastos_semanales.labels;
+    gastosChart.data.datasets = aplicarColoresRojos(data.gastos_semanales.datasets);
+    gastosChart.update();
+
+
+
     console.log("Dashboard data:", data);
 }
+
 </script>
 
 

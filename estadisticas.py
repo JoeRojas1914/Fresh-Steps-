@@ -152,3 +152,73 @@ def obtener_total_gastos(inicio: date, fin: date, id_negocio: str):
     conn.close()
 
     return float(total)
+
+
+
+def obtener_unidades_por_semana(inicio: date, fin: date, id_negocio: str):
+    semanas = generar_semanas_rango(inicio, fin)
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    resultados = []
+
+    for s in semanas:
+        semana_inicio = max(s["inicio"], inicio)
+        semana_fin = min(s["fin"], fin)
+
+        total_unidades = 0
+
+        # =========================
+        # NEGOCIO 1
+        # =========================
+        if id_negocio in ("1", "all"):
+            query = """
+                SELECT COUNT(a.id_articulo) AS total
+                FROM venta v
+                JOIN articulo a ON a.id_venta = v.id_venta
+                WHERE v.fecha_recibo BETWEEN %s AND %s
+                  AND v.id_negocio = 1
+            """
+            cursor.execute(query, [semana_inicio, semana_fin])
+            total_unidades += cursor.fetchone()["total"] or 0
+
+        # =========================
+        # NEGOCIO 2
+        # =========================
+        if id_negocio in ("2", "all"):
+            query = """
+                SELECT SUM(ac.cantidad) AS total
+                FROM venta v
+                JOIN articulo a ON a.id_venta = v.id_venta
+                JOIN articulo_confeccion ac ON ac.id_articulo = a.id_articulo
+                WHERE v.fecha_recibo BETWEEN %s AND %s
+                  AND v.id_negocio = 2
+            """
+            cursor.execute(query, [semana_inicio, semana_fin])
+            total_unidades += cursor.fetchone()["total"] or 0
+
+        # =========================
+        # NEGOCIO 3
+        # =========================
+        if id_negocio in ("3", "all"):
+            query = """
+                SELECT SUM(am.cantidad) AS total
+                FROM venta v
+                JOIN articulo a ON a.id_venta = v.id_venta
+                JOIN articulo_maquila am ON am.id_articulo = a.id_articulo
+                WHERE v.fecha_recibo BETWEEN %s AND %s
+                  AND v.id_negocio = 3
+            """
+            cursor.execute(query, [semana_inicio, semana_fin])
+            total_unidades += cursor.fetchone()["total"] or 0
+
+        resultados.append({
+            "label": s["label"],
+            "total": int(total_unidades)
+        })
+
+    cursor.close()
+    conn.close()
+
+    return resultados

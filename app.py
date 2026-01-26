@@ -43,7 +43,8 @@ from estadisticas import (
     generar_semanas_rango,
     contar_ventas_por_semana,
     obtener_gastos_por_semana_y_proveedor,
-    obtener_total_gastos
+    obtener_total_gastos,
+    obtener_unidades_por_semana
 )
 
 from negocio import obtener_negocios
@@ -654,12 +655,14 @@ def api_estadisticas_dashboard():
     ventas_semanales = contar_ventas_por_semana(inicio, fin, id_negocio)
     gastos_semanales = obtener_gastos_por_semana_y_proveedor(inicio, fin, id_negocio)
     total_gastos = obtener_total_gastos(inicio, fin, id_negocio)
+    unidades_semanales = obtener_unidades_por_semana(inicio, fin, id_negocio)
 
 
 
     return jsonify({
         "ventas_semanales": ventas_semanales,
         "gastos_semanales": gastos_semanales,
+        "unidades_semanales": unidades_semanales,
         "kpis": {
             "ventas": 0,
             "gastos": total_gastos,

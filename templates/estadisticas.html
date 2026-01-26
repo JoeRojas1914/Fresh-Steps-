@@ -105,6 +105,8 @@ const redPalette = [
     "#fecaca"
 ];
 
+
+
 function aplicarColoresRojos(datasets) {
     return datasets.map((ds, i) => ({
         ...ds,
@@ -201,11 +203,19 @@ function initCharts() {
             datasets: [{
                 label: "Unidades",
                 data: [],
+                backgroundColor: "#7c3aed",  
+                borderColor: "#5b21b6",  
+                borderWidth: 1,
                 borderRadius: 8
             }]
         },
-        options: { scales: { y: { beginAtZero: true } } }
+        options: {
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
     });
+
 }
 
 async function cargarDashboard() {
@@ -243,6 +253,11 @@ async function cargarDashboard() {
     gastosChart.data.datasets = aplicarColoresRojos(data.gastos_semanales.datasets);
     gastosChart.update();
 
+    const labelsUnidades = data.unidades_semanales.map(x => x.label);
+    const valoresUnidades = data.unidades_semanales.map(x => x.total);
+    unidadesSemanaChart.data.labels = labelsUnidades;
+    unidadesSemanaChart.data.datasets[0].data = valoresUnidades;
+    unidadesSemanaChart.update();
 
 
     console.log("Dashboard data:", data);

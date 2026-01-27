@@ -148,10 +148,6 @@ function aplicarColoresRojos(datasets) {
 
 document.addEventListener("DOMContentLoaded", () => {
     initCharts();
-    document.getElementById("fecha_inicio").addEventListener("change", cargarDashboard);
-    document.getElementById("fecha_fin").addEventListener("change", cargarDashboard);
-    document.getElementById("negocio_select").addEventListener("change", cargarDashboard);
-    cargarDashboard();
 });
 
 function initCharts() {
@@ -267,9 +263,6 @@ function initCharts() {
                 legend: {
                     labels: {
                         color: "#0b3c5d",
-                        font: {
-                            weight: "600"
-                        }
                     }
                 },
                 tooltip: {
@@ -303,9 +296,6 @@ function initCharts() {
                 legend: {
                     labels: {
                         color: "#0b3c5d",
-                        font: {
-                            weight: "600"
-                        }
                     }
                 }
             }

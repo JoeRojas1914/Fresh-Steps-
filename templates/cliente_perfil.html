@@ -207,8 +207,18 @@
       </div>
 
     {% else %}
-      <p>Este cliente no tiene pedidos aún.</p>
+      <div class="empty-state">
+        <div class="empty-icon">📦</div>
+
+        <h3>Sin pedidos registrados</h3>
+
+        <p>
+          Este cliente aún no tiene pedidos.<br>
+          Cuando se registre alguno, se mostrará aquí.
+        </p>
+      </div>
     {% endfor %}
+
 
   </div>
 

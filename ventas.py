@@ -1,6 +1,6 @@
 from db import get_connection
-from datetime import date, datetime, timedelta 
-from calendar import monthrange
+from datetime import datetime
+
 
 
 def crear_venta(
@@ -125,17 +125,17 @@ def crear_venta(
                 d = art["datos"]
 
                 cursor.execute("""
-                    INSERT INTO articulo_confeccion (
-                        id_articulo_confeccion,
-                        tipo,
-                        marca,
-                        material,
-                        color_base,
-                        color_secundario,
-                        cantidad,
-                        agujetas
-                    )
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO articulo_confeccion (
+                    id_articulo,
+                    tipo,
+                    marca,
+                    material,
+                    color_base,
+                    color_secundario,
+                    cantidad,
+                    agujetas
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """, (
                     id_articulo,
                     d["tipo"],
@@ -178,7 +178,7 @@ def crear_venta(
 
                 cursor.execute("""
                     INSERT INTO articulo_maquila (
-                        id_articulo_maquila,
+                        id_articulo,
                         tipo,
                         cantidad,
                         precio_unitario
@@ -330,7 +330,7 @@ def obtener_detalles_venta(id_venta):
                     cantidad,
                     agujetas
                 FROM articulo_confeccion
-                WHERE id_articulo_confeccion = %s
+                WHERE id_articulo = %s
             """, (id_articulo,))
 
             datos = cursor.fetchone()
@@ -361,7 +361,7 @@ def obtener_detalles_venta(id_venta):
                     precio_unitario,
                     subtotal
                 FROM articulo_maquila
-                WHERE id_articulo_maquila = %s
+                WHERE id_articulo = %s
             """, (id_articulo,))
 
             datos = cursor.fetchone()
@@ -379,142 +379,6 @@ def obtener_detalles_venta(id_venta):
 
 
 
-
-def obtener_ingresos_por_semana(id_negocio, mes=None, año=None):
-    hoy = date.today()
-    mes = mes or hoy.month
-    año = año or hoy.year
-
-    primer_dia = date(año, mes, 1)
-    ultimo_dia = date(año, mes, monthrange(año, mes)[1])
-
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    cursor.execute("""
-        SELECT v.fecha_entrega, asv.precio_aplicado AS total
-        FROM venta v
-        JOIN articulo a ON a.id_venta = v.id_venta
-        JOIN articulo_servicio asv ON asv.id_articulo = a.id_articulo
-        WHERE v.id_negocio = %s
-          AND v.fecha_entrega BETWEEN %s AND %s
-    """, (id_negocio, primer_dia, ultimo_dia))
-
-    servicios = cursor.fetchall()
-
-    cursor.execute("""
-        SELECT v.fecha_entrega, am.subtotal AS total
-        FROM venta v
-        JOIN articulo a ON a.id_venta = v.id_venta
-        JOIN articulo_maquila am ON am.id_articulo_maquila = a.id_articulo
-        WHERE v.id_negocio = %s
-          AND v.fecha_entrega BETWEEN %s AND %s
-    """, (id_negocio, primer_dia, ultimo_dia))
-
-    maquila = cursor.fetchall()
-
-    cursor.close()
-    conn.close()
-
-    ventas = servicios + maquila
-
-    for v in ventas:
-        if isinstance(v["fecha_entrega"], datetime):
-            v["fecha_entrega"] = v["fecha_entrega"].date()
-
-    rangos = []
-    totales = []
-
-    dia_actual = primer_dia
-    while dia_actual <= ultimo_dia:
-        inicio = dia_actual
-        fin = min(dia_actual + timedelta(days=6), ultimo_dia)
-
-        total_semana = sum(
-            float(v["total"]) for v in ventas
-            if inicio <= v["fecha_entrega"] <= fin
-        )
-
-        rangos.append(f"{inicio.day}-{fin.day}")
-        totales.append(total_semana)
-
-        dia_actual = fin + timedelta(days=1)
-
-    return {"rangos": rangos, "totales": totales}
-
-
-
-def obtener_ingresos_por_negocio(id_negocio, fecha_inicio=None, fecha_fin=None):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    filtros_fecha = ""
-    params = [id_negocio]
-
-    if fecha_inicio and fecha_fin:
-        filtros_fecha = "AND v.fecha_entrega BETWEEN %s AND %s"
-        params.extend([fecha_inicio, fecha_fin])
-
-    cursor.execute(f"""
-        SELECT COALESCE(SUM(asv.precio_aplicado), 0) AS total
-        FROM venta v
-        JOIN articulo a ON a.id_venta = v.id_venta
-        JOIN articulo_servicio asv ON asv.id_articulo = a.id_articulo
-        WHERE v.id_negocio = %s
-          AND v.fecha_entrega IS NOT NULL
-          {filtros_fecha}
-    """, params)
-
-    total_servicios = cursor.fetchone()["total"]
-
-    cursor.execute(f"""
-        SELECT COALESCE(SUM(am.subtotal), 0) AS total
-        FROM venta v
-        JOIN articulo a ON a.id_venta = v.id_venta
-        JOIN articulo_maquila am ON am.id_articulo_maquila = a.id_articulo
-        WHERE v.id_negocio = %s
-          AND v.fecha_entrega IS NOT NULL
-          {filtros_fecha}
-    """, params)
-
-    total_maquila = cursor.fetchone()["total"]
-
-    cursor.close()
-    conn.close()
-
-    return total_servicios + total_maquila
-
-
-def obtener_ingresos_por_dia(id_negocio, fecha):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    cursor.execute("""
-        SELECT COALESCE(SUM(asv.precio_aplicado), 0) AS total
-        FROM venta v
-        JOIN articulo a ON a.id_venta = v.id_venta
-        JOIN articulo_servicio asv ON asv.id_articulo = a.id_articulo
-        WHERE v.id_negocio = %s
-          AND DATE(v.fecha_entrega) = %s
-    """, (id_negocio, fecha))
-
-    total_servicios = cursor.fetchone()["total"]
-
-    cursor.execute("""
-        SELECT COALESCE(SUM(am.subtotal), 0) AS total
-        FROM venta v
-        JOIN articulo a ON a.id_venta = v.id_venta
-        JOIN articulo_maquila am ON am.id_articulo_maquila = a.id_articulo
-        WHERE v.id_negocio = %s
-          AND DATE(v.fecha_entrega) = %s
-    """, (id_negocio, fecha))
-
-    total_maquila = cursor.fetchone()["total"]
-
-    cursor.close()
-    conn.close()
-
-    return total_servicios + total_maquila
 
 def obtener_ventas_pendientes(id_negocio=None):
     conn = get_connection()

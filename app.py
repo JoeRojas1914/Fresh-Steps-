@@ -676,68 +676,76 @@ def borrar_gasto(id_gasto):
 
 
 # ================= ESTADISTICAS =================
+from datetime import date
+import calendar
+
 @app.route("/estadisticas")
 def estadisticas():
     hoy = date.today()
-    negocios = obtener_negocios() 
+
+    fecha_inicio = hoy.replace(day=1)
+
+    ultimo_dia = calendar.monthrange(hoy.year, hoy.month)[1]
+    fecha_fin = hoy.replace(day=ultimo_dia)
+
+    negocios = obtener_negocios()
 
     return render_template(
         "estadisticas.html",
         total_clientes=contar_clientes(),
         total_servicios=contar_servicios(),
         negocios=negocios,
-        hoy=hoy
+        fecha_inicio=fecha_inicio.isoformat(),
+        fecha_fin=fecha_fin.isoformat()
     )
+
 
 
 @app.route("/api/estadisticas/dashboard")
 def api_estadisticas_dashboard():
-    inicio_str = request.args.get("inicio")
-    fin_str = request.args.get("fin")
-    id_negocio = request.args.get("id_negocio", "all")
+    try: 
+        inicio_str = request.args.get("inicio")
+        fin_str = request.args.get("fin")
+        id_negocio = request.args.get("id_negocio", "all")
 
-    if not inicio_str or not fin_str:
-        return jsonify({"error": "Faltan fechas"}), 400
+        if not inicio_str or not fin_str:
+            return jsonify({"error": "Faltan fechas"}), 400
 
-    inicio = datetime.strptime(inicio_str, "%Y-%m-%d").date()
-    fin = datetime.strptime(fin_str, "%Y-%m-%d").date()
+        inicio = datetime.strptime(inicio_str, "%Y-%m-%d").date()
+        fin = datetime.strptime(fin_str, "%Y-%m-%d").date()
 
-    if fin < inicio:
-        return jsonify({"error": "La fecha fin no puede ser menor a inicio"}), 400
+        if fin < inicio:
+            return jsonify({"error": "La fecha fin no puede ser menor a inicio"}), 400
 
-    ventas_semanales = contar_ventas_por_semana(inicio, fin, id_negocio)
-    gastos_semanales = obtener_gastos_por_semana_y_proveedor(inicio, fin, id_negocio)
-    total_gastos = obtener_total_gastos(inicio, fin, id_negocio)
-    unidades_semanales = obtener_unidades_por_semana(inicio, fin, id_negocio)
-    total_ingresos = obtener_total_ingresos(inicio, fin, id_negocio)
-    ingresos_semanales = obtener_ingresos_por_semana(inicio, fin, id_negocio)
-    ganancia = total_ingresos - total_gastos
-    ventas_tipo_pago = obtener_ventas_por_tipo_pago(inicio, fin, id_negocio)
-    uso_servicios = obtener_uso_servicios(inicio, fin, id_negocio)
-    ventas_por_dia = obtener_ventas_por_dia(inicio, fin, id_negocio)
+        ventas_semanales = contar_ventas_por_semana(inicio, fin, id_negocio)
+        gastos_semanales = obtener_gastos_por_semana_y_proveedor(inicio, fin, id_negocio)
+        total_gastos = obtener_total_gastos(inicio, fin, id_negocio)
+        unidades_semanales = obtener_unidades_por_semana(inicio, fin, id_negocio)
+        total_ingresos = obtener_total_ingresos(inicio, fin, id_negocio)
+        ingresos_semanales = obtener_ingresos_por_semana(inicio, fin, id_negocio)
+        ganancia = total_ingresos - total_gastos
+        ventas_tipo_pago = obtener_ventas_por_tipo_pago(inicio, fin, id_negocio)
+        uso_servicios = obtener_uso_servicios(inicio, fin, id_negocio)
+        ventas_por_dia = obtener_ventas_por_dia(inicio, fin, id_negocio)
 
-
-
-
-    return jsonify({
-        "ventas_semanales": ventas_semanales,
-        "gastos_semanales": gastos_semanales,
-        "ingresos_semanales": ingresos_semanales,
-        "unidades_semanales": unidades_semanales,
-        "ventas_tipo_pago": ventas_tipo_pago,
-        "uso_servicios": uso_servicios,
-        "ventas_por_dia": ventas_por_dia,
-        "kpis": {
-            "ventas": total_ingresos,
-            "gastos": total_gastos,
-            "ganancia": ganancia
-        }
-    })
-
-
-
-
-
+        return jsonify({
+            "ventas_semanales": ventas_semanales,
+            "gastos_semanales": gastos_semanales,
+            "ingresos_semanales": ingresos_semanales,
+            "unidades_semanales": unidades_semanales,
+            "ventas_tipo_pago": ventas_tipo_pago,
+            "uso_servicios": uso_servicios,
+            "ventas_por_dia": ventas_por_dia,
+            "kpis": {
+                "ventas": total_ingresos,
+                "gastos": total_gastos,
+                "ganancia": ganancia
+            }
+        })
+    
+    except Exception as e:
+        print("ERROR DASHBOARD:", e)
+        return jsonify({"error": str(e)}), 500
 
 
 # ================= RUN =================

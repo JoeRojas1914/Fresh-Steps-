@@ -50,7 +50,13 @@ def eliminar_gasto(id_gasto):
     conn.close()
 
 
-def obtener_gastos(id_negocio=None, q=None, limit=10, offset=0):
+def obtener_gastos(
+    id_negocio=None,
+    fecha_inicio=None,
+    fecha_fin=None,
+    limit=10,
+    offset=0
+):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
@@ -68,15 +74,19 @@ def obtener_gastos(id_negocio=None, q=None, limit=10, offset=0):
     """
 
     params = []
-
     where = []
+
     if id_negocio:
         where.append("g.id_negocio = %s")
         params.append(id_negocio)
 
-    if q:
-        where.append("(g.descripcion LIKE %s OR g.proveedor LIKE %s)")
-        params.extend([f"%{q}%", f"%{q}%"])
+    if fecha_inicio:
+        where.append("g.fecha_registro >= %s")
+        params.append(fecha_inicio)
+
+    if fecha_fin:
+        where.append("g.fecha_registro <= %s")
+        params.append(fecha_fin)
 
     if where:
         sql += " WHERE " + " AND ".join(where)
@@ -90,6 +100,7 @@ def obtener_gastos(id_negocio=None, q=None, limit=10, offset=0):
     cursor.close()
     conn.close()
     return gastos
+
 
 
 
@@ -112,25 +123,29 @@ def obtener_gastos_por_proveedor(id_negocio, fecha_inicio, fecha_fin):
     return resultados
 
 
-def contar_gastos(id_negocio, q=None):
+def contar_gastos(id_negocio=None, fecha_inicio=None, fecha_fin=None):
     conn = get_connection()
     cursor = conn.cursor()
 
-    if q:
-        cursor.execute("""
-            SELECT COUNT(*)
-            FROM gastos
-            WHERE id_negocio = %s
-              AND (descripcion LIKE %s OR proveedor LIKE %s)
-        """, (id_negocio, f"%{q}%", f"%{q}%"))
-    else:
-        cursor.execute("""
-            SELECT COUNT(*)
-            FROM gastos
-            WHERE id_negocio = %s
-        """, (id_negocio,))
+    sql = "SELECT COUNT(*) FROM gastos WHERE 1=1"
+    params = []
 
+    if id_negocio:
+        sql += " AND id_negocio = %s"
+        params.append(id_negocio)
+
+    if fecha_inicio:
+        sql += " AND fecha_registro >= %s"
+        params.append(fecha_inicio)
+
+    if fecha_fin:
+        sql += " AND fecha_registro <= %s"
+        params.append(fecha_fin)
+
+    cursor.execute(sql, params)
     total = cursor.fetchone()[0]
+
     cursor.close()
     conn.close()
     return total
+

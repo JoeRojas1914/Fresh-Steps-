@@ -371,7 +371,6 @@ def guardar_venta():
         id_cliente = request.form.get("id_cliente") or None
         fecha_estimada = request.form.get("fecha_estimada") or None
         tipo_pago = request.form.get("tipo_pago")
-        fecha_recibo = datetime.now()
 
         prepago = request.form.get("prepago") == "si"
         monto_prepago = request.form.get("monto_prepago") if prepago else None
@@ -561,20 +560,28 @@ def venta_ticket(id_venta):
 # ================= GASTOS =================
 @app.route("/gastos")
 def gastos():
-    proveedor = request.args.get("proveedor", "")
-    pagina = request.args.get("pagina", 1, type=int)
+    id_negocio = request.args.get("id_negocio")
+    fecha_inicio = request.args.get("fecha_inicio")
+    fecha_fin = request.args.get("fecha_fin")
 
+    pagina = request.args.get("pagina", 1, type=int)
     por_pagina = 10
     offset = (pagina - 1) * por_pagina
 
     negocios = obtener_negocios()
 
-    total_gastos = contar_gastos(None, proveedor)
+    total_gastos = contar_gastos(
+        id_negocio=id_negocio,
+        fecha_inicio=fecha_inicio,
+        fecha_fin=fecha_fin
+    )
+
     total_paginas = (total_gastos + por_pagina - 1) // por_pagina
 
     gastos = obtener_gastos(
-        id_negocio=None,
-        q=proveedor,
+        id_negocio=id_negocio,
+        fecha_inicio=fecha_inicio,
+        fecha_fin=fecha_fin,
         limit=por_pagina,
         offset=offset
     )
@@ -583,11 +590,9 @@ def gastos():
         "gastos.html",
         gastos=gastos,
         negocios=negocios,
-        proveedor=proveedor,
         pagina=pagina,
         total_paginas=total_paginas
     )
-
 
 
 

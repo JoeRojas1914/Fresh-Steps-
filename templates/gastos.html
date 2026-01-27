@@ -6,10 +6,36 @@
 
 <h1>💸 Gastos</h1>
 
-<form method="GET" action="/gastos" class="search-form">
-    <input type="text" name="proveedor" placeholder="Buscar por proveedor..." value="{{ request.args.get('proveedor', '') }}">
-    <button type="submit">Buscar</button>
+<form method="GET" action="{{ url_for('gastos') }}" class="search-form filtros">
+    
+    <select name="id_negocio">
+        <option value="">Todos los negocios</option>
+        {% for n in negocios %}
+            <option value="{{ n.id_negocio }}"
+                {% if request.args.get('id_negocio') == n.id_negocio|string %}
+                    selected
+                {% endif %}
+            >
+                {{ n.nombre }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <input
+        type="date"
+        name="fecha_inicio"
+        value="{{ request.args.get('fecha_inicio', '') }}"
+    >
+
+    <input
+        type="date"
+        name="fecha_fin"
+        value="{{ request.args.get('fecha_fin', '') }}"
+    >
+
+    <button type="submit">Aplicar filtros</button>
 </form>
+
 
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
@@ -121,7 +147,7 @@
 
         {# Botón «Anterior» para desplazar el bloque hacia atrás #}
         {% if inicio > 1 %}
-            <a href="{{ url_for('gastos', pagina=inicio-10, proveedor=proveedor) }}">«</a>
+            <a href="{{ url_for('gastos', pagina=p, id_negocio=request.args.get('id_negocio'), fecha_inicio=request.args.get('fecha_inicio'), fecha_fin=request.args.get('fecha_fin')) }}">«</a>
         {% endif %}
 
         {# Mostrar páginas del bloque #}
@@ -129,13 +155,13 @@
             {% if p == pagina %}
                 <strong>{{ p }}</strong>
             {% else %}
-                <a href="{{ url_for('gastos', pagina=p, proveedor=proveedor) }}">{{ p }}</a>
+                <a href="{{ url_for('gastos', pagina=p, id_negocio=request.args.get('id_negocio'), fecha_inicio=request.args.get('fecha_inicio'), fecha_fin=request.args.get('fecha_fin')) }}">«</a>
             {% endif %}
         {% endfor %}
 
         {# Botón «Siguiente» para desplazar el bloque hacia adelante #}
         {% if fin < total_paginas %}
-            <a href="{{ url_for('gastos', pagina=inicio+10, proveedor=proveedor) }}">»</a>
+            <a href="{{ url_for('gastos', pagina=inicio+10, id_negocio=request.args.get('id_negocio'), fecha_inicio=request.args.get('fecha_inicio'), fecha_fin=request.args.get('fecha_fin')) }}">»</a>
         {% endif %}
     {% endif %}
 </div>

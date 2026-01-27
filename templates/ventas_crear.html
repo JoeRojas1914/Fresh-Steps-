@@ -3,20 +3,6 @@
 {% block content %}
 <h1 id="tituloNuevaVenta">🧾 Nueva venta</h1>
 
-<div id="busquedaCliente">
-    <form class="search-form" onsubmit="return false;">
-        <input
-            type="text"
-            id="buscarCliente"
-            placeholder="Nombre del cliente"
-            autocomplete="off"
-        >
-        <button type="button" id="btnNuevoCliente">➕ Nuevo cliente</button>
-    </form>
-
-    <div class="results-list" id="listaClientes"></div>
-</div>
-
 
 <div id="modalCliente" class="modal" style="display:none;">
     <div class="modal-content">
@@ -68,56 +54,78 @@
 <form method="POST" action="/ventas/guardar" id="formVenta">
     <input type="hidden" name="id_cliente" id="id_cliente">
 
-    <div id="clienteBox" style="display:none;">
-        <strong id="clienteSeleccionado"></strong>
-        <button type="button" id="btnCambiarCliente">Cambiar cliente</button>
-    </div>
-
-    <div id="errorCliente" style="color:red; font-size:0.9em; display:none; margin-top:5px;">
-        Debes seleccionar un cliente
-    </div>
-
-    <hr>
-
-    <div class="form-group form-row">
-        <div class="form-item">
-            <label class="form-label">Negocio</label>
-            <select name="id_negocio" id="id_negocio" onchange="seleccionarNegocio()">
-                <option value="">-- Selecciona --</option>
-                <option value="1">Fresh Steps</option>
-                <option value="2">Confección</option>
-                <option value="3">Maquila</option>
-            </select>
-
-            <div id="errorNegocio" style="color:red; font-size:0.9em; display:none;">
-                No puedes cambiar el negocio si ya agregaste artículos. Borra todos primero.
-            </div>
+    <div class="venta-section">
+        <div class="section-header">
+            <h2>Cliente</h2>
         </div>
-
-        <div class="form-item">
-            <label class="form-label">Fecha y hora estimada</label>
-
-            <div style="display:flex; gap:10px;">
+        <div id="busquedaCliente">
+            <div class="search-form">
                 <input
-                    type="date"
-                    id="fecha_estimada_fecha"
-                    onchange="validarFormulario(); actualizarFechaEstimadaCompleta(); "
-                    style="flex:1;"
+                    type="text"
+                    id="buscarCliente"
+                    placeholder="Nombre del cliente"
+                    autocomplete="off"
                 >
+                <button type="button" id="btnNuevoCliente">➕ Nuevo cliente</button>
+            </div>
+            <div class="results-list" id="listaClientes"></div>
+        </div>
+        <div id="clienteBox" style="display:none;">
+            <strong id="clienteSeleccionado"></strong>
+            <button type="button" id="btnCambiarCliente">Cambiar cliente</button>
+        </div>
 
-                <input
-                    type="time"
-                    id="fecha_estimada_hora"
-                    onchange="validarFormulario(); actualizarFechaEstimadaCompleta(); "
-                    style="width:120px;"
-                >
+        <div id="errorCliente" style="color:red; font-size:0.9em; display:none; margin-top:5px;">
+            Debes seleccionar un cliente
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="venta-section">
+        <div class="section-header">
+            <h2>Negocio y fecha</h2>
+        </div>
+        <div class="form-group form-row">
+            <div class="form-item">
+                <label class="form-label">Negocio</label>
+                <select name="id_negocio" id="id_negocio" onchange="seleccionarNegocio()">
+                    <option value="">-- Selecciona --</option>
+                    <option value="1">Fresh Steps</option>
+                    <option value="2">Confección</option>
+                    <option value="3">Maquila</option>
+                </select>
+
+                <div id="errorNegocio" style="color:red; font-size:0.9em; display:none;">
+                    No puedes cambiar el negocio si ya agregaste artículos. Borra todos primero.
+                </div>
             </div>
 
-            <input type="hidden" name="fecha_estimada" id="fecha_estimada">
+            <div class="form-item">
+                <label class="form-label">Fecha y hora estimada</label>
+
+                <div style="display:flex; gap:10px;">
+                    <input
+                        type="date"
+                        id="fecha_estimada_fecha"
+                        onchange="validarFormulario(); actualizarFechaEstimadaCompleta(); "
+                        style="flex:1;"
+                    >
+
+                    <input
+                        type="time"
+                        id="fecha_estimada_hora"
+                        onchange="validarFormulario(); actualizarFechaEstimadaCompleta(); "
+                        style="width:120px;"
+                    >
+                </div>
+
+                <input type="hidden" name="fecha_estimada" id="fecha_estimada">
 
 
-            <div id="errorFecha" style="color:red; font-size:0.9em; display:none;">
-                La fecha estimada no puede ser menor a hoy.
+                <div id="errorFecha" style="color:red; font-size:0.9em; display:none;">
+                    La fecha estimada no puede ser menor a hoy.
+                </div>
             </div>
         </div>
     </div>
@@ -125,66 +133,76 @@
 
     <hr>
 
-    <div id="articulosContainer"></div>
-    <button type="button" onclick="agregarArticulo()">➕ Agregar Artículo</button>
+    <div class="venta-section">    
+        <div class="section-header">
+            <h2>Artículos</h2>
+        </div>
+        <div id="articulosContainer"></div>
+        <button type="button" onclick="agregarArticulo()">➕ Agregar Artículo</button>
+    </div>
 
     <hr>
 
-    <div class="form-group form-row">
-        <div class="form-item">
-            <label class="form-label">Tipo de pago</label>
-            <select name="tipo_pago" id="tipo_pago" onchange="validarFormulario(); actualizarTotal()">
-                <option value="">-- Selecciona --</option>
-                <option value="efectivo">Efectivo</option>
-                <option value="tarjeta">Tarjeta</option>
-            </select>
+    <div class="venta-section">
+        <div class="section-header">
+            <h2>Pago y descuentos</h2>
         </div>
-
-        <div class="form-item">
-            <label class="form-label">¿Prepago?</label>
-            <select name="prepago" id="prepago" onchange="togglePrepago(); validarFormulario(); actualizarTotal()">
-                <option value="">-- Selecciona --</option>
-                <option value="si">Sí</option>
-                <option value="no">No</option>
-            </select>
-        </div>
-
-        <div class="form-item" id="montoPrepagoContainer" style="display:none;">
-            <label class="form-label">Monto prepago</label>
-            <input
-                type="number"
-                min="0"
-                step="1"
-                name="monto_prepago"
-                id="monto_prepago"
-                placeholder="0"
-                oninput="validarFormulario(); actualizarTotal()"
-            >
-            <div id="errorPrepago" style="color:red; font-size:0.9em; display:none;">
-                El prepago no puede ser mayor al total ni menor a 0.
+        <div class="form-group form-row">
+            <div class="form-item">
+                <label class="form-label">Tipo de pago</label>
+                <select name="tipo_pago" id="tipo_pago" onchange="validarFormulario(); actualizarTotal()">
+                    <option value="">-- Selecciona --</option>
+                    <option value="efectivo">Efectivo</option>
+                    <option value="tarjeta">Tarjeta</option>
+                </select>
             </div>
-        </div>
 
-        <div class="form-item">
-            <label class="form-label">¿Aplicar descuento?</label>
-            <select name="aplica_descuento" id="aplica_descuento" onchange="toggleDescuento(); actualizarTotal()">
-                <option value="">-- Selecciona --</option>
-                <option value="si">Sí</option>
-                <option value="no">No</option>
-            </select>
-        </div>
+            <div class="form-item">
+                <label class="form-label">¿Prepago?</label>
+                <select name="prepago" id="prepago" onchange="togglePrepago(); validarFormulario(); actualizarTotal()">
+                    <option value="">-- Selecciona --</option>
+                    <option value="si">Sí</option>
+                    <option value="no">No</option>
+                </select>
+            </div>
 
-        <div class="form-item" id="cantidadDescuentoContainer" style="display:none;">
-            <label class="form-label">Descuento ($)</label>
-            <input
-                type="number"
-                min="0"
-                step="1"
-                name="cantidad_descuento"
-                id="cantidad_descuento"
-                placeholder="0"
-                oninput="validarFormulario(); actualizarTotal()"
-            >
+            <div class="form-item" id="montoPrepagoContainer" style="display:none;">
+                <label class="form-label">Monto prepago</label>
+                <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    name="monto_prepago"
+                    id="monto_prepago"
+                    placeholder="0"
+                    oninput="validarFormulario(); actualizarTotal()"
+                >
+                <div id="errorPrepago" style="color:red; font-size:0.9em; display:none;">
+                    El prepago no puede ser mayor al total ni menor a 0.
+                </div>
+            </div>
+
+            <div class="form-item">
+                <label class="form-label">¿Aplicar descuento?</label>
+                <select name="aplica_descuento" id="aplica_descuento" onchange="toggleDescuento(); actualizarTotal()">
+                    <option value="">-- Selecciona --</option>
+                    <option value="si">Sí</option>
+                    <option value="no">No</option>
+                </select>
+            </div>
+
+            <div class="form-item" id="cantidadDescuentoContainer" style="display:none;">
+                <label class="form-label">Descuento ($)</label>
+                <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    name="cantidad_descuento"
+                    id="cantidad_descuento"
+                    placeholder="0"
+                    oninput="validarFormulario(); actualizarTotal()"
+                >
+            </div>
         </div>
     </div>
 

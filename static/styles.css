@@ -1717,3 +1717,28 @@ hr {
     margin: 28px 0;
 }
 
+.venta-section {
+    background: linear-gradient(135deg, #f8fbff, #ffffff);
+    border-radius: 18px;
+    padding: 22px 26px;
+    border: 1px solid #dbeafe;
+    box-shadow: 0 6px 18px rgba(47, 164, 255, 0.12);
+    margin-bottom: 26px;
+    position: relative;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.section-header h2 {
+    font-size: 20px;
+    font-weight: 800;
+    margin: 0;
+    color: #0b3c5d;
+}
+
+

@@ -48,6 +48,7 @@ from estadisticas import (
     obtener_ingresos_por_semana,
     obtener_ventas_por_tipo_pago,
     obtener_uso_servicios,
+    obtener_ventas_por_dia
 )
 
 from negocio import obtener_negocios
@@ -664,6 +665,8 @@ def api_estadisticas_dashboard():
     ganancia = total_ingresos - total_gastos
     ventas_tipo_pago = obtener_ventas_por_tipo_pago(inicio, fin, id_negocio)
     uso_servicios = obtener_uso_servicios(inicio, fin, id_negocio)
+    ventas_por_dia = obtener_ventas_por_dia(inicio, fin, id_negocio)
+
 
 
 
@@ -674,6 +677,7 @@ def api_estadisticas_dashboard():
         "unidades_semanales": unidades_semanales,
         "ventas_tipo_pago": ventas_tipo_pago,
         "uso_servicios": uso_servicios,
+        "ventas_por_dia": ventas_por_dia,
         "kpis": {
             "ventas": total_ingresos,
             "gastos": total_gastos,

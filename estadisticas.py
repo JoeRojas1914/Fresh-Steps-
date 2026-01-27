@@ -338,3 +338,35 @@ def obtener_ventas_por_tipo_pago(inicio, fin, id_negocio):
 
     return ejecutar_query(sql, params)
 
+
+def obtener_ventas_por_dia(inicio, fin, id_negocio):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    sql = """
+        SELECT
+            WEEKDAY(fecha_recibo) AS dia,
+            COUNT(*) AS total
+        FROM venta
+        WHERE DATE(fecha_recibo) BETWEEN %s AND %s
+          AND WEEKDAY(fecha_recibo) BETWEEN 0 AND 5
+    """
+    params = [inicio, fin]
+
+    if id_negocio != "all":
+        sql += " AND id_negocio = %s"
+        params.append(id_negocio)
+
+    sql += " GROUP BY dia"
+
+    cursor.execute(sql, params)
+    rows = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    dias = [0, 0, 0, 0, 0, 0]
+    for r in rows:
+        dias[r["dia"]] = r["total"]
+
+    return dias

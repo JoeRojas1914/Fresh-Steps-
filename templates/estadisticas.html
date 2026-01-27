@@ -98,6 +98,14 @@
     </div>
 </div>
 
+<div class="stats-page">
+    <div class="card stats-card full-width">
+        <h2 class="stats-title">Ventas por día</h2>
+        <canvas id="ventasPorDiaChart"></canvas>
+    </div>
+</div>
+
+
 
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -109,6 +117,8 @@ let ventasSemanaChart;
 let unidadesSemanaChart;
 let tipoPagoChart;
 let serviciosChart;
+let ventasPorDiaChart;
+
 
 
 const redPalette = [
@@ -303,6 +313,34 @@ function initCharts() {
     });
 
 
+    ventasPorDiaChart = new Chart(
+    document.getElementById("ventasPorDiaChart"),
+    {
+        type: "bar",
+        data: {
+            labels: ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
+            datasets: [{
+                label: "Ventas",
+                data: [0, 0, 0, 0, 0, 0],
+                backgroundColor: "#6366f1",
+                borderColor: "#4338ca",
+                borderWidth: 1,
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 }
+                }
+            }
+        }
+    }
+);
+
+
 }
 
 async function cargarDashboard() {
@@ -363,8 +401,8 @@ async function cargarDashboard() {
     serviciosChart.data.datasets[0].data = data.uso_servicios.map(x => x.total);
     serviciosChart.update();
 
-
-
+    ventasPorDiaChart.data.datasets[0].data = data.ventas_por_dia;
+    ventasPorDiaChart.update();
 
     console.log("Dashboard data:", data);
 }

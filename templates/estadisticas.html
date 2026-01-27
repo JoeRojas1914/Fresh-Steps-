@@ -86,6 +86,19 @@
     </div>
 </div>
 
+<div class="stats-page">
+    <div class="card stats-card">
+        <h2 class="stats-title">Tipo de pago</h2>
+        <canvas id="tipoPagoChart"></canvas>
+    </div>
+
+    <div class="card stats-card">
+        <h2 class="stats-title">Uso de servicios</h2>
+        <canvas id="serviciosChart"></canvas>
+    </div>
+</div>
+
+
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -94,16 +107,30 @@ let gastosChart;
 let ingresosChart;
 let ventasSemanaChart;
 let unidadesSemanaChart;
+let tipoPagoChart;
+let serviciosChart;
+
 
 const redPalette = [
     "#7f1d1d", 
     "#991b1b",
     "#b91c1c",
     "#dc2626",
-    "#ef4444",
-    "#f87171",
-    "#fecaca"
+    "#ef4444"
 ];
+
+
+
+const serviciosPalette = [
+    "#60a5fa",
+    "#34d399", 
+    "#fbbf24", 
+    "#a78bfa",
+    "#fb7185", 
+    "#38bdf8", 
+    "#4ade80" 
+];
+
 
 
 
@@ -111,15 +138,19 @@ function aplicarColoresRojos(datasets) {
     return datasets.map((ds, i) => ({
         ...ds,
         backgroundColor: redPalette[i % redPalette.length],
-        borderColor: redPalette[i % redPalette.length],
+        borderColor: "#7f1d1d",
         borderWidth: 1,
         borderRadius: 6
     }));
 }
 
+
+
 document.addEventListener("DOMContentLoaded", () => {
     initCharts();
-
+    document.getElementById("fecha_inicio").addEventListener("change", cargarDashboard);
+    document.getElementById("fecha_fin").addEventListener("change", cargarDashboard);
+    document.getElementById("negocio_select").addEventListener("change", cargarDashboard);
     cargarDashboard();
 });
 
@@ -173,6 +204,9 @@ function initCharts() {
             datasets: [{
                 label: "Ingresos ($)",
                 data: [],
+                backgroundColor: "#22c55e",
+                borderColor: "#16a34a" ,
+                borderWidth: 1,
                 borderRadius: 8
             }]
         },
@@ -184,16 +218,17 @@ function initCharts() {
         data: {
             labels: [],
             datasets: [{
-                label: "Numero de Ventas",
+                label: "Número de Ventas",
                 data: [],
-                backgroundColor: "#1d4ed8",  
-                borderColor: "#1e40af",
+                backgroundColor: "#f59e0b", 
+                borderColor: "#b45309",
                 borderWidth: 1,
                 borderRadius: 8
             }]
         },
         options: { scales: { y: { beginAtZero: true } } }
     });
+
 
 
     unidadesSemanaChart = new Chart(document.getElementById("unidadesSemanaChart"), {
@@ -203,18 +238,80 @@ function initCharts() {
             datasets: [{
                 label: "Unidades",
                 data: [],
-                backgroundColor: "#7c3aed",  
-                borderColor: "#5b21b6",  
+                backgroundColor: "#14b8a6", 
+                borderColor: "#0f766e",
                 borderWidth: 1,
                 borderRadius: 8
             }]
         },
+        options: { scales: { y: { beginAtZero: true } } }
+    });
+
+
+    tipoPagoChart = new Chart(document.getElementById("tipoPagoChart"), {
+        type: "pie",
+        data: {
+            labels: [],
+            datasets: [{
+                data: [],
+                backgroundColor: [
+                    "#34d399", 
+                    "#fbbf24",
+                ],
+                borderColor: "#ffffff",
+                borderWidth: 2
+            }]
+        },
         options: {
-            scales: {
-                y: { beginAtZero: true }
+            plugins: {
+                legend: {
+                    labels: {
+                        color: "#0b3c5d",
+                        font: {
+                            weight: "600"
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label(ctx) {
+                            const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                            const val = ctx.raw;
+                            const pct = ((val / total) * 100).toFixed(1);
+                            return `${ctx.label}: ${pct}% (${val})`;
+                        }
+                    }
+                }
             }
         }
     });
+
+
+    serviciosChart = new Chart(document.getElementById("serviciosChart"), {
+        type: "pie",
+        data: {
+            labels: [],
+            datasets: [{
+                data: [],
+                backgroundColor: serviciosPalette,
+                borderColor: "#ffffff",
+                borderWidth: 2
+            }]
+        },
+        options: {
+            plugins: {
+                legend: {
+                    labels: {
+                        color: "#0b3c5d",
+                        font: {
+                            weight: "600"
+                        }
+                    }
+                }
+            }
+        }
+    });
+
 
 }
 
@@ -255,9 +352,28 @@ async function cargarDashboard() {
 
     const labelsUnidades = data.unidades_semanales.map(x => x.label);
     const valoresUnidades = data.unidades_semanales.map(x => x.total);
+
     unidadesSemanaChart.data.labels = labelsUnidades;
     unidadesSemanaChart.data.datasets[0].data = valoresUnidades;
     unidadesSemanaChart.update();
+
+    const labelsIngresos = data.ingresos_semanales.map(x => x.label);
+    const valoresIngresos = data.ingresos_semanales.map(x => x.total);
+
+    ingresosChart.data.labels = labelsIngresos;
+    ingresosChart.data.datasets[0].data = valoresIngresos;
+    ingresosChart.update();
+
+
+    tipoPagoChart.data.labels = data.ventas_tipo_pago.map(x => x.tipo_pago);
+    tipoPagoChart.data.datasets[0].data = data.ventas_tipo_pago.map(x => x.total);
+    tipoPagoChart.update();
+
+    serviciosChart.data.labels = data.uso_servicios.map(x => x.nombre);
+    serviciosChart.data.datasets[0].data = data.uso_servicios.map(x => x.total);
+    serviciosChart.update();
+
+
 
 
     console.log("Dashboard data:", data);

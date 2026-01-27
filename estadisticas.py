@@ -169,9 +169,7 @@ def obtener_unidades_por_semana(inicio: date, fin: date, id_negocio: str):
 
         total_unidades = 0
 
-        # =========================
-        # NEGOCIO 1
-        # =========================
+
         if id_negocio in ("1", "all"):
             query = """
                 SELECT COUNT(a.id_articulo) AS total
@@ -183,9 +181,7 @@ def obtener_unidades_por_semana(inicio: date, fin: date, id_negocio: str):
             cursor.execute(query, [semana_inicio, semana_fin])
             total_unidades += cursor.fetchone()["total"] or 0
 
-        # =========================
-        # NEGOCIO 2
-        # =========================
+
         if id_negocio in ("2", "all"):
             query = """
                 SELECT SUM(ac.cantidad) AS total
@@ -198,9 +194,7 @@ def obtener_unidades_por_semana(inicio: date, fin: date, id_negocio: str):
             cursor.execute(query, [semana_inicio, semana_fin])
             total_unidades += cursor.fetchone()["total"] or 0
 
-        # =========================
-        # NEGOCIO 3
-        # =========================
+
         if id_negocio in ("3", "all"):
             query = """
                 SELECT SUM(am.cantidad) AS total
@@ -222,3 +216,125 @@ def obtener_unidades_por_semana(inicio: date, fin: date, id_negocio: str):
     conn.close()
 
     return resultados
+
+
+def obtener_total_ingresos(inicio: date, fin: date, id_negocio: str):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    query = """
+        SELECT
+            COALESCE(SUM(
+                CASE
+                    WHEN fecha_entrega IS NOT NULL THEN total
+                    ELSE monto_prepago
+                END
+            ), 0) AS total
+        FROM venta
+        WHERE fecha_recibo BETWEEN %s AND %s
+    """
+    params = [inicio, fin]
+
+    if id_negocio != "all":
+        query += " AND id_negocio = %s"
+        params.append(id_negocio)
+
+    cursor.execute(query, params)
+    total = cursor.fetchone()["total"] or 0
+
+    cursor.close()
+    conn.close()
+
+    return float(total)
+
+
+def obtener_ingresos_por_semana(inicio: date, fin: date, id_negocio: str):
+    semanas = generar_semanas_rango(inicio, fin)
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    resultados = []
+
+    for s in semanas:
+        semana_inicio = max(s["inicio"], inicio)
+        semana_fin = min(s["fin"], fin)
+
+        query = """
+            SELECT
+                COALESCE(SUM(
+                    CASE
+                        WHEN fecha_entrega IS NOT NULL THEN total
+                        ELSE monto_prepago
+                    END
+                ), 0) AS total
+            FROM venta
+            WHERE fecha_recibo BETWEEN %s AND %s
+        """
+        params = [semana_inicio, semana_fin]
+
+        if id_negocio != "all":
+            query += " AND id_negocio = %s"
+            params.append(id_negocio)
+
+        cursor.execute(query, params)
+        total = cursor.fetchone()["total"] or 0
+
+        resultados.append({
+            "label": s["label"],
+            "total": float(total)
+        })
+
+    cursor.close()
+    conn.close()
+
+    return resultados
+
+def ejecutar_query(sql, params=None):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute(sql, params or [])
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return rows
+
+
+
+def obtener_uso_servicios(inicio, fin, id_negocio):
+    conn = get_connection()
+    sql = """
+        SELECT s.nombre, COUNT(*) total
+        FROM articulo_servicio aps
+        JOIN servicio s ON s.id_servicio = aps.id_servicio
+        JOIN articulo a ON a.id_articulo = aps.id_articulo
+        JOIN venta v ON v.id_venta = a.id_venta
+        WHERE DATE(v.fecha_recibo) BETWEEN %s AND %s
+    """
+    params = [inicio, fin]
+
+    if id_negocio != "all":
+        sql += " AND v.id_negocio = %s"
+        params.append(id_negocio)
+
+    sql += " GROUP BY s.id_servicio ORDER BY total DESC"
+
+    return ejecutar_query(sql, params)
+
+
+def obtener_ventas_por_tipo_pago(inicio, fin, id_negocio):
+    sql = """
+        SELECT tipo_pago, COUNT(*) total
+        FROM venta
+        WHERE DATE(fecha_recibo) BETWEEN %s AND %s
+    """
+    params = [inicio, fin]
+
+    if id_negocio != "all":
+        sql += " AND id_negocio = %s"
+        params.append(id_negocio)
+
+    sql += " GROUP BY tipo_pago"
+
+    return ejecutar_query(sql, params)
+

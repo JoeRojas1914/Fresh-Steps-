@@ -511,8 +511,8 @@ function crearCamposArticulo(index, tipoArticulo) {
                 ${inputConLabel("Marca", `articulos[${index}][marca]`, "Nike, Puma...", true)}
                 ${inputConLabel("Material", `articulos[${index}][material]`, "Gamuza, Piel...", true)}
                 ${inputConLabel("Color base", `articulos[${index}][color_base]`, "Negro, Blanco...", true)}
-                ${inputConLabel("Color secundario", `articulos[${index}][color_secundario]`, "(opcional)", false)}
-                ${inputConLabel("Color agujetas", `articulos[${index}][color_agujetas]`, "Negro, Blanco...", false)}
+                ${inputConLabel("Color secundario (Opcional)", `articulos[${index}][color_secundario]`, "Negro, Blanco...", false)}
+                ${inputConLabel("Color agujetas (Opcional)", `articulos[${index}][color_agujetas]`, "Negro, Blanco...", false)}
             </div>
 
             ${crearServiciosSelect(index)}
@@ -528,7 +528,7 @@ function crearCamposArticulo(index, tipoArticulo) {
                 ${inputConLabel("Marca", `articulos[${index}][marca]`, "Zara, Levis...", true)}
                 ${inputConLabel("Material", `articulos[${index}][material]`, "Mezclilla, Gamuza...", true)}
                 ${inputConLabel("Color base", `articulos[${index}][color_base]`, "Negro, Blanco...", true)}
-                ${inputConLabel("Color secundario", `articulos[${index}][color_secundario]`, "(opcional)", false)}
+                ${inputConLabel("Color secundario (Opcional)", `articulos[${index}][color_secundario]`, "Negro, Blanco...", false)}
                 ${inputConLabel("Cantidad", `articulos[${index}][cantidad]`, "1,2...", true, "number", `min="1"`)}
 
             </div>
@@ -742,20 +742,42 @@ function articulosCompletos() {
     const articulos = document.querySelectorAll(".articulo-item");
     if (articulos.length === 0) return false;
 
-    for (const art of articulos) {
-        const requeridos = art.querySelectorAll("input[required], select[required], textarea[required]");
+    const negocio = document.getElementById("id_negocio").value;
 
-        for (const campo of requeridos) {
+    for (const art of articulos) {
+        const campos = art.querySelectorAll("input, select, textarea");
+
+        for (const campo of campos) {
             if (campo.offsetParent === null) continue;
 
-            if (!campo.value || campo.value.trim() === "") {
-                return false;
+            const name = campo.name || "";
+
+            if (negocio === "1") {
+                if (
+                    name.includes("[color_secundario]") ||
+                    name.includes("[color_agujetas]")
+                ) {
+                    continue;
+                }
+            }
+
+            if (negocio === "2") {
+                if (name.includes("[color_secundario]")) {
+                    continue;
+                }
+            }
+
+            if (campo.hasAttribute("required")) {
+                if (!campo.value || campo.value.trim() === "") {
+                    return false;
+                }
             }
         }
     }
 
     return true;
 }
+
 
 
 
@@ -827,7 +849,7 @@ function calcularTotal() {
     const negocio = document.getElementById("id_negocio").value;
     let total = 0;
 
-    if (negocio === "1" || negocio === "2") {
+    if (negocio === "1") {
         document.querySelectorAll(".servicio-item").forEach(fila => {
             const sel = fila.querySelector("select");
             const precio = fila.querySelector(".precio-aplicado");
@@ -838,10 +860,32 @@ function calcularTotal() {
         });
     }
 
+    if (negocio === "2") {
+        document.querySelectorAll(".articulo-item").forEach(articulo => {
+            const cantidad = parseFloat(
+                articulo.querySelector("input[name$='[cantidad]']")?.value || 1
+            );
+
+            articulo.querySelectorAll(".servicio-item").forEach(fila => {
+                const sel = fila.querySelector("select");
+                const precio = fila.querySelector(".precio-aplicado");
+
+                if (sel && sel.value) {
+                    total += cantidad * parseFloat(precio?.value || 0);
+                }
+            });
+        });
+    }
+
     if (negocio === "3") {
         document.querySelectorAll(".articulo-item").forEach(item => {
-            const cantidad = parseFloat(item.querySelector("input[name$='[cantidad]']")?.value || 0);
-            const precio = parseFloat(item.querySelector("input[name$='[precio_unitario]']")?.value || 0);
+            const cantidad = parseFloat(
+                item.querySelector("input[name$='[cantidad]']")?.value || 0
+            );
+            const precio = parseFloat(
+                item.querySelector("input[name$='[precio_unitario]']")?.value || 0
+            );
+
             total += cantidad * precio;
         });
     }
@@ -856,6 +900,7 @@ function calcularTotal() {
 
     return total;
 }
+
 
 function actualizarTotal() {
     const total = calcularTotal();

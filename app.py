@@ -192,10 +192,13 @@ def eliminar_cliente(id_cliente):
 
 @app.route("/clientes/<int:id_cliente>")
 def ver_cliente(id_cliente):
+    id_negocio = request.args.get("id_negocio")
+    fecha_inicio = request.args.get("fecha_inicio")
+    fecha_fin = request.args.get("fecha_fin")
+
     pagina = request.args.get("pagina", 1, type=int)
     pedidos_por_pagina = 5
     inicio = (pagina - 1) * pedidos_por_pagina
-
 
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
@@ -208,20 +211,39 @@ def ver_cliente(id_cliente):
     cursor.close()
     conn.close()
 
-
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*) FROM venta WHERE id_cliente = %s", (id_cliente,))
+
+    sql_count = """
+        SELECT COUNT(*)
+        FROM venta
+        WHERE id_cliente = %s
+    """
+    params = [id_cliente]
+
+    if id_negocio:
+        sql_count += " AND id_negocio = %s"
+        params.append(id_negocio)
+
+    if fecha_inicio:
+        sql_count += " AND fecha_recibo >= %s"
+        params.append(fecha_inicio)
+
+    if fecha_fin:
+        sql_count += " AND fecha_recibo <= %s"
+        params.append(fecha_fin)
+
+    cursor.execute(sql_count, params)
     total_pedidos = cursor.fetchone()[0]
     cursor.close()
     conn.close()
 
     total_paginas = (total_pedidos + pedidos_por_pagina - 1) // pedidos_por_pagina
 
-
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("""
+
+    sql = """
         SELECT 
             v.id_venta, 
             v.fecha_recibo, 
@@ -233,25 +255,47 @@ def ver_cliente(id_cliente):
         FROM venta v
         LEFT JOIN negocio n ON v.id_negocio = n.id_negocio
         WHERE v.id_cliente = %s
+    """
+    params = [id_cliente]
+
+    if id_negocio:
+        sql += " AND v.id_negocio = %s"
+        params.append(id_negocio)
+
+    if fecha_inicio:
+        sql += " AND v.fecha_recibo >= %s"
+        params.append(fecha_inicio)
+
+    if fecha_fin:
+        sql += " AND v.fecha_recibo <= %s"
+        params.append(fecha_fin)
+
+    sql += """
         ORDER BY v.fecha_recibo DESC
         LIMIT %s OFFSET %s
-    """, (id_cliente, pedidos_por_pagina, inicio))
+    """
+    params.extend([pedidos_por_pagina, inicio])
+
+    cursor.execute(sql, params)
     pedidos = cursor.fetchall()
     cursor.close()
     conn.close()
 
-
     for p in pedidos:
         p["detalles"] = obtener_detalles_venta(p["id_venta"])
+
+    negocios = obtener_negocios()
 
     return render_template(
         "cliente_perfil.html",
         cliente=cliente,
         total_pedidos=total_pedidos,
         pedidos=pedidos,
+        negocios=negocios,
         pagina=pagina,
         total_paginas=total_paginas
     )
+
 
 
 

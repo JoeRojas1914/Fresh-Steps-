@@ -1574,3 +1574,91 @@ button:disabled:hover {
 .search-form button {
     padding: 6px 10px;
 }
+
+/* ====== FILTRO DE HISTORIAL ====== */
+.filtro-box {
+    margin-bottom: 30px;
+    padding: 18px 22px;
+
+    background: linear-gradient(135deg, #e6f3ff, #f8fbff);
+    border: 2px solid #2fa4ff;
+    border-radius: 16px;
+
+    box-shadow: 0 6px 18px rgba(47, 164, 255, 0.25);
+}
+
+.filtro-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 22px;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.filtro-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;               
+    min-width: 220px;      
+}
+
+.filtro-item label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e3a8a;
+}
+
+.filtro-item select,
+.filtro-item input[type="date"] {
+    width: 100%;
+    height: 42px;
+    padding: 8px 12px;
+    box-sizing: border-box;
+}
+
+
+.filtro-actions {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    flex: 0 0 auto;         
+}
+
+.filtro-actions button {
+    margin-top: 0;
+    height: 42px;
+    padding: 0 22px;
+    white-space: nowrap;
+}
+
+.filtro-actions a {
+    font-weight: 600;
+    text-decoration: none;
+    color: #1e7fd6;
+}
+
+.filtro-actions a:hover {
+    text-decoration: underline;
+}
+
+.filtro-item input[type="date"] {
+    height: 42px;             
+    padding: 8px 12px;         
+    line-height: 1.2;
+    box-sizing: border-box;
+}
+
+.filtro-item input[type="date"]::-webkit-datetime-edit {
+    padding: 0;
+}
+
+.filtro-item input[type="date"]::-webkit-calendar-picker-indicator {
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+}
+
+.filtro-row {
+    gap: 22px;                
+}

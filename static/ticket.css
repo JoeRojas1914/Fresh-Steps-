@@ -1,0 +1,83 @@
+    body { font-family: monospace; padding: 10px; }
+    .ticket { width: 280px; margin: auto; }
+
+    .logo { text-align: center; margin-bottom: 8px; }
+    .logo img{
+      max-width: 140px;
+      height: auto;
+      filter: contrast(1);
+    }
+
+    .center { text-align: center; }
+
+    .linea {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .seccion { margin-top: 8px; margin-bottom: 8px; }
+
+    .titulo-articulo {
+      margin-top: 6px;
+      margin-bottom: 4px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .subtexto { font-size: 12px; color: #111; }
+
+    hr {
+      border: none;
+      border-top: 1px dashed #000;
+      margin: 10px 0;
+    }
+
+    .totales { margin-top: 6px; font-size: 13px; }
+
+    .total-final {
+      font-size: 15px;
+      font-weight: bold;
+      margin-top: 6px;
+    }
+
+    .ticket-numero {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .entrega-estimada {
+      font-size: 13px;
+      font-weight: bold;
+      margin-top: 3px;
+    }
+
+    @media print {
+      button { display: none; }
+    }
+
+    .info-local{
+      margin-top: 10px;
+      font-size: 11px;
+      text-align: center;
+      line-height: 1.35;
+    }
+
+    .info-local .titulo{
+      font-weight: bold;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+
+    .copia-titulo{
+      text-align: center;
+      font-weight: bold;
+      font-size: 12px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .separador-copias{
+      margin: 14px 0;
+      border-top: 2px dashed #000;
+    }

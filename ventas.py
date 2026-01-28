@@ -98,6 +98,8 @@ def crear_venta(
                 if not art.get("servicios"):
                     raise Exception("Artículo de calzado sin servicios")
 
+                cantidad = int(d.get("cantidad", 1))
+
                 for s in art["servicios"]:
                     id_servicio = int(s["id_servicio"])
                     precio_aplicado = float(s.get("precio_aplicado") or 0)
@@ -119,7 +121,8 @@ def crear_venta(
                         VALUES (%s, %s, %s)
                     """, (id_articulo, id_servicio, precio_aplicado))
 
-                    total += precio_aplicado
+                    total += cantidad * precio_aplicado 
+
 
             elif tipo_articulo == "confeccion":
                 d = art["datos"]
@@ -171,7 +174,9 @@ def crear_venta(
                         VALUES (%s, %s, %s)
                     """, (id_articulo, id_servicio, precio_aplicado))
 
-                    total += precio_aplicado
+                    cantidad = int(d.get("cantidad", 1))
+                    total += cantidad * precio_aplicado
+
 
             elif tipo_articulo == "maquila":
                 d = art["datos"]

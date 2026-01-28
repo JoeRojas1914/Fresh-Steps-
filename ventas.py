@@ -76,7 +76,7 @@ def crear_venta(
 
                 cursor.execute("""
                     INSERT INTO articulo_calzado (
-                        id_articulo_calzado,
+                        id_articulo,
                         tipo,
                         marca,
                         material,
@@ -296,7 +296,7 @@ def obtener_detalles_venta(id_venta):
                     color_secundario,
                     color_agujetas
                 FROM articulo_calzado
-                WHERE id_articulo_calzado = %s
+                WHERE id_articulo = %s
             """, (id_articulo,))
 
             datos = cursor.fetchone()

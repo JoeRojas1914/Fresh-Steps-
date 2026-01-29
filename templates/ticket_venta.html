@@ -7,10 +7,7 @@
 </head>
 
 <body>
-
-  <!-- ================= COPIA CLIENTE ================= -->
   <div class="ticket">
-    <div class="copia-titulo">COPIA CLIENTE</div>
 
     <div class="logo">
       {% if (venta.id_negocio | int) == 1 %}
@@ -147,10 +144,8 @@
 
       {% if (venta.id_negocio | int) == 1 %}
         <div><b>Tel:</b> 440 200 0320</div>
-        <div><b>Correo:</b> freshsteps.terrazas@gmail.com</div>
       {% else %}
         <div><b>Tel:</b> 440 200 0317</div>
-        <div><b>Correo:</b> fersshop.terrazas@gmail.com</div>
           {% endif %}
         </div>
 
@@ -158,160 +153,6 @@
           <b>GRACIAS POR SU PREFERENCIA</b>
         </div>
     </div>
-
-  <div class="separador-copias"></div>
-
-  <!-- ================= COPIA LOCAL ================= -->
-  <div class="ticket">
-    <div class="copia-titulo">COPIA LOCAL</div>
-
-    <div class="logo">
-      {% if (venta.id_negocio | int) == 1 %}
-        <img src="{{ url_for('static', filename='logo.png') }}" alt="Fresh Steps">
-      {% else %}
-        <img src="{{ url_for('static', filename='logo1.png') }}" alt="Confección / Maquila">
-      {% endif %}
-    </div>
-
-    <div class="center">
-      <div class="ticket-numero">Ticket #{{ venta.id_venta }}</div>
-
-      <div class="entrega-estimada">
-        Entrega estimada:
-        {% if venta.fecha_estimada %}
-          {{ venta.fecha_estimada.day }}
-          {{ ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"][venta.fecha_estimada.month - 1] }}
-          {{ venta.fecha_estimada.year }}
-          {{ venta.fecha_estimada.strftime("%H:%M") }}
-        {% endif %}
-      </div>
-
-    </div>
-
-    <hr>
-
-    <div class="seccion">
-      <div><b>Cliente:</b> {{ venta.nombre_cliente or "" }}</div>
-
-      <div style="margin-top:6px;">
-        <b>Fecha de recibo:</b>
-        {% if venta.fecha_recibo %}
-          {{ venta.fecha_recibo.day }}
-          {{ ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"][venta.fecha_recibo.month - 1] }}
-          {{ venta.fecha_recibo.year }}
-          {{ venta.fecha_recibo.strftime("%H:%M") }}
-        {% endif %}
-      </div>
-
-    </div>
-
-    <hr>
-
-    {% for art in detalles %}
-      <div class="titulo-articulo">Artículo {{ loop.index }} - {{ art.tipo_articulo|capitalize }}</div>
-
-      {% if art.tipo_articulo == "calzado" %}
-        <div class="subtexto">
-          {{ art.datos.tipo }} | {{ art.datos.marca }} | {{ art.datos.material }}
-        </div>
-        <div class="subtexto">
-          Base: {{ art.datos.color_base }}
-          {% if art.datos.color_secundario %} | Sec: {{ art.datos.color_secundario }}{% endif %}
-          {% if art.datos.color_agujetas %} | Agujetas: {{ art.datos.color_agujetas }}{% endif %}
-        </div>
-      {% endif %}
-
-      {% if art.tipo_articulo == "confeccion" %}
-        <div class="subtexto">
-          {{ art.datos.tipo }} | {{ art.datos.marca }} | {{ art.datos.material }}
-        </div>
-        <div class="subtexto">
-          Base: {{ art.datos.color_base }}
-          {% if art.datos.color_secundario %} | Sec: {{ art.datos.color_secundario }}{% endif %}
-          | Cant: {{ art.datos.cantidad }}
-        </div>
-      {% endif %}
-
-      {% if art.tipo_articulo == "maquila" %}
-        <div class="subtexto">
-          {{ art.datos.tipo }} | Cant: {{ art.datos.cantidad }} | P.U: ${{ "%.2f"|format(art.datos.precio_unitario or 0) }}
-        </div>
-      {% endif %}
-
-      {% if art.tipo_articulo in ["calzado", "confeccion"] %}
-        {% for s in art.servicios %}
-          <div class="linea">
-            <span>{{ s.nombre }}</span>
-            <span>${{ "%.2f"|format(s.precio_aplicado) }}</span>
-          </div>
-        {% endfor %}
-      {% endif %}
-
-      {% if art.tipo_articulo == "maquila" %}
-        <div class="linea">
-          <span><b>Subtotal</b></span>
-          <span><b>${{ "%.2f"|format(art.datos.subtotal or 0) }}</b></span>
-        </div>
-      {% endif %}
-
-      {% if art.comentario %}
-        <div class="subtexto" style="margin-top:4px;">
-          <b>Comentario:</b> {{ art.comentario }}
-        </div>
-      {% endif %}
-
-      <hr>
-    {% endfor %}
-
-    <div class="totales">
-
-      {% if venta.aplica_descuento and (venta.cantidad_descuento or 0) > 0 %}
-        <div class="linea">
-          <span>Descuento</span>
-          <span>- ${{ "%.2f"|format(venta.cantidad_descuento) }}</span>
-        </div>
-      {% endif %}
-
-      <div class="linea total-final">
-        <span>TOTAL</span>
-        <span>$ {{ "%.2f"|format(venta.total) }}</span>
-      </div>
-
-      {% if venta.prepago and (venta.monto_prepago or 0) > 0 %}
-        <div class="linea" style="margin-top:6px;">
-          <span>Prepago</span>
-          <span>$ {{ "%.2f"|format(venta.monto_prepago) }}</span>
-        </div>
-
-        <div class="linea" style="font-weight:bold;">
-          <span>Restante</span>
-          <span>
-            $ {{ "%.2f"|format((venta.total or 0) - (venta.monto_prepago or 0)) }}
-          </span>
-        </div>
-      {% endif %}
-
-    </div>
-
-    <div class="info-local">
-
-      <div><b>Dirección:</b> Alfredo M. Terrazas #935 A</div>
-      <div><b>Horario:</b> Lunes a Viernes 9:00 AM - 7:00 PM  Sabado: 9:00 AM - 2:00 PM</div>
-
-      {% if (venta.id_negocio | int) == 1 %}
-        <div><b>Tel:</b> 440 200 0320</div>
-        <div><b>Correo:</b> freshsteps.terrazas@gmail.com</div>
-      {% else %}
-        <div><b>Tel:</b> 440 200 0317</div>
-        <div><b>Correo:</b> fersshop.terrazas@gmail.com</div>
-          {% endif %}
-        </div>
-
-        <div class="center subtexto" style="margin-top:10px;">
-          <b>GRACIAS POR SU PREFERENCIA</b>
-        </div>
-    </div>
-  </div>
 
   <script>
     window.addEventListener("load", () => {

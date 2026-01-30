@@ -52,7 +52,9 @@
     <hr>
 
     {% for art in detalles %}
-      <div class="titulo-articulo">Artículo {{ loop.index }} - {{ art.tipo_articulo|capitalize }}</div>
+      {% set ns = namespace(subtotal=0) %}
+
+      <div class="titulo-articulo">Artículo {{ loop.index }}</div>
 
       {% if art.tipo_articulo == "calzado" %}
         <div class="subtexto">
@@ -63,6 +65,14 @@
           {% if art.datos.color_secundario %} | Sec: {{ art.datos.color_secundario }}{% endif %}
           {% if art.datos.color_agujetas %} | Agujetas: {{ art.datos.color_agujetas }}{% endif %}
         </div>
+
+        {% for s in art.servicios %}
+          <div class="linea">
+            <span>{{ s.nombre }}</span>
+            <span>${{ "%.2f"|format(s.precio_aplicado) }}</span>
+          </div>
+          {% set ns.subtotal = ns.subtotal + s.precio_aplicado %}
+        {% endfor %}
       {% endif %}
 
       {% if art.tipo_articulo == "confeccion" %}
@@ -74,29 +84,32 @@
           {% if art.datos.color_secundario %} | Sec: {{ art.datos.color_secundario }}{% endif %}
           | Cant: {{ art.datos.cantidad }}
         </div>
-      {% endif %}
 
-      {% if art.tipo_articulo == "maquila" %}
-        <div class="subtexto">
-          {{ art.datos.tipo }} | Cant: {{ art.datos.cantidad }} | P.U: ${{ "%.2f"|format(art.datos.precio_unitario or 0) }}
-        </div>
-      {% endif %}
-
-      {% if art.tipo_articulo in ["calzado", "confeccion"] %}
         {% for s in art.servicios %}
+          {% set linea = s.precio_aplicado * art.datos.cantidad %}
           <div class="linea">
             <span>{{ s.nombre }}</span>
-            <span>${{ "%.2f"|format(s.precio_aplicado) }}</span>
+            <span>${{ "%.2f"|format(linea) }}</span>
           </div>
+          {% set ns.subtotal = ns.subtotal + linea %}
         {% endfor %}
       {% endif %}
 
       {% if art.tipo_articulo == "maquila" %}
-        <div class="linea">
-          <span><b>Subtotal</b></span>
-          <span><b>${{ "%.2f"|format(art.datos.subtotal or 0) }}</b></span>
+        <div class="subtexto">
+          {{ art.datos.tipo }} |
+          Cant: {{ art.datos.cantidad }} |
+          P.U: ${{ "%.2f"|format(art.datos.precio_unitario) }}
         </div>
+
+        {% set ns.subtotal = art.datos.cantidad * art.datos.precio_unitario %}
       {% endif %}
+
+      <!-- SUBTOTAL -->
+      <div class="linea" style="margin-top:4px;">
+        <span><b>Subtotal</b></span>
+        <span><b>${{ "%.2f"|format(ns.subtotal) }}</b></span>
+      </div>
 
       {% if art.comentario %}
         <div class="subtexto" style="margin-top:4px;">
@@ -105,7 +118,7 @@
       {% endif %}
 
       <hr>
-    {% endfor %}
+      {% endfor %}
 
     <div class="totales">
       {% if venta.aplica_descuento and (venta.cantidad_descuento or 0) > 0 %}

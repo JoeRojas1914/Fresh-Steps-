@@ -3,7 +3,8 @@ from datetime import date, datetime
 import os
 from dotenv import load_dotenv
 from db import get_connection
-
+from werkzeug.security import check_password_hash
+from flask import session
 
 # ================= IMPORTS DE MODULOS =================
 from clientes import (
@@ -109,6 +110,40 @@ def api_servicios():
     id_negocio = request.args.get("id_negocio", type=int)
     return jsonify(obtener_servicios(id_negocio=id_negocio, limit=1000, offset=0))
 
+
+# ================= LOGIN =================
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        usuario_form = request.form.get("usuario")
+        password = request.form.get("password")
+
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT * FROM usuario
+            WHERE usuario = %s AND activo = 1
+        """, (usuario_form,))
+        usuario = cursor.fetchone()
+        cursor.close()
+        conn.close()
+
+        if usuario and check_password_hash(usuario["password_hash"], password):
+            session["id_usuario"] = usuario["id_usuario"]
+            session["usuario"] = usuario["usuario"]
+            session["rol"] = usuario["rol"]
+
+            return redirect(url_for("index"))
+
+        flash("❌ Usuario o contraseña incorrectos", "error")
+
+    return render_template("login.html")
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
 
 
 # ================= HOME =================

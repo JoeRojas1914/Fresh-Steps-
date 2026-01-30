@@ -22,6 +22,7 @@ from gastos import (
     contar_gastos,
 )
 
+from pagos import obtener_pagos_venta, registrar_pago
 from servicios import (
     contar_servicios,
     obtener_servicios,
@@ -373,25 +374,34 @@ def ventas():
 def ventas_pendientes():
     id_negocio = request.args.get("id_negocio") or None
     ventas = obtener_ventas_pendientes(id_negocio)
-    negocios = obtener_negocios()  
+    negocios = obtener_negocios()
 
     ventas_con_detalles = []
-    for v in ventas:
-        detalles = obtener_detalles_venta(v["id_venta"])
-        v["detalles"] = detalles
 
-        v["monto_prepago"] = v.get("monto_prepago", 0) or 0
-        v["prepago"] = v.get("prepago", 0) or 0
-        v["total"] = v.get("total", 0) or 0
+    for v in ventas:
+        v["detalles"] = obtener_detalles_venta(v["id_venta"])
+
+        pagos = obtener_pagos_venta(v["id_venta"])
+        v["pagos"] = pagos
+
+        total_pagado = sum(float(p["monto"]) for p in pagos)
+
+        v["total"] = float(v.get("total") or 0)
+        v["total_pagado"] = total_pagado
+        v["saldo_pendiente"] = max(v["total"] - total_pagado, 0)
+
+        v["tiene_pagos"] = total_pagado > 0
+        v["esta_pagada"] = v["saldo_pendiente"] == 0
 
         ventas_con_detalles.append(v)
 
     return render_template(
         "ventas_pendientes.html",
         ventas=ventas_con_detalles,
-        negocios=negocios,  
+        negocios=negocios,
         hoy=date.today()
     )
+
 
 
 
@@ -417,10 +427,20 @@ def guardar_venta():
         tipo_pago = request.form.get("tipo_pago")
 
         prepago = request.form.get("prepago") == "si"
-        monto_prepago = request.form.get("monto_prepago") if prepago else None
+        monto_prepago = (
+            float(request.form.get("monto_prepago") or 0)
+            if prepago
+            else 0
+        )
+
 
         aplica_descuento = request.form.get("aplica_descuento") == "si"
-        cantidad_descuento = int(request.form.get("cantidad_descuento") or 0) if aplica_descuento else 0
+        cantidad_descuento = (
+            float(request.form.get("cantidad_descuento") or 0)
+            if aplica_descuento
+            else 0
+        )
+
 
         tipos_por_negocio = {
             1: "calzado",
@@ -572,13 +592,23 @@ def guardar_venta():
             id_negocio=id_negocio,
             id_cliente=id_cliente,
             fecha_estimada=fecha_estimada,
-            tipo_pago=tipo_pago,
-            prepago=prepago,
-            monto_prepago=monto_prepago,
             aplica_descuento=aplica_descuento,
             cantidad_descuento=cantidad_descuento,
             articulos=articulos
         )
+
+        if prepago and monto_prepago > 0:
+            if not tipo_pago:
+                return jsonify({
+                    "ok": False,
+                    "error": "Debes seleccionar el tipo de pago del prepago."
+                }), 400
+
+            registrar_pago(
+                id_venta=id_venta,
+                monto=monto_prepago,
+                tipo_pago=tipo_pago
+            )
 
         return jsonify({
             "ok": True,

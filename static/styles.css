@@ -1620,3 +1620,48 @@ hr {
 }
 
 
+.pago-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.pago-row {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.pago-row .form-item {
+    min-width: 200px;
+    flex: 1;
+}
+
+.pago-row .form-item select,
+.pago-row .form-item input {
+    height: 42px;
+}
+
+
+/* ===== Ajuste fino para pago y descuento ===== */
+
+.pago-row .form-item {
+    flex: 0 0 auto;
+}
+
+.pago-row .form-item select,
+.pago-row .form-item input {
+    max-width: 220px;
+}
+
+.pago-row .form-item {
+    position: relative;
+}
+
+.pago-row .form-item .error-msg {
+    min-height: 16px;
+    font-size: 12px;
+    margin-top: 4px;
+    color: #dc2626;
+}

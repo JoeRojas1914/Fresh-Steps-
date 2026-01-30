@@ -1,3 +1,4 @@
+from decimal import Decimal
 from db import get_connection
 from datetime import datetime
 
@@ -7,9 +8,6 @@ def crear_venta(
     id_negocio,
     id_cliente,
     fecha_estimada,
-    tipo_pago,
-    prepago,
-    monto_prepago,
     aplica_descuento,
     cantidad_descuento,
     articulos
@@ -24,28 +22,22 @@ def crear_venta(
                 id_cliente,
                 fecha_recibo,
                 fecha_estimada,
-                tipo_pago,
-                prepago,
-                monto_prepago,
                 aplica_descuento,
                 cantidad_descuento,
                 total
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, 0)
+            VALUES (%s, %s, %s, %s, %s, %s, 0)
         """, (
             id_negocio,
             id_cliente,
             datetime.now(),
             fecha_estimada,
-            tipo_pago,
-            prepago,
-            monto_prepago,
             aplica_descuento,
             cantidad_descuento
         ))
 
         id_venta = cursor.lastrowid
-        total = 0
+        total = Decimal("0.00")
 
         tipos_por_negocio = {
             1: "calzado",
@@ -58,7 +50,9 @@ def crear_venta(
             tipo_esperado = tipos_por_negocio.get(id_negocio)
 
             if tipo_esperado and tipo_articulo != tipo_esperado:
-                raise Exception(f"Tipo de artículo inválido. Este negocio solo permite: {tipo_esperado}")
+                raise Exception(
+                    f"Tipo de artículo inválido. Este negocio solo permite: {tipo_esperado}"
+                )
 
             cursor.execute("""
                 INSERT INTO articulo (id_venta, tipo_articulo, comentario)
@@ -71,6 +65,9 @@ def crear_venta(
 
             id_articulo = cursor.lastrowid
 
+            # =====================
+            # CALZADO
+            # =====================
             if tipo_articulo == "calzado":
                 d = art["datos"]
 
@@ -98,11 +95,13 @@ def crear_venta(
                 if not art.get("servicios"):
                     raise Exception("Artículo de calzado sin servicios")
 
-                cantidad = int(d.get("cantidad", 1))
-
                 for s in art["servicios"]:
                     id_servicio = int(s["id_servicio"])
-                    precio_aplicado = float(s.get("precio_aplicado") or 0)
+
+                    try:
+                        precio_aplicado = Decimal(str(s.get("precio_aplicado") or "0"))
+                    except InvalidOperation:
+                        precio_aplicado = Decimal("0")
 
                     if precio_aplicado <= 0:
                         cursor.execute(
@@ -110,7 +109,9 @@ def crear_venta(
                             (id_servicio,)
                         )
                         row = cursor.fetchone()
-                        precio_aplicado = float(row["precio_base"]) if row else 0
+                        precio_aplicado = (
+                            Decimal(str(row["precio_base"])) if row else Decimal("0")
+                        )
 
                     cursor.execute("""
                         INSERT INTO articulo_servicio (
@@ -121,24 +122,29 @@ def crear_venta(
                         VALUES (%s, %s, %s)
                     """, (id_articulo, id_servicio, precio_aplicado))
 
-                    total += cantidad * precio_aplicado 
+                    # Calzado NO usa cantidad
+                    total += precio_aplicado
 
-
+            # =====================
+            # CONFECCIÓN
+            # =====================
             elif tipo_articulo == "confeccion":
                 d = art["datos"]
 
+                cantidad = Decimal(str(d.get("cantidad", 1)))
+
                 cursor.execute("""
-                INSERT INTO articulo_confeccion (
-                    id_articulo,
-                    tipo,
-                    marca,
-                    material,
-                    color_base,
-                    color_secundario,
-                    cantidad,
-                    agujetas
-                )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    INSERT INTO articulo_confeccion (
+                        id_articulo,
+                        tipo,
+                        marca,
+                        material,
+                        color_base,
+                        color_secundario,
+                        cantidad,
+                        agujetas
+                    )
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """, (
                     id_articulo,
                     d["tipo"],
@@ -146,7 +152,7 @@ def crear_venta(
                     d["material"],
                     d["color_base"],
                     d.get("color_secundario"),
-                    d["cantidad"],
+                    int(cantidad),
                     d["agujetas"]
                 ))
 
@@ -155,7 +161,11 @@ def crear_venta(
 
                 for s in art["servicios"]:
                     id_servicio = int(s["id_servicio"])
-                    precio_aplicado = float(s.get("precio_aplicado") or 0)
+
+                    try:
+                        precio_aplicado = Decimal(str(s.get("precio_aplicado") or "0"))
+                    except InvalidOperation:
+                        precio_aplicado = Decimal("0")
 
                     if precio_aplicado <= 0:
                         cursor.execute(
@@ -163,7 +173,9 @@ def crear_venta(
                             (id_servicio,)
                         )
                         row = cursor.fetchone()
-                        precio_aplicado = float(row["precio_base"]) if row else 0
+                        precio_aplicado = (
+                            Decimal(str(row["precio_base"])) if row else Decimal("0")
+                        )
 
                     cursor.execute("""
                         INSERT INTO articulo_servicio (
@@ -174,12 +186,16 @@ def crear_venta(
                         VALUES (%s, %s, %s)
                     """, (id_articulo, id_servicio, precio_aplicado))
 
-                    cantidad = int(d.get("cantidad", 1))
                     total += cantidad * precio_aplicado
 
-
+            # =====================
+            # MAQUILA
+            # =====================
             elif tipo_articulo == "maquila":
                 d = art["datos"]
+
+                cantidad = Decimal(str(d["cantidad"]))
+                precio_unitario = Decimal(str(d["precio_unitario"]))
 
                 cursor.execute("""
                     INSERT INTO articulo_maquila (
@@ -192,28 +208,31 @@ def crear_venta(
                 """, (
                     id_articulo,
                     d["tipo"],
-                    d["cantidad"],
-                    d["precio_unitario"]
+                    int(cantidad),
+                    precio_unitario
                 ))
 
-                total += float(d["cantidad"]) * float(d["precio_unitario"])
+                total += cantidad * precio_unitario
 
+        # =====================
+        # DESCUENTO
+        # =====================
         if aplica_descuento and cantidad_descuento:
-            total -= float(cantidad_descuento)
+            total -= Decimal(str(cantidad_descuento))
             if total < 0:
-                total = 0
+                total = Decimal("0.00")
 
         cursor.execute(
             "UPDATE venta SET total = %s WHERE id_venta = %s",
-            (total, id_venta)
+            (str(total), id_venta)
         )
 
         conn.commit()
         return id_venta
 
-    except Exception as e:
+    except Exception:
         conn.rollback()
-        raise e
+        raise
 
     finally:
         cursor.close()
@@ -389,38 +408,36 @@ def obtener_ventas_pendientes(id_negocio=None):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-    filtros = ""
-    params = []
-
-    if id_negocio:
-        filtros = "AND v.id_negocio = %s"
-        params.append(id_negocio)
-
-    cursor.execute(f"""
-        SELECT 
+    query = """
+        SELECT
             v.id_venta,
             v.fecha_recibo,
             v.fecha_estimada,
             v.total,
-            v.prepago,             
-            v.monto_prepago, 
             c.nombre,
             c.apellido,
             n.nombre AS negocio
         FROM venta v
-        LEFT JOIN cliente c ON v.id_cliente = c.id_cliente
-        LEFT JOIN negocio n ON v.id_negocio = n.id_negocio
+        JOIN cliente c ON c.id_cliente = v.id_cliente
+        JOIN negocio n ON n.id_negocio = v.id_negocio
         WHERE v.fecha_entrega IS NULL
-        {filtros}
-        ORDER BY 
-            v.fecha_estimada ASC,
-            v.fecha_recibo ASC
-    """, params)
+    """
 
+    params = []
+
+    if id_negocio:
+        query += " AND v.id_negocio = %s"
+        params.append(id_negocio)
+
+    query += " ORDER BY v.fecha_estimada ASC"
+
+    cursor.execute(query, params)
     ventas = cursor.fetchall()
+
     cursor.close()
     conn.close()
     return ventas
+
 
 
 def obtener_venta(id_venta):

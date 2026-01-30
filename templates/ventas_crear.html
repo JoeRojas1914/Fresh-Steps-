@@ -147,63 +147,65 @@
         <div class="section-header">
             <h2>Pago y descuentos</h2>
         </div>
-        <div class="form-group form-row">
-            <div class="form-item">
-                <label class="form-label">Tipo de pago</label>
-                <select name="tipo_pago" id="tipo_pago" onchange="validarFormulario(); actualizarTotal()">
-                    <option value="">-- Selecciona --</option>
-                    <option value="efectivo">Efectivo</option>
-                    <option value="tarjeta">Tarjeta</option>
-                </select>
-            </div>
+        <div class="pago-grid">
 
-            <div class="form-item">
-                <label class="form-label">¿Prepago?</label>
-                <select name="prepago" id="prepago" onchange="togglePrepago(); validarFormulario(); actualizarTotal()">
-                    <option value="">-- Selecciona --</option>
-                    <option value="si">Sí</option>
-                    <option value="no">No</option>
-                </select>
-            </div>
+    <!-- FILA PREPAGO -->
+    <div class="pago-row">
+        <div class="form-item">
+            <label class="form-label">¿Prepago?</label>
+            <select name="prepago" id="prepago"
+                    onchange="togglePrepago(); validarFormulario(); actualizarTotal()">
+                <option value="">-- Selecciona --</option>
+                <option value="si">Sí</option>
+                <option value="no">No</option>
+            </select>
+        </div>
 
-            <div class="form-item" id="montoPrepagoContainer" style="display:none;">
-                <label class="form-label">Monto prepago</label>
-                <input
-                    type="number"
-                    min="0"
-                    step="1"
-                    name="monto_prepago"
-                    id="monto_prepago"
-                    placeholder="0"
-                    oninput="validarFormulario(); actualizarTotal()"
-                >
-                <div id="errorPrepago" style="color:red; font-size:0.9em; display:none;">
-                    El prepago no puede ser mayor al total ni menor a 0.
-                </div>
-            </div>
+        <div class="form-item" id="tipoPagoPrepagoContainer" style="display:none;">
+            <label class="form-label">Tipo de pago</label>
+            <select name="tipo_pago" id="tipo_pago"
+                    onchange="validarFormulario(); actualizarTotal()">
+                <option value="">-- Selecciona --</option>
+                <option value="efectivo">Efectivo</option>
+                <option value="tarjeta">Tarjeta</option>
+            </select>
+        </div>
 
-            <div class="form-item">
-                <label class="form-label">¿Aplicar descuento?</label>
-                <select name="aplica_descuento" id="aplica_descuento" onchange="toggleDescuento(); actualizarTotal()">
-                    <option value="">-- Selecciona --</option>
-                    <option value="si">Sí</option>
-                    <option value="no">No</option>
-                </select>
-            </div>
-
-            <div class="form-item" id="cantidadDescuentoContainer" style="display:none;">
-                <label class="form-label">Descuento ($)</label>
-                <input
-                    type="number"
-                    min="0"
-                    step="1"
-                    name="cantidad_descuento"
-                    id="cantidad_descuento"
-                    placeholder="0"
-                    oninput="validarFormulario(); actualizarTotal()"
-                >
+        <div class="form-item" id="montoPrepagoContainer" style="display:none;">
+            <label class="form-label">Monto prepago</label>
+            <input type="number" min="0" step="0.01"
+                   name="monto_prepago" id="monto_prepago"
+                   placeholder="0"
+                   oninput="validarFormulario(); actualizarTotal()">
+            <div id="errorPrepago" class="error-msg" style="display:none;">
+                El prepago no puede ser mayor al total ni menor a 0.
             </div>
         </div>
+    </div>
+
+    <!-- FILA DESCUENTO -->
+    <div class="pago-row">
+        <div class="form-item">
+            <label class="form-label">¿Aplicar descuento?</label>
+            <select name="aplica_descuento" id="aplica_descuento"
+                    onchange="toggleDescuento(); actualizarTotal()">
+                <option value="">-- Selecciona --</option>
+                <option value="si">Sí</option>
+                <option value="no">No</option>
+            </select>
+        </div>
+
+        <div class="form-item" id="cantidadDescuentoContainer" style="display:none;">
+            <label class="form-label">Descuento ($)</label>
+            <input type="number" min="0" step="0.01"
+                   name="cantidad_descuento" id="cantidad_descuento"
+                   placeholder="0"
+                   oninput="validarFormulario(); actualizarTotal()">
+        </div>
+    </div>
+
+</div>
+
     </div>
 
     <hr>
@@ -253,7 +255,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const form = e.target;
         const formData = new FormData(form);
 
-        // Abre una pestaña "en blanco" ANTES del fetch para evitar bloqueos del navegador
+
         const nuevaPestana = window.open("", "_blank");
 
         try {
@@ -270,10 +272,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // manda la pestaña al ticket
             nuevaPestana.location.href = `/ventas/ticket/${data.id_venta}`;
 
-            // y aquí ya puedes mandar al usuario a pendientes
             window.location.href = "/ventas/pendientes";
 
         } catch (err) {
@@ -592,7 +592,7 @@ function crearFilaServicio(indexArticulo, indexServicio, opcionesHTML) {
 
             <input type="number"
                    min="0"
-                   step="1"
+                   step="0.01"
                    class="precio-aplicado"
                    name="articulos[${indexArticulo}][servicios][${indexServicio}][precio_aplicado]"
                    placeholder="Precio aplicado"
@@ -730,8 +730,18 @@ function actualizarOpcionesServiciosDelArticulo(indexArticulo) {
 
 function togglePrepago() {
     const val = document.getElementById("prepago").value;
-    document.getElementById("montoPrepagoContainer").style.display = val === "si" ? "block" : "none";
+
+    const show = val === "si";
+
+    document.getElementById("montoPrepagoContainer").style.display = show ? "block" : "none";
+    document.getElementById("tipoPagoPrepagoContainer").style.display = show ? "block" : "none";
+
+    if (!show) {
+        document.getElementById("monto_prepago").value = "";
+        document.getElementById("tipo_pago").value = "";
+    }
 }
+
 
 function toggleDescuento() {
     const val = document.getElementById("aplica_descuento").value;
@@ -788,9 +798,14 @@ function validarFormulario() {
     const tipoPago = document.getElementById("tipo_pago").value;
     const prepago = document.getElementById("prepago").value;
 
-    let valido = cliente && negocio && fechaEstimada && tipoPago && prepago;
+    let valido = cliente && negocio && fechaEstimada && prepago;
+
 
     const buscando = document.getElementById("busquedaCliente").style.display !== "none";
+
+    if (prepago === "si" && !tipoPago) {
+        valido = false;
+    }
 
     if (!cliente && !buscando) {
         document.getElementById("errorCliente").style.display = "block";
@@ -832,15 +847,16 @@ function validarFormulario() {
 
     if (prepago === "si") {
         if (!monto || monto <= 0) valido = false;
+        if (!tipoPago) valido = false;
+
         if (monto > total) {
             document.getElementById("errorPrepago").style.display = "block";
             valido = false;
         } else {
             document.getElementById("errorPrepago").style.display = "none";
         }
-    } else {
-        document.getElementById("errorPrepago").style.display = "none";
     }
+
 
     document.getElementById("btnCrear").disabled = !valido;
 }

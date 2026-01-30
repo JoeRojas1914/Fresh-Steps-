@@ -65,8 +65,9 @@
         } %}
     {% for v in ventas %}
         {% set total = v.total | float(0) %}
-        {% set prepago = v.monto_prepago | float(0) %}
-        {% set deuda = total - prepago %}
+        {% set pagado = v.total_pagado | float(0) %}
+        {% set deuda = v.saldo_pendiente | float(0) %}
+
 
         <tr class="{% if v.fecha_estimada.date() < hoy %}entrega-atrasada{% elif v.fecha_estimada.date() == hoy %}entrega-hoy{% endif %}">
             <td>#{{ v.id_venta }}</td>
@@ -87,9 +88,22 @@
                     <span class="badge-hoy">HOY</span>
                 {% endif %}
             </td>
-            <td>{{ 'Sí' if v.prepago else 'No' }}</td>
+            <td>
+                {% if v.total_pagado > 0 %}
+                    Sí
+                {% else %}
+                    No
+                {% endif %}
+            </td>
             <td>${{ total | round(2) }}</td>
-            <td>${{ prepago | round(2) }}</td>
+            <td>
+                {% if v.total_pagado > 0 %}
+                    ${{ pagado | round(2) }}
+                {% else %}
+                    <span style="opacity:0.6;">Sin prepago</span>
+                {% endif %}
+            </td>
+
             <td>${{ deuda | round(2) }}</td>
             <td>
                 <button class="btn-info" data-id="{{ v.id_venta }}">ℹ️ Info</button>

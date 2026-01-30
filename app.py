@@ -446,10 +446,12 @@ def entregar_venta(id_venta):
         row = cursor.fetchone()
 
         if not row:
-            return jsonify({"ok": False, "error": "Venta no existe"}), 404
+            flash("❌ La venta no existe", "error")
+            return redirect(url_for("ventas_pendientes"))
 
         if row[0] is not None:
-            return jsonify({"ok": False, "error": "La venta ya fue entregada"}), 400
+            flash("⚠️ La venta ya fue entregada", "warning")
+            return redirect(url_for("ventas_pendientes"))
 
         cursor.execute("""
             UPDATE venta
@@ -458,15 +460,13 @@ def entregar_venta(id_venta):
         """, (id_venta,))
 
         conn.commit()
-        return jsonify({
-            "ok": True,
-            "message": "✅ Venta entregada."
-        })
-
+        flash("✅ Venta entregada correctamente", "success")
+        return redirect(url_for("ventas_pendientes"))
 
     except Exception as e:
         conn.rollback()
-        return jsonify({"ok": False, "error": str(e)}), 500
+        flash(f"❌ Error: {e}", "error")
+        return redirect(url_for("ventas_pendientes"))
 
     finally:
         cursor.close()

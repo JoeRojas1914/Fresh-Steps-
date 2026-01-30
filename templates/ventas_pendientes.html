@@ -25,15 +25,8 @@
 </div>
 
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    {% for category, message in messages %}
-      <div class="alert {{ category }}">
-        {{ message }}
-      </div>
-    {% endfor %}
-  {% endif %}
-{% endwith %}
+<div id="toast-container"></div>
+
 
 <style>
 .entrega-hoy {
@@ -344,8 +337,18 @@ function cerrarModalEntrega() {
 
 function confirmarEntregaSinPago() {
   fetch(`/ventas/entregar/${ventaEntregaActual}`, { method: "POST" })
-    .then(() => location.reload());
+    .then(r => r.json())
+    .then(res => {
+      if (res.ok) {
+        cerrarModalEntrega();
+        mostrarFeedback(res.message, "success");
+        setTimeout(() => location.reload(), 1200);
+      } else {
+        mostrarFeedback(res.error || "Error al entregar", "error");
+      }
+    });
 }
+
 
 function confirmarPagoYEntrega() {
   const metodo = document.getElementById("metodoPagoFinal").value;
@@ -367,12 +370,27 @@ function confirmarPagoYEntrega() {
   .then(r => r.json())
   .then(res => {
     if (res.ok) {
-      location.reload();
+      cerrarModalEntrega();
+      mostrarFeedback(res.message, "success");
+      setTimeout(() => location.reload(), 1200);
     } else {
-      alert(res.error || "Error al registrar pago");
+      mostrarFeedback(res.error || "Error al registrar pago", "error");
     }
   });
 }
+
+function mostrarFeedback(texto, tipo = "success") {
+  const div = document.createElement("div");
+  div.className = `alert ${tipo}`;
+  div.innerText = texto;
+
+  document.body.prepend(div);
+
+  setTimeout(() => {
+    div.remove();
+  }, 3000);
+}
+
 </script>
 
 

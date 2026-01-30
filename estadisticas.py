@@ -218,28 +218,24 @@ def obtener_unidades_por_semana(inicio: date, fin: date, id_negocio: str):
     return resultados
 
 
-def obtener_total_ingresos(inicio: date, fin: date, id_negocio: str):
+def obtener_total_ingresos(inicio, fin, id_negocio):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-    query = """
-        SELECT
-            COALESCE(SUM(
-                CASE
-                    WHEN fecha_entrega IS NOT NULL THEN total
-                    ELSE monto_prepago
-                END
-            ), 0) AS total
-        FROM venta
-        WHERE fecha_recibo BETWEEN %s AND %s
+    sql = """
+        SELECT COALESCE(SUM(pv.monto), 0) AS total
+        FROM pago_venta pv
+        JOIN venta v ON v.id_venta = pv.id_venta
+        WHERE pv.fecha_pago >= %s
+          AND pv.fecha_pago < DATE_ADD(%s, INTERVAL 1 DAY)
     """
     params = [inicio, fin]
 
     if id_negocio != "all":
-        query += " AND id_negocio = %s"
+        sql += " AND v.id_negocio = %s"
         params.append(id_negocio)
 
-    cursor.execute(query, params)
+    cursor.execute(sql, params)
     total = cursor.fetchone()["total"] or 0
 
     cursor.close()
@@ -248,7 +244,9 @@ def obtener_total_ingresos(inicio: date, fin: date, id_negocio: str):
     return float(total)
 
 
-def obtener_ingresos_por_semana(inicio: date, fin: date, id_negocio: str):
+
+
+def obtener_ingresos_por_semana(inicio, fin, id_negocio):
     semanas = generar_semanas_rango(inicio, fin)
 
     conn = get_connection()
@@ -260,24 +258,20 @@ def obtener_ingresos_por_semana(inicio: date, fin: date, id_negocio: str):
         semana_inicio = max(s["inicio"], inicio)
         semana_fin = min(s["fin"], fin)
 
-        query = """
-            SELECT
-                COALESCE(SUM(
-                    CASE
-                        WHEN fecha_entrega IS NOT NULL THEN total
-                        ELSE monto_prepago
-                    END
-                ), 0) AS total
-            FROM venta
-            WHERE fecha_recibo BETWEEN %s AND %s
+        sql = """
+            SELECT COALESCE(SUM(pv.monto), 0) AS total
+            FROM pago_venta pv
+            JOIN venta v ON v.id_venta = pv.id_venta
+            WHERE pv.fecha_pago >= %s
+              AND pv.fecha_pago < DATE_ADD(%s, INTERVAL 1 DAY)
         """
         params = [semana_inicio, semana_fin]
 
         if id_negocio != "all":
-            query += " AND id_negocio = %s"
+            sql += " AND v.id_negocio = %s"
             params.append(id_negocio)
 
-        cursor.execute(query, params)
+        cursor.execute(sql, params)
         total = cursor.fetchone()["total"] or 0
 
         resultados.append({
@@ -289,6 +283,8 @@ def obtener_ingresos_por_semana(inicio: date, fin: date, id_negocio: str):
     conn.close()
 
     return resultados
+
+
 
 def ejecutar_query(sql, params=None):
     conn = get_connection()
@@ -322,21 +318,43 @@ def obtener_uso_servicios(inicio, fin, id_negocio):
     return ejecutar_query(sql, params)
 
 
-def obtener_ventas_por_tipo_pago(inicio, fin, id_negocio):
+def obtener_ventas_con_y_sin_prepago(inicio, fin, id_negocio):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
     sql = """
-        SELECT tipo_pago, COUNT(*) total
-        FROM venta
-        WHERE DATE(fecha_recibo) BETWEEN %s AND %s
+        SELECT
+            CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM pago_venta pv
+                    WHERE pv.id_venta = v.id_venta
+                      AND pv.tipo_pago_venta = 'prepago'
+                )
+                THEN 'Con prepago'
+                ELSE 'Sin prepago'
+            END AS tipo,
+            COUNT(*) AS total
+        FROM venta v
+        WHERE DATE(v.fecha_recibo) BETWEEN %s AND %s
     """
     params = [inicio, fin]
 
     if id_negocio != "all":
-        sql += " AND id_negocio = %s"
+        sql += " AND v.id_negocio = %s"
         params.append(id_negocio)
 
-    sql += " GROUP BY tipo_pago"
+    sql += " GROUP BY tipo"
 
-    return ejecutar_query(sql, params)
+    cursor.execute(sql, params)
+    rows = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return rows
+
+
 
 
 def obtener_ventas_por_dia(inicio, fin, id_negocio):

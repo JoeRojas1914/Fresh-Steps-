@@ -95,7 +95,7 @@
 
 <div class="stats-page">
     <div class="card stats-card">
-        <h2 class="stats-title">Tipo de pago</h2>
+        <h2 class="stats-title">Prepago vs Sin prepago</h2>
         <canvas id="tipoPagoChart"></canvas>
     </div>
 
@@ -357,7 +357,6 @@ async function cargarDashboard() {
 
         const res = await fetch(url);
 
-        // 👇 CLAVE: valida respuesta HTTP
         if (!res.ok) {
             const text = await res.text();
             console.error("❌ Error HTTP:", res.status, text);
@@ -367,9 +366,8 @@ async function cargarDashboard() {
         const data = await res.json();
         console.log("✅ Dashboard data:", data);
 
-        // ---- KPIs ----
         document.getElementById("ventasMes").textContent =
-            `$${Number(data.kpis?.ventas || 0).toLocaleString()}`;
+            `$${Number(data.kpis?.ingresos || 0).toLocaleString()}`;
 
         document.getElementById("gastosMes").textContent =
             `$${Number(data.kpis?.gastos || 0).toLocaleString()}`;
@@ -411,14 +409,15 @@ async function cargarDashboard() {
             ingresosChart.update();
         }
 
-        // ---- Tipo pago ----
-        if (data.ventas_tipo_pago) {
+        // ---- Prepago vs Sin prepago ----
+        if (data.ventas_prepago) {
             tipoPagoChart.data.labels =
-                data.ventas_tipo_pago.map(x => x.tipo_pago);
+                data.ventas_prepago.map(x => x.tipo);
             tipoPagoChart.data.datasets[0].data =
-                data.ventas_tipo_pago.map(x => x.total);
+                data.ventas_prepago.map(x => x.total);
             tipoPagoChart.update();
         }
+
 
         // ---- Servicios ----
         if (data.uso_servicios) {

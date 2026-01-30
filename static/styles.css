@@ -1644,8 +1644,6 @@ hr {
 }
 
 
-/* ===== Ajuste fino para pago y descuento ===== */
-
 .pago-row .form-item {
     flex: 0 0 auto;
 }
@@ -1665,3 +1663,5 @@ hr {
     margin-top: 4px;
     color: #dc2626;
 }
+
+

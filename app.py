@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
-from datetime import date, timedelta, datetime
-from calendar import monthrange
+from datetime import date, datetime
 import os
 from dotenv import load_dotenv
 from db import get_connection
@@ -41,7 +40,6 @@ from ventas import (
     obtener_venta,
     obtener_ventas_pendientes,
     obtener_detalles_venta,
-    marcar_entregada,
     contar_entregas_pendientes,
 )
 
@@ -52,7 +50,7 @@ from estadisticas import (
     obtener_total_ingresos,
     obtener_unidades_por_semana,
     obtener_ingresos_por_semana,
-    obtener_ventas_por_tipo_pago,
+    obtener_ventas_con_y_sin_prepago,
     obtener_uso_servicios,
     obtener_ventas_por_dia
 )
@@ -843,7 +841,7 @@ def estadisticas():
 
 @app.route("/api/estadisticas/dashboard")
 def api_estadisticas_dashboard():
-    try: 
+    try:
         inicio_str = request.args.get("inicio")
         fin_str = request.args.get("fin")
         id_negocio = request.args.get("id_negocio", "all")
@@ -863,29 +861,31 @@ def api_estadisticas_dashboard():
         unidades_semanales = obtener_unidades_por_semana(inicio, fin, id_negocio)
         total_ingresos = obtener_total_ingresos(inicio, fin, id_negocio)
         ingresos_semanales = obtener_ingresos_por_semana(inicio, fin, id_negocio)
-        ganancia = total_ingresos - total_gastos
-        ventas_tipo_pago = obtener_ventas_por_tipo_pago(inicio, fin, id_negocio)
+        ventas_prepago = obtener_ventas_con_y_sin_prepago(inicio, fin, id_negocio)
         uso_servicios = obtener_uso_servicios(inicio, fin, id_negocio)
         ventas_por_dia = obtener_ventas_por_dia(inicio, fin, id_negocio)
+        print("DEBUG KPI ingresos:", total_ingresos)
+
 
         return jsonify({
             "ventas_semanales": ventas_semanales,
             "gastos_semanales": gastos_semanales,
             "ingresos_semanales": ingresos_semanales,
             "unidades_semanales": unidades_semanales,
-            "ventas_tipo_pago": ventas_tipo_pago,
+            "ventas_prepago": ventas_prepago,
             "uso_servicios": uso_servicios,
             "ventas_por_dia": ventas_por_dia,
             "kpis": {
-                "ventas": total_ingresos,
+                "ingresos": total_ingresos,
                 "gastos": total_gastos,
-                "ganancia": ganancia
+                "ganancia": total_ingresos - total_gastos
             }
         })
-    
+
     except Exception as e:
         print("ERROR DASHBOARD:", e)
         return jsonify({"error": str(e)}), 500
+
 
 
 # ================= RUN =================

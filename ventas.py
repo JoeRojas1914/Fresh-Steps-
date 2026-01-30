@@ -65,9 +65,7 @@ def crear_venta(
 
             id_articulo = cursor.lastrowid
 
-            # =====================
-            # CALZADO
-            # =====================
+
             if tipo_articulo == "calzado":
                 d = art["datos"]
 
@@ -122,12 +120,9 @@ def crear_venta(
                         VALUES (%s, %s, %s)
                     """, (id_articulo, id_servicio, precio_aplicado))
 
-                    # Calzado NO usa cantidad
                     total += precio_aplicado
 
-            # =====================
-            # CONFECCIÓN
-            # =====================
+
             elif tipo_articulo == "confeccion":
                 d = art["datos"]
 
@@ -188,9 +183,6 @@ def crear_venta(
 
                     total += cantidad * precio_aplicado
 
-            # =====================
-            # MAQUILA
-            # =====================
             elif tipo_articulo == "maquila":
                 d = art["datos"]
 
@@ -214,9 +206,7 @@ def crear_venta(
 
                 total += cantidad * precio_unitario
 
-        # =====================
-        # DESCUENTO
-        # =====================
+
         if aplica_descuento and cantidad_descuento:
             total -= Decimal(str(cantidad_descuento))
             if total < 0:
@@ -445,21 +435,26 @@ def obtener_venta(id_venta):
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute("""
-        SELECT 
+        SELECT
             v.id_venta,
             v.id_negocio,
-            v.total,
             v.fecha_recibo,
             v.fecha_estimada,
-            v.prepago,
-            v.monto_prepago,
+            v.total,
             v.aplica_descuento,
             v.cantidad_descuento,
-            CONCAT(c.nombre, ' ', c.apellido) AS nombre_cliente
+
+            CONCAT(c.nombre, ' ', c.apellido) AS nombre_cliente,
+
+            COALESCE(SUM(p.monto), 0) AS total_pagado,
+            (v.total - COALESCE(SUM(p.monto), 0)) AS saldo_pendiente
+
         FROM venta v
         JOIN cliente c ON c.id_cliente = v.id_cliente
+        LEFT JOIN pago_venta p ON p.id_venta = v.id_venta
+
         WHERE v.id_venta = %s
-        LIMIT 1
+        GROUP BY v.id_venta
     """, (id_venta,))
 
     venta = cursor.fetchone()
@@ -467,3 +462,4 @@ def obtener_venta(id_venta):
     cursor.close()
     conn.close()
     return venta
+

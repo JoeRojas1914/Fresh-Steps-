@@ -624,10 +624,14 @@ def guardar_venta():
 
 @app.route("/ventas/ticket/<int:id_venta>")
 def venta_ticket(id_venta):
-    venta = obtener_venta(id_venta) 
+    venta = obtener_venta(id_venta)
     detalles = obtener_detalles_venta(id_venta)
 
-    return render_template("ticket_venta.html", venta=venta, detalles=detalles)
+    return render_template(
+        "ticket_venta.html",
+        venta=venta,
+        detalles=detalles
+    )
 
 
 

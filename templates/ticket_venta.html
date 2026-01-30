@@ -108,7 +108,6 @@
     {% endfor %}
 
     <div class="totales">
-
       {% if venta.aplica_descuento and (venta.cantidad_descuento or 0) > 0 %}
         <div class="linea">
           <span>Descuento</span>
@@ -121,21 +120,26 @@
         <span>$ {{ "%.2f"|format(venta.total) }}</span>
       </div>
 
-      {% if venta.prepago and (venta.monto_prepago or 0) > 0 %}
+      {% if venta.total_pagado > 0 %}
         <div class="linea" style="margin-top:6px;">
           <span>Prepago</span>
-          <span>$ {{ "%.2f"|format(venta.monto_prepago) }}</span>
+          <span>$ {{ "%.2f"|format(venta.total_pagado) }}</span>
         </div>
 
         <div class="linea" style="font-weight:bold;">
           <span>Restante</span>
-          <span>
-            $ {{ "%.2f"|format((venta.total or 0) - (venta.monto_prepago or 0)) }}
-          </span>
+          <span>$ {{ "%.2f"|format(venta.saldo_pendiente) }}</span>
+        </div>
+      {% else %}
+        <div class="linea" style="margin-top:6px; opacity:0.6;">
+          <span>Sin prepago</span>
+          <span></span>
         </div>
       {% endif %}
 
+
     </div>
+
 
     <div class="info-local">
 

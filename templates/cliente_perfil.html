@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% from "macros/badges.html" import badge_negocio %}
 {% block content %}
 
 <div class="page-content">
@@ -85,16 +85,13 @@
 
     {% for p in pedidos %}
       <div class="pedido-card" style="border-radius:16px; padding:20px; background:white; box-shadow:0 6px 16px rgba(0,0,0,0.08);">
-
+        <p style="margin-top:4px; display:flex; align-items:center; gap:8px;">
+          {{ badge_negocio(p.negocio) }}
+        </p>
+        
         <p style="font-weight:600; color:#1e3a8a;">
           Fecha: {{ p.fecha_recibo.strftime('%d/%m/%Y') }}
         </p>
-
-        {% if p.negocio %}
-          <p style="margin-top:4px;">
-            <strong style="color:#1e3a8a;">Negocio:</strong> {{ p.negocio }}
-          </p>
-        {% endif %}
 
         <p style="margin-top:4px;">
           <strong style="color:#1e3a8a;">Status:</strong>

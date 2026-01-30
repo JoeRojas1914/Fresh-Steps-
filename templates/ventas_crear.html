@@ -164,6 +164,7 @@
             <label class="form-label">Tipo de pago</label>
             <select name="tipo_pago" id="tipo_pago"
                     onchange="validarFormulario(); actualizarTotal()">
+                <option value="">-- Selecciona --</option>
                 <option value="efectivo">Efectivo</option>
                 <option value="tarjeta">Tarjeta</option>
             </select>
@@ -197,6 +198,10 @@
                    name="cantidad_descuento" id="cantidad_descuento"
                    placeholder="0"
                    oninput="validarFormulario(); actualizarTotal()">
+            <div id="errorDescuento" class="error-msg" style="display:none;">
+                El descuento no puede ser mayor al total.
+            </div>
+
         </div>
     </div>
 
@@ -291,6 +296,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     bloquearFechaMinima();
+    togglePrepago();
+    toggleDescuento();
     validarFormulario();
 });
 
@@ -726,7 +733,6 @@ function actualizarOpcionesServiciosDelArticulo(indexArticulo) {
 
 function togglePrepago() {
     const val = document.getElementById("prepago").value;
-
     const show = val === "si";
 
     document.getElementById("montoPrepagoContainer").style.display = show ? "block" : "none";
@@ -735,8 +741,10 @@ function togglePrepago() {
     if (!show) {
         document.getElementById("monto_prepago").value = "";
         document.getElementById("tipo_pago").value = "";
+        document.getElementById("errorPrepago").style.display = "none";
     }
 }
+
 
 
 function toggleDescuento() {
@@ -800,86 +808,85 @@ function articulosCompletos() {
 
 
 function validarFormulario() {
+    let valido = true;
+
     const cliente = document.getElementById("id_cliente").value;
     const negocio = document.getElementById("id_negocio").value;
     const fechaEstimada = document.getElementById("fecha_estimada").value;
-    const tipoPago = document.getElementById("tipo_pago").value;
+
     const prepago = document.getElementById("prepago").value;
+    const tipoPago = document.getElementById("tipo_pago").value;
+    const montoPrepago = parseFloat(document.getElementById("monto_prepago")?.value || 0);
 
-    let valido = cliente && negocio && fechaEstimada && prepago;
+    const aplicaDesc = document.getElementById("aplica_descuento").value === "si";
+    const descuento = parseFloat(document.getElementById("cantidad_descuento")?.value || 0);
 
 
-    const buscando = document.getElementById("busquedaCliente").style.display !== "none";
-
-    if (prepago === "si" && !tipoPago) {
-        valido = false;
-    }
-
-    if (!cliente && !buscando) {
+    if (!cliente) {
         document.getElementById("errorCliente").style.display = "block";
         valido = false;
     } else {
         document.getElementById("errorCliente").style.display = "none";
     }
 
-    const articulos = document.querySelectorAll(".articulo-item");
-    if (articulos.length === 0) valido = false;
-    if (!articulosCompletos()) valido = false;
 
-    const fechaSolo = document.getElementById("fecha_estimada_fecha").value;
-    const minFecha = document.getElementById("fecha_estimada_fecha").min;
-
-    if (fechaSolo && minFecha && fechaSolo < minFecha) {
-        document.getElementById("errorFecha").style.display = "block";
+    if (!negocio || !fechaEstimada) {
         valido = false;
-    } else {
-        document.getElementById("errorFecha").style.display = "none";
     }
+
+
+    const articulos = document.querySelectorAll(".articulo-item");
+    if (articulos.length === 0 || !articulosCompletos()) {
+        valido = false;
+    }
+
 
     if (negocio === "1" || negocio === "2") {
         document.querySelectorAll(".servicios-box").forEach(box => {
-            const filas = box.querySelectorAll(".servicio-item");
-            let tieneUno = false;
+            let tieneServicio = false;
 
-            filas.forEach(fila => {
-                const sel = fila.querySelector("select");
-                if (sel && sel.value) tieneUno = true;
+            box.querySelectorAll("select").forEach(sel => {
+                if (sel.value) tieneServicio = true;
             });
 
-            if (!tieneUno) valido = false;
+            if (!tieneServicio) valido = false;
         });
     }
 
-    const monto = parseFloat(document.getElementById("monto_prepago")?.value || 0);
-    const total = calcularTotal();
-
     if (prepago === "si") {
-        if (!monto || monto <= 0) valido = false;
-        if (!tipoPago) valido = false;
+        if (!tipoPago || montoPrepago <= 0) {
+            valido = false;
+        }
 
-        if (monto > total) {
+        if (montoPrepago > calcularTotal()) {
             document.getElementById("errorPrepago").style.display = "block";
             valido = false;
         } else {
             document.getElementById("errorPrepago").style.display = "none";
         }
+    } else {
+        document.getElementById("errorPrepago").style.display = "none";
     }
 
-    const aplicaDescuento = document.getElementById("aplica_descuento").value;
-    const cantidadDescuento = parseFloat(
-        document.getElementById("cantidad_descuento")?.value || 0
-    );
+    if (aplicaDesc) {
+        const totalBruto = calcularTotal(true);
 
-    if (aplicaDescuento === "si") {
-        if (!cantidadDescuento || cantidadDescuento <= 0) {
+        if (descuento <= 0 || descuento > totalBruto) {
+            document.getElementById("errorDescuento").style.display = "block";
             valido = false;
+        } else {
+            document.getElementById("errorDescuento").style.display = "none";
         }
+    } else {
+        document.getElementById("errorDescuento").style.display = "none";
     }
+
 
     document.getElementById("btnCrear").disabled = !valido;
 }
 
-function calcularTotal() {
+
+function calcularTotal(bruto = false) {
     const negocio = document.getElementById("id_negocio").value;
     let total = 0;
 
@@ -924,6 +931,8 @@ function calcularTotal() {
         });
     }
 
+    if (bruto) return total; 
+
     const aplicaDesc = document.getElementById("aplica_descuento").value === "si";
     const desc = parseFloat(document.getElementById("cantidad_descuento")?.value || 0);
 
@@ -934,6 +943,7 @@ function calcularTotal() {
 
     return total;
 }
+
 
 
 function actualizarTotal() {

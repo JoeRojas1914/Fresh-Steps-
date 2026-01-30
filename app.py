@@ -651,7 +651,7 @@ def guardar_venta():
 
             i += 1
 
-        if not id_cliente or not tipo_pago or not fecha_estimada:
+        if not id_cliente or not fecha_estimada:
             return jsonify({
                 "ok": False,
                 "error": "Faltan datos obligatorios (cliente, negocio, fecha estimada o tipo de pago)."

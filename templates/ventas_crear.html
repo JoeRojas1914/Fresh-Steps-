@@ -155,9 +155,8 @@
             <label class="form-label">¿Prepago?</label>
             <select name="prepago" id="prepago"
                     onchange="togglePrepago(); validarFormulario(); actualizarTotal()">
-                <option value="">-- Selecciona --</option>
+                    <option value="no" selected>No</option>
                 <option value="si">Sí</option>
-                <option value="no">No</option>
             </select>
         </div>
 
@@ -165,7 +164,6 @@
             <label class="form-label">Tipo de pago</label>
             <select name="tipo_pago" id="tipo_pago"
                     onchange="validarFormulario(); actualizarTotal()">
-                <option value="">-- Selecciona --</option>
                 <option value="efectivo">Efectivo</option>
                 <option value="tarjeta">Tarjeta</option>
             </select>
@@ -186,12 +184,11 @@
     <div class="pago-row">
         <div class="form-item">
             <label class="form-label">¿Aplicar descuento?</label>
-            <select name="aplica_descuento" id="aplica_descuento"
-                    onchange="toggleDescuento(); actualizarTotal()">
-                <option value="">-- Selecciona --</option>
-                <option value="si">Sí</option>
-                <option value="no">No</option>
-            </select>
+                <select name="aplica_descuento" id="aplica_descuento"
+                        onchange="toggleDescuento(); actualizarTotal()">
+                    <option value="no" selected>No</option>
+                    <option value="si">Sí</option>
+                </select>
         </div>
 
         <div class="form-item" id="cantidadDescuentoContainer" style="display:none;">
@@ -744,8 +741,20 @@ function togglePrepago() {
 
 function toggleDescuento() {
     const val = document.getElementById("aplica_descuento").value;
-    document.getElementById("cantidadDescuentoContainer").style.display = val === "si" ? "block" : "none";
+    const container = document.getElementById("cantidadDescuentoContainer");
+    const input = document.getElementById("cantidad_descuento");
+
+    if (val === "si") {
+        container.style.display = "block";
+    } else {
+        container.style.display = "none";
+        input.value = "";
+    }
+
+    validarFormulario();
+    actualizarTotal();
 }
+
 
 function articulosCompletos() {
     const articulos = document.querySelectorAll(".articulo-item");
@@ -856,6 +865,16 @@ function validarFormulario() {
         }
     }
 
+    const aplicaDescuento = document.getElementById("aplica_descuento").value;
+    const cantidadDescuento = parseFloat(
+        document.getElementById("cantidad_descuento")?.value || 0
+    );
+
+    if (aplicaDescuento === "si") {
+        if (!cantidadDescuento || cantidadDescuento <= 0) {
+            valido = false;
+        }
+    }
 
     document.getElementById("btnCrear").disabled = !valido;
 }

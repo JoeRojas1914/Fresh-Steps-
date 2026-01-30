@@ -200,9 +200,41 @@
         </p>
 
 
-        <p>
-          <strong style="color:#1e3a8a;">Tipo de pago:</strong> {{ p.tipo_pago }}
+        <p style="margin-top:8px;">
+          <strong style="color:#1e3a8a;">Pagado:</strong>
+          ${{ "{:.2f}".format(p.total_pagado) }}
         </p>
+
+        {% if p.saldo_pendiente > 0 %}
+          <p>
+            <strong style="color:#b91c1c;">Saldo pendiente:</strong>
+            ${{ "{:.2f}".format(p.saldo_pendiente) }}
+          </p>
+        {% else %}
+          <p style="color:#15803d; font-weight:600;">
+            ✔ Pedido liquidado
+          </p>
+        {% endif %}
+
+        {% if p.pagos and p.pagos|length > 0 %}
+          <div style="margin-top:12px;">
+            <strong style="color:#1e3a8a;">Pagos realizados</strong>
+
+            <ul style="margin-top:6px; padding-left:18px;">
+              {% for pago in p.pagos %}
+                <li style="margin-bottom:4px;">
+                  <b>{{ pago.tipo_pago_venta | capitalize }}</b>
+                  — {{ pago.tipo_pago | capitalize }}
+                  — <b>${{ "{:.2f}".format(pago.monto) }}</b>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% else %}
+          <p style="opacity:0.7; margin-top:8px;">
+            Sin pagos registrados
+          </p>
+        {% endif %}
 
       </div>
 

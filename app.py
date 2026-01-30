@@ -22,7 +22,12 @@ from gastos import (
     contar_gastos,
 )
 
-from pagos import obtener_pagos_venta, registrar_pago
+from pagos import (
+    obtener_pagos_venta, 
+    registrar_pago
+    )
+
+
 from servicios import (
     contar_servicios,
     obtener_servicios,
@@ -250,7 +255,6 @@ def ver_cliente(id_cliente):
             v.fecha_recibo, 
             v.fecha_entrega,
             v.total, 
-            v.tipo_pago,
             v.cantidad_descuento,
             n.nombre AS negocio
         FROM venta v
@@ -284,6 +288,30 @@ def ver_cliente(id_cliente):
 
     for p in pedidos:
         p["detalles"] = obtener_detalles_venta(p["id_venta"])
+
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT
+                tipo_pago_venta,
+                tipo_pago,
+                monto,
+                fecha_pago
+            FROM pago_venta
+            WHERE id_venta = %s
+            ORDER BY fecha_pago
+        """, (p["id_venta"],))
+
+        pagos = cursor.fetchall()
+
+        total_pagado = sum(float(pg["monto"]) for pg in pagos)
+
+        p["pagos"] = pagos
+        p["total_pagado"] = total_pagado
+        p["saldo_pendiente"] = float(p["total"]) - total_pagado
+
+
 
     negocios = obtener_negocios()
 
@@ -406,16 +434,94 @@ def ventas_pendientes():
 
 
 
-@app.route("/ventas/entregar/<int:id_venta>")
+@app.route("/ventas/entregar/<int:id_venta>", methods=["POST"])
 def entregar_venta(id_venta):
-    ok = marcar_entregada(id_venta)
+    conn = get_connection()
+    cursor = conn.cursor()
 
-    if ok:
-        flash("✅ Venta entregada correctamente.", "success")
-    else:
-        flash("⚠️ No se pudo entregar (ya estaba entregada o no existe).", "warning")
+    try:
+        cursor.execute("""
+            SELECT fecha_entrega
+            FROM venta
+            WHERE id_venta = %s
+        """, (id_venta,))
+        row = cursor.fetchone()
 
-    return redirect("/ventas/pendientes")
+        if not row:
+            return jsonify({"ok": False, "error": "Venta no existe"}), 404
+
+        if row[0] is not None:
+            return jsonify({"ok": False, "error": "La venta ya fue entregada"}), 400
+
+        cursor.execute("""
+            UPDATE venta
+            SET fecha_entrega = NOW()
+            WHERE id_venta = %s
+        """, (id_venta,))
+
+        conn.commit()
+        return jsonify({
+            "ok": True,
+            "message": "✅ Venta entregada."
+        })
+
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+
+
+@app.route("/ventas/pago-final", methods=["POST"])
+def registrar_pago_final():
+    data = request.json
+    id_venta = data["id_venta"]
+    monto = data["monto"]
+    metodo = data["metodo_pago"]
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            INSERT INTO pago_venta (
+                id_venta,
+                monto,
+                tipo_pago,
+                tipo_pago_venta,
+                fecha_pago
+            )
+            VALUES (%s, %s, %s, 'final', NOW())
+        """, (id_venta, monto, metodo))
+
+        cursor.execute("""
+            UPDATE venta
+            SET fecha_entrega = NOW()
+            WHERE id_venta = %s
+              AND fecha_entrega IS NULL
+        """, (id_venta,))
+
+        conn.commit()
+        return jsonify({
+            "ok": True,
+            "message": "✅ Pago final registrado y venta entregada."
+        })
+
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
 
 
 @app.route("/ventas/guardar", methods=["POST"])

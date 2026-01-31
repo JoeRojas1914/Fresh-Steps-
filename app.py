@@ -5,7 +5,12 @@ from dotenv import load_dotenv
 from db import get_connection
 from werkzeug.security import check_password_hash
 import calendar
+
+
 from routes.servicios_routes import servicios_bp
+from routes.gastos_routes import gastos_bp
+
+
 
 
 
@@ -18,14 +23,6 @@ from clientes import (
     actualizar_cliente,
 )
 
-from gastos import (
-    crear_gasto,
-    actualizar_gasto,
-    obtener_gastos,
-    eliminar_gasto,
-    contar_gastos,
-)
-
 from pagos import (
     obtener_pagos_venta, 
     registrar_pago
@@ -35,9 +32,6 @@ from pagos import (
 from servicios import (
     contar_servicios,
     obtener_servicios,
-    crear_servicio,
-    actualizar_servicio,
-    eliminar_servicio,
 )
 
 from ventas import (
@@ -68,6 +62,8 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY")
 app.register_blueprint(servicios_bp)
+app.register_blueprint(gastos_bp)
+
 
 
 
@@ -831,81 +827,6 @@ def venta_ticket(id_venta):
         venta=venta,
         detalles=detalles
     )
-
-
-
-# ================= GASTOS =================
-@app.route("/gastos")
-def gastos():
-    id_negocio = request.args.get("id_negocio")
-    fecha_inicio = request.args.get("fecha_inicio")
-    fecha_fin = request.args.get("fecha_fin")
-
-    pagina = request.args.get("pagina", 1, type=int)
-    por_pagina = 10
-    offset = (pagina - 1) * por_pagina
-
-    negocios = obtener_negocios()
-
-    total_gastos = contar_gastos(
-        id_negocio=id_negocio,
-        fecha_inicio=fecha_inicio,
-        fecha_fin=fecha_fin
-    )
-
-    total_paginas = (total_gastos + por_pagina - 1) // por_pagina
-
-    gastos = obtener_gastos(
-        id_negocio=id_negocio,
-        fecha_inicio=fecha_inicio,
-        fecha_fin=fecha_fin,
-        limit=por_pagina,
-        offset=offset
-    )
-
-    return render_template(
-        "gastos.html",
-        gastos=gastos,
-        negocios=negocios,
-        pagina=pagina,
-        total_paginas=total_paginas
-    )
-
-
-
-
-@app.route("/gastos/guardar", methods=["POST"])
-def guardar_gasto():
-    id_gasto = request.form.get("id_gasto")
-    id_negocio = request.form["id_negocio"]
-
-    datos = (
-        id_negocio,
-        request.form["descripcion"],
-        request.form["proveedor"],
-        request.form["total"],
-        request.form["fecha_registro"]
-    )
-
-    if id_gasto:
-        actualizar_gasto(id_gasto, *datos)
-        flash("✅ Gasto editado correctamente.", "success")
-    else:
-        crear_gasto(*datos)
-        flash("✅ Gasto creado correctamente.", "success")
-
-    return redirect("/gastos")
-
-
-
-@app.route("/gastos/eliminar/<int:id_gasto>")
-def borrar_gasto(id_gasto):
-    eliminar_gasto(id_gasto) 
-    flash("✅ Gasto eliminado correctamente.", "success")
-    return redirect("/gastos")
-
-
-
 
 
 # ================= ESTADISTICAS =================

@@ -7,7 +7,7 @@
 <h1>💸 Gastos</h1>
 
 <form method="GET"
-      action="{{ url_for('gastos') }}"
+      action="{{ url_for('gastos.gastos') }}"
       class="filtro-box">
 
   <div class="filtro-row">
@@ -50,7 +50,7 @@
       <button type="submit">Aplicar</button>
 
       {% if request.args.get('id_negocio') or request.args.get('fecha_inicio') or request.args.get('fecha_fin') %}
-        <a href="{{ url_for('gastos') }}">
+        <a href="{{ url_for('gastos.gastos') }}">
           Limpiar
         </a>
       {% endif %}
@@ -170,7 +170,7 @@
 
         {# Botón «Anterior» para desplazar el bloque hacia atrás #}
         {% if inicio > 1 %}
-            <a href="{{ url_for('gastos', pagina=p, id_negocio=request.args.get('id_negocio'), fecha_inicio=request.args.get('fecha_inicio'), fecha_fin=request.args.get('fecha_fin')) }}">«</a>
+            <a href="{{ url_for('gastos.gastos', pagina=p, id_negocio=request.args.get('id_negocio'), fecha_inicio=request.args.get('fecha_inicio'), fecha_fin=request.args.get('fecha_fin')) }}">«</a>
         {% endif %}
 
         {# Mostrar páginas del bloque #}
@@ -178,13 +178,13 @@
             {% if p == pagina %}
                 <strong>{{ p }}</strong>
             {% else %}
-                <a href="{{ url_for('gastos', pagina=p, id_negocio=request.args.get('id_negocio'), fecha_inicio=request.args.get('fecha_inicio'), fecha_fin=request.args.get('fecha_fin')) }}">«</a>
+                <a href="{{ url_for('gastos.gastos', pagina=p, id_negocio=request.args.get('id_negocio'), fecha_inicio=request.args.get('fecha_inicio'), fecha_fin=request.args.get('fecha_fin')) }}">«</a>
             {% endif %}
         {% endfor %}
 
         {# Botón «Siguiente» para desplazar el bloque hacia adelante #}
         {% if fin < total_paginas %}
-            <a href="{{ url_for('gastos', pagina=inicio+10, id_negocio=request.args.get('id_negocio'), fecha_inicio=request.args.get('fecha_inicio'), fecha_fin=request.args.get('fecha_fin')) }}">»</a>
+            <a href="{{ url_for('gastos.gastos', pagina=inicio+10, id_negocio=request.args.get('id_negocio'), fecha_inicio=request.args.get('fecha_inicio'), fecha_fin=request.args.get('fecha_fin')) }}">»</a>
         {% endif %}
     {% endif %}
 </div>

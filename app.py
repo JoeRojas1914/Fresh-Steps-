@@ -9,18 +9,15 @@ import calendar
 
 from routes.servicios_routes import servicios_bp
 from routes.gastos_routes import gastos_bp
-
-
-
+from routes.clientes_routes import clientes_bp
 
 
 
 # ================= IMPORTS DE MODULOS =================
 from clientes import (
     contar_clientes,
-    obtener_clientes,
     crear_cliente,
-    actualizar_cliente,
+    buscar_clientes_por_nombre
 )
 
 from pagos import (
@@ -31,7 +28,6 @@ from pagos import (
 
 from servicios import (
     contar_servicios,
-    obtener_servicios,
 )
 
 from ventas import (
@@ -63,7 +59,7 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY")
 app.register_blueprint(servicios_bp)
 app.register_blueprint(gastos_bp)
-
+app.register_blueprint(clientes_bp)
 
 
 
@@ -140,19 +136,6 @@ def control_acceso():
 
 
 # ================= UTILIDADES =================
-def buscar_clientes_por_nombre(texto):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    cursor.execute("""
-        SELECT * FROM cliente
-        WHERE nombre LIKE %s OR apellido LIKE %s
-    """, (f"%{texto}%", f"%{texto}%"))
-
-    resultados = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    return resultados
 
 def registrar_login(usuario, metodo, exito):
     conn = get_connection()
@@ -171,31 +154,6 @@ def registrar_login(usuario, metodo, exito):
     conn.commit()
     cursor.close()
     conn.close()
-
-
-
-# ================= API =================
-@app.route("/api/clientes")
-def api_clientes():
-    q = request.args.get("q", "")
-    return jsonify(buscar_clientes_por_nombre(q)) if q else jsonify([])
-
-
-@app.route("/api/clientes/crear", methods=["POST"])
-def api_crear_cliente():
-    id_cliente = crear_cliente(
-        request.form["nombre"],
-        request.form["apellido"],
-        request.form.get("correo"),
-        request.form.get("telefono"),
-        request.form.get("direccion")
-    )
-
-    return jsonify({
-        "id_cliente": id_cliente,
-        "nombre": request.form["nombre"],
-        "apellido": request.form["apellido"]
-    })
 
 
 # ================= LOGIN =================
@@ -292,214 +250,6 @@ def index():
         nombre_usuario=session.get("usuario") 
     )
 
-
-
-
-
-
-
-# ================= CLIENTES =================
-@app.route("/clientes")
-def clientes():
-    q = request.args.get("q", "")
-    pagina = request.args.get("pagina", 1, type=int)
-    por_pagina = 10
-
-    offset = (pagina - 1) * por_pagina
-
-    total_clientes = contar_clientes(q)
-    total_paginas = (total_clientes + por_pagina - 1) // por_pagina
-
-    clientes = obtener_clientes(
-        q=q,
-        limit=por_pagina,
-        offset=offset
-    )
-
-    return render_template(
-        "clientes.html",
-        clientes=clientes,
-        q=q,
-        pagina=pagina,
-        total_paginas=total_paginas
-    )
-
-
-
-
-
-@app.route("/clientes/guardar", methods=["POST"])
-def guardar_cliente():
-    id_cliente = request.form.get("id_cliente")
-
-    nombre = request.form.get("nombre", "").strip()
-    apellido = request.form.get("apellido", "").strip()
-    correo = request.form.get("correo", "").strip()
-    telefono = request.form.get("telefono", "").strip()
-    direccion = request.form.get("direccion", "").strip()
-
-    if not nombre or not apellido or not telefono:
-        flash("❌ Nombre, apellido y teléfono son obligatorios.", "alert-error")
-        return redirect(url_for("clientes"))
-
-    if not telefono.isdigit() or len(telefono) != 10:
-        flash("❌ El teléfono debe contener exactamente 10 números.", "alert-error")
-        return redirect(url_for("clientes"))
-
-    datos = (nombre, apellido, correo, telefono, direccion)
-
-    if id_cliente:
-        actualizar_cliente(id_cliente, *datos)
-        flash("✅ Cliente actualizado correctamente.", "success")
-    else:
-        crear_cliente(*datos)
-        flash("✅ Cliente creado correctamente.", "success")
-
-    return redirect(url_for("clientes"))
-
-
-
-@app.route("/clientes/eliminar/<int:id_cliente>")
-def eliminar_cliente(id_cliente):
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM cliente WHERE id_cliente = %s", (id_cliente,))
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-    flash("✅ Cliente eliminado correctamente.", "success")
-    return redirect(url_for("clientes"))
-
-
-@app.route("/clientes/<int:id_cliente>")
-def ver_cliente(id_cliente):
-    id_negocio = request.args.get("id_negocio")
-    fecha_inicio = request.args.get("fecha_inicio")
-    fecha_fin = request.args.get("fecha_fin")
-
-    pagina = request.args.get("pagina", 1, type=int)
-    pedidos_por_pagina = 5
-    inicio = (pagina - 1) * pedidos_por_pagina
-
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("""
-        SELECT *, DATE_FORMAT(fecha_registro, '%d/%m/%Y') as fecha_registro_fmt
-        FROM cliente
-        WHERE id_cliente = %s
-    """, (id_cliente,))
-    cliente = cursor.fetchone()
-    cursor.close()
-    conn.close()
-
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    sql_count = """
-        SELECT COUNT(*)
-        FROM venta
-        WHERE id_cliente = %s
-    """
-    params = [id_cliente]
-
-    if id_negocio:
-        sql_count += " AND id_negocio = %s"
-        params.append(id_negocio)
-
-    if fecha_inicio:
-        sql_count += " AND fecha_recibo >= %s"
-        params.append(fecha_inicio)
-
-    if fecha_fin:
-        sql_count += " AND fecha_recibo <= %s"
-        params.append(fecha_fin)
-
-    cursor.execute(sql_count, params)
-    total_pedidos = cursor.fetchone()[0]
-    cursor.close()
-    conn.close()
-
-    total_paginas = (total_pedidos + pedidos_por_pagina - 1) // pedidos_por_pagina
-
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    sql = """
-        SELECT 
-            v.id_venta, 
-            v.fecha_recibo, 
-            v.fecha_entrega,
-            v.total, 
-            v.cantidad_descuento,
-            n.nombre AS negocio
-        FROM venta v
-        LEFT JOIN negocio n ON v.id_negocio = n.id_negocio
-        WHERE v.id_cliente = %s
-    """
-    params = [id_cliente]
-
-    if id_negocio:
-        sql += " AND v.id_negocio = %s"
-        params.append(id_negocio)
-
-    if fecha_inicio:
-        sql += " AND v.fecha_recibo >= %s"
-        params.append(fecha_inicio)
-
-    if fecha_fin:
-        sql += " AND v.fecha_recibo <= %s"
-        params.append(fecha_fin)
-
-    sql += """
-        ORDER BY v.fecha_recibo DESC
-        LIMIT %s OFFSET %s
-    """
-    params.extend([pedidos_por_pagina, inicio])
-
-    cursor.execute(sql, params)
-    pedidos = cursor.fetchall()
-    cursor.close()
-    conn.close()
-
-    for p in pedidos:
-        p["detalles"] = obtener_detalles_venta(p["id_venta"])
-
-        conn = get_connection()
-        cursor = conn.cursor(dictionary=True)
-
-        cursor.execute("""
-            SELECT
-                tipo_pago_venta,
-                tipo_pago,
-                monto,
-                fecha_pago
-            FROM pago_venta
-            WHERE id_venta = %s
-            ORDER BY fecha_pago
-        """, (p["id_venta"],))
-
-        pagos = cursor.fetchall()
-
-        total_pagado = sum(float(pg["monto"]) for pg in pagos)
-
-        p["pagos"] = pagos
-        p["total_pagado"] = total_pagado
-        p["saldo_pendiente"] = float(p["total"]) - total_pagado
-
-
-
-    negocios = obtener_negocios()
-
-    return render_template(
-        "cliente_perfil.html",
-        cliente=cliente,
-        total_pedidos=total_pedidos,
-        pedidos=pedidos,
-        negocios=negocios,
-        pagina=pagina,
-        total_paginas=total_paginas
-    )
 
 
 # ================= VENTAS =================

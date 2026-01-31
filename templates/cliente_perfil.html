@@ -29,7 +29,7 @@
   <h2 style="margin-bottom:20px;">📦 Historial de pedidos</h2>
 
 <form method="GET"
-      action="{{ url_for('ver_cliente', id_cliente=cliente.id_cliente) }}"
+      action="{{ url_for('clientes.ver_cliente', id_cliente=cliente.id_cliente) }}"
       class="filtro-box">
 
   <div class="filtro-row">
@@ -72,7 +72,7 @@
       <button type="submit">Aplicar</button>
 
       {% if request.args.get('id_negocio') or request.args.get('fecha_inicio') or request.args.get('fecha_fin') %}
-        <a href="{{ url_for('ver_cliente', id_cliente=cliente.id_cliente) }}">
+        <a href="{{ url_for('clientes.ver_cliente', id_cliente=cliente.id_cliente) }}">
           Limpiar
         </a>
       {% endif %}
@@ -261,19 +261,19 @@
         {% endif %}
 
         {% if inicio > 1 %}
-            <a href="{{ url_for('ver_cliente', id_cliente=cliente.id_cliente, pagina=p, id_negocio=request.args.get('id_negocio'), fecha_inicio=request.args.get('fecha_inicio'), fecha_fin=request.args.get('fecha_fin')) }}">«</a>
+            <a href="{{ url_for('clientes.ver_cliente', id_cliente=cliente.id_cliente, pagina=p, id_negocio=request.args.get('id_negocio'), fecha_inicio=request.args.get('fecha_inicio'), fecha_fin=request.args.get('fecha_fin')) }}">«</a>
         {% endif %}
 
         {% for p in range(inicio, fin + 1) %}
             {% if p == pagina %}
                 <strong>{{ p }}</strong>
             {% else %}
-              <a href="{{ url_for('ver_cliente', id_cliente=cliente.id_cliente, pagina=p, id_negocio=request.args.get('id_negocio'), fecha_inicio=request.args.get('fecha_inicio'), fecha_fin=request.args.get('fecha_fin')) }}">«</a>
+              <a href="{{ url_for('clientes.ver_cliente', id_cliente=cliente.id_cliente, pagina=p, id_negocio=request.args.get('id_negocio'), fecha_inicio=request.args.get('fecha_inicio'), fecha_fin=request.args.get('fecha_fin')) }}">«</a>
             {% endif %}
         {% endfor %}
 
         {% if fin < total_paginas %}
-          <a href="{{ url_for('ver_cliente', id_cliente=cliente.id_cliente, pagina=p, id_negocio=request.args.get('id_negocio'), fecha_inicio=request.args.get('fecha_inicio'), fecha_fin=request.args.get('fecha_fin')) }}">«</a>
+          <a href="{{ url_for('clientes.ver_cliente', id_cliente=cliente.id_cliente, pagina=p, id_negocio=request.args.get('id_negocio'), fecha_inicio=request.args.get('fecha_inicio'), fecha_fin=request.args.get('fecha_fin')) }}">«</a>
         {% endif %}
     {% endif %}
   </div>

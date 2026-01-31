@@ -55,3 +55,21 @@ def obtener_pagos_venta(id_venta):
     finally:
         cursor.close()
         conn.close()
+
+
+def obtener_pagos_por_venta(id_venta):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT tipo_pago_venta, tipo_pago, monto, fecha_pago
+        FROM pago_venta
+        WHERE id_venta=%s
+        ORDER BY fecha_pago
+    """, (id_venta,))
+
+    data = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+    return data

@@ -1,4 +1,6 @@
 from db import get_connection
+from negocio import obtener_negocios
+from ventas import obtener_detalles_venta
 
 def crear_cliente(nombre, apellido, correo, telefono, direccion):
     conn = get_connection()
@@ -90,3 +92,37 @@ def contar_clientes(q=None):
     conn.close()
     return total
 
+
+def buscar_clientes_por_nombre(texto):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT *
+        FROM cliente
+        WHERE nombre LIKE %s OR apellido LIKE %s
+    """, (f"%{texto}%", f"%{texto}%"))
+
+    resultados = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return resultados
+
+
+
+def obtener_cliente_por_id(id_cliente):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT *,
+               DATE_FORMAT(fecha_registro, '%d/%m/%Y') as fecha_registro_fmt
+        FROM cliente
+        WHERE id_cliente = %s
+    """, (id_cliente,))
+
+    data = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+    return data

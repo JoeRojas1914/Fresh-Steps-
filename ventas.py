@@ -468,3 +468,68 @@ def obtener_venta(id_venta):
     conn.close()
     return venta
 
+
+
+def contar_ventas_cliente(id_cliente, id_negocio=None, fecha_inicio=None, fecha_fin=None):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    sql = "SELECT COUNT(*) FROM venta WHERE id_cliente=%s"
+    params = [id_cliente]
+
+    if id_negocio:
+        sql += " AND id_negocio=%s"
+        params.append(id_negocio)
+
+    if fecha_inicio:
+        sql += " AND fecha_recibo >= %s"
+        params.append(fecha_inicio)
+
+    if fecha_fin:
+        sql += " AND fecha_recibo <= %s"
+        params.append(fecha_fin)
+
+    cursor.execute(sql, params)
+    total = cursor.fetchone()[0]
+
+    cursor.close()
+    conn.close()
+    return total
+
+
+def obtener_ventas_cliente(id_cliente, id_negocio, fecha_inicio, fecha_fin, limit, offset):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    sql = """
+        SELECT v.id_venta, v.fecha_recibo, v.fecha_entrega,
+               v.total, v.cantidad_descuento,
+               n.nombre AS negocio
+        FROM venta v
+        LEFT JOIN negocio n ON v.id_negocio = n.id_negocio
+        WHERE v.id_cliente = %s
+    """
+
+    params = [id_cliente]
+
+    if id_negocio:
+        sql += " AND v.id_negocio=%s"
+        params.append(id_negocio)
+
+    if fecha_inicio:
+        sql += " AND v.fecha_recibo >= %s"
+        params.append(fecha_inicio)
+
+    if fecha_fin:
+        sql += " AND v.fecha_recibo <= %s"
+        params.append(fecha_fin)
+
+    sql += " ORDER BY v.fecha_recibo DESC LIMIT %s OFFSET %s"
+    params.extend([limit, offset])
+
+    cursor.execute(sql, params)
+    data = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+    return data

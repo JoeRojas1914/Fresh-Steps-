@@ -50,3 +50,49 @@ nav {
 .nav-links .logout:hover {
     color: #e74c3c;
 }
+
+
+.nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: #0b3c5d;
+}
+
+@media (max-width: 768px) {
+
+    nav {
+        flex-wrap: wrap;
+    }
+
+    .nav-toggle {
+        display: block;
+        margin-left: auto;
+    }
+
+    .nav-links {
+        width: 100%;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        margin-top: 15px;
+        display: none;
+    }
+
+    .nav-links a {
+        margin-right: 0;
+        width: 100%;
+        padding: 8px 0;
+    }
+
+    .nav-links .logout {
+        margin-left: 0;
+        align-self: flex-start;
+    }
+
+    .nav-links.active {
+        display: flex;
+    }
+}

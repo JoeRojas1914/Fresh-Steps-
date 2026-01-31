@@ -18,7 +18,11 @@
             <img src="{{ url_for('static', filename='logo.png') }}" alt="Fresh Steps">
         </div>
 
-        <div class="nav-links">
+        <button class="nav-toggle" id="navToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <div class="nav-links" id="navLinks">
             <a href="/">Inicio</a>
 
             {% if session.rol == "admin" %}
@@ -36,6 +40,7 @@
             </a>
         </div>
     </nav>
+
 
     <hr>
 {% endif %}
@@ -63,6 +68,16 @@
             </div>
         </div>
     </footer>
+
+
+    <script>
+        const navToggle = document.getElementById("navToggle");
+        const navLinks = document.getElementById("navLinks");
+
+        navToggle.addEventListener("click", () => {
+            navLinks.classList.toggle("active");
+        });
+    </script>
 
 </body>
 </html>

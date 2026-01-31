@@ -72,3 +72,24 @@
 .footer-social a i {
     font-size: 16px;
 }
+
+
+@media (max-width: 768px) {
+    .footer-container {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .footer-brand {
+        justify-content: center;
+    }
+
+    .footer-info {
+        align-items: center;
+    }
+
+    .footer-social {
+        justify-content: center;
+    }
+}

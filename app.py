@@ -4,6 +4,8 @@ import os
 from dotenv import load_dotenv
 from db import get_connection
 from werkzeug.security import check_password_hash
+import calendar
+
 
 
 # ================= IMPORTS DE MODULOS =================
@@ -38,6 +40,7 @@ from servicios import (
 
 from ventas import (
     crear_venta,
+    marcar_entregada,
     obtener_venta,
     obtener_ventas_pendientes,
     obtener_detalles_venta,
@@ -611,58 +614,28 @@ def ventas_pendientes():
     )
 
 
-
-
-
 @app.route("/ventas/entregar/<int:id_venta>", methods=["POST"])
 def entregar_venta(id_venta):
-    conn = get_connection()
-    cursor = conn.cursor()
+
+    id_usuario = session["id_usuario"]
 
     try:
-        cursor.execute("""
-            SELECT fecha_entrega
-            FROM venta
-            WHERE id_venta = %s
-        """, (id_venta,))
-        row = cursor.fetchone()
-
-        if not row:
-            flash("❌ La venta no existe", "error")
-            return redirect(url_for("ventas_pendientes"))
-
-        if row[0] is not None:
-            flash("⚠️ La venta ya fue entregada", "warning")
-            return redirect(url_for("ventas_pendientes"))
-
-        cursor.execute("""
-            UPDATE venta
-            SET fecha_entrega = NOW()
-            WHERE id_venta = %s
-        """, (id_venta,))
-
-        conn.commit()
-        flash("✅ Venta entregada correctamente", "success")
-        return redirect(url_for("ventas_pendientes"))
+        if marcar_entregada(id_venta, id_usuario):
+            flash("✅ Venta entregada correctamente", "success")
+        else:
+            flash("⚠️ La venta ya fue entregada o no existe", "warning")
 
     except Exception as e:
-        conn.rollback()
         flash(f"❌ Error: {e}", "error")
-        return redirect(url_for("ventas_pendientes"))
 
-    finally:
-        cursor.close()
-        conn.close()
-
-
+    return redirect(url_for("ventas_pendientes"))
 
 
 @app.route("/ventas/pago-final", methods=["POST"])
 def registrar_pago_final():
     data = request.json
-    id_venta = data["id_venta"]
-    monto = data["monto"]
-    metodo = data["metodo_pago"]
+
+    id_usuario = session["id_usuario"]
 
     conn = get_connection()
     cursor = conn.cursor()
@@ -674,24 +647,22 @@ def registrar_pago_final():
                 monto,
                 tipo_pago,
                 tipo_pago_venta,
-                fecha_pago
+                fecha_pago,
+                id_usuario_cobro
             )
-            VALUES (%s, %s, %s, 'final', NOW())
-        """, (id_venta, monto, metodo))
-
-        cursor.execute("""
-            UPDATE venta
-            SET fecha_entrega = NOW()
-            WHERE id_venta = %s
-              AND fecha_entrega IS NULL
-        """, (id_venta,))
+            VALUES (%s, %s, %s, 'final', NOW(), %s)
+        """, (
+            data["id_venta"],
+            data["monto"],
+            data["metodo_pago"],
+            id_usuario
+        ))
 
         conn.commit()
-        return jsonify({
-            "ok": True,
-            "message": "✅ Pago final registrado y venta entregada."
-        })
 
+        marcar_entregada(data["id_venta"], id_usuario)
+
+        return jsonify({"ok": True})
 
     except Exception as e:
         conn.rollback()
@@ -700,7 +671,6 @@ def registrar_pago_final():
     finally:
         cursor.close()
         conn.close()
-
 
 
 
@@ -1001,9 +971,6 @@ def borrar_gasto(id_gasto):
 
 
 # ================= ESTADISTICAS =================
-from datetime import date
-import calendar
-
 @app.route("/estadisticas")
 def estadisticas():
     hoy = date.today()

@@ -32,19 +32,26 @@ def obtener_pagos_venta(id_venta):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("""
-        SELECT
-            id_pago,
-            fecha_pago,
-            monto,
-            tipo_pago
-        FROM pago_venta
-        WHERE id_venta = %s
-        ORDER BY fecha_pago ASC
-    """, (id_venta,))
+    try:
+        cursor.execute("""
+            SELECT
+                p.id_pago,
+                p.fecha_pago,
+                p.monto,
+                p.tipo_pago,
+                p.tipo_pago_venta,
+                p.id_usuario_cobro,
+                u.usuario AS usuario_cobro
+            FROM pago_venta p
+            JOIN usuario u
+                ON p.id_usuario_cobro = u.id_usuario
+            WHERE p.id_venta = %s
+            ORDER BY p.fecha_pago ASC
+        """, (id_venta,))
 
-    pagos = cursor.fetchall()
+        pagos = cursor.fetchall()
+        return pagos
 
-    cursor.close()
-    conn.close()
-    return pagos
+    finally:
+        cursor.close()
+        conn.close()

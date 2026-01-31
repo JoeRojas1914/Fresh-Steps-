@@ -260,25 +260,26 @@ def contar_entregas_pendientes(id_negocio=None):
 
 
 
-def marcar_entregada(id_venta):
+def marcar_entregada(id_venta, id_usuario):
     conn = get_connection()
     cursor = conn.cursor()
 
     try:
         cursor.execute("""
             UPDATE venta
-            SET fecha_entrega = NOW()
+            SET fecha_entrega = NOW(),
+                id_usuario_entrego = %s
             WHERE id_venta = %s
               AND fecha_entrega IS NULL
-        """, (id_venta,))
+        """, (id_usuario, id_venta))
 
         conn.commit()
 
         return cursor.rowcount > 0
 
-    except Exception as e:
+    except Exception:
         conn.rollback()
-        raise e
+        raise
 
     finally:
         cursor.close()

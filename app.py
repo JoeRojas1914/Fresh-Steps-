@@ -1,34 +1,23 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
-from datetime import date, datetime, timedelta
 import os
+from datetime import date, datetime, timedelta
+import calendar
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 from dotenv import load_dotenv
 from db import get_connection
 from werkzeug.security import check_password_hash
-import calendar
 
 
 from routes.servicios_routes import servicios_bp
 from routes.gastos_routes import gastos_bp
 from routes.clientes_routes import clientes_bp
-
+from routes.estadisticas_routes import estadisticas_bp
 
 
 # ================= IMPORTS DE MODULOS =================
-from clientes import (
-    contar_clientes,
-    crear_cliente,
-    buscar_clientes_por_nombre
-)
-
 from pagos import (
     obtener_pagos_venta, 
     registrar_pago
     )
-
-
-from servicios import (
-    contar_servicios,
-)
 
 from ventas import (
     crear_venta,
@@ -37,18 +26,6 @@ from ventas import (
     obtener_ventas_pendientes,
     obtener_detalles_venta,
     contar_entregas_pendientes,
-)
-
-from estadisticas import (
-    contar_ventas_por_semana,
-    obtener_gastos_por_semana_y_proveedor,
-    obtener_total_gastos,
-    obtener_total_ingresos,
-    obtener_unidades_por_semana,
-    obtener_ingresos_por_semana,
-    obtener_ventas_con_y_sin_prepago,
-    obtener_uso_servicios,
-    obtener_ventas_por_dia
 )
 
 from negocio import obtener_negocios
@@ -60,6 +37,7 @@ app.secret_key = os.environ.get("SECRET_KEY")
 app.register_blueprint(servicios_bp)
 app.register_blueprint(gastos_bp)
 app.register_blueprint(clientes_bp)
+app.register_blueprint(estadisticas_bp)
 
 
 
@@ -570,78 +548,6 @@ def venta_ticket(id_venta):
         venta=venta,
         detalles=detalles
     )
-
-
-# ================= ESTADISTICAS =================
-@app.route("/estadisticas")
-def estadisticas():
-    hoy = date.today()
-
-    fecha_inicio = hoy.replace(day=1)
-
-    ultimo_dia = calendar.monthrange(hoy.year, hoy.month)[1]
-    fecha_fin = hoy.replace(day=ultimo_dia)
-
-    negocios = obtener_negocios()
-
-    return render_template(
-        "estadisticas.html",
-        total_clientes=contar_clientes(),
-        total_servicios=contar_servicios(),
-        negocios=negocios,
-        fecha_inicio=fecha_inicio.isoformat(),
-        fecha_fin=fecha_fin.isoformat()
-    )
-
-
-
-@app.route("/api/estadisticas/dashboard")
-def api_estadisticas_dashboard():
-    try:
-        inicio_str = request.args.get("inicio")
-        fin_str = request.args.get("fin")
-        id_negocio = request.args.get("id_negocio", "all")
-
-        if not inicio_str or not fin_str:
-            return jsonify({"error": "Faltan fechas"}), 400
-
-        inicio = datetime.strptime(inicio_str, "%Y-%m-%d").date()
-        fin = datetime.strptime(fin_str, "%Y-%m-%d").date()
-
-        if fin < inicio:
-            return jsonify({"error": "La fecha fin no puede ser menor a inicio"}), 400
-
-        ventas_semanales = contar_ventas_por_semana(inicio, fin, id_negocio)
-        gastos_semanales = obtener_gastos_por_semana_y_proveedor(inicio, fin, id_negocio)
-        total_gastos = obtener_total_gastos(inicio, fin, id_negocio)
-        unidades_semanales = obtener_unidades_por_semana(inicio, fin, id_negocio)
-        total_ingresos = obtener_total_ingresos(inicio, fin, id_negocio)
-        ingresos_semanales = obtener_ingresos_por_semana(inicio, fin, id_negocio)
-        ventas_prepago = obtener_ventas_con_y_sin_prepago(inicio, fin, id_negocio)
-        uso_servicios = obtener_uso_servicios(inicio, fin, id_negocio)
-        ventas_por_dia = obtener_ventas_por_dia(inicio, fin, id_negocio)
-        print("DEBUG KPI ingresos:", total_ingresos)
-
-
-        return jsonify({
-            "ventas_semanales": ventas_semanales,
-            "gastos_semanales": gastos_semanales,
-            "ingresos_semanales": ingresos_semanales,
-            "unidades_semanales": unidades_semanales,
-            "ventas_prepago": ventas_prepago,
-            "uso_servicios": uso_servicios,
-            "ventas_por_dia": ventas_por_dia,
-            "kpis": {
-                "ingresos": total_ingresos,
-                "gastos": total_gastos,
-                "ganancia": total_ingresos - total_gastos
-            }
-        })
-
-    except Exception as e:
-        print("ERROR DASHBOARD:", e)
-        return jsonify({"error": str(e)}), 500
-
 
 
 # ================= RUN =================

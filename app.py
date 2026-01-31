@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 from db import get_connection
 from werkzeug.security import check_password_hash
 import calendar
+from routes.servicios_routes import servicios_bp
+
 
 
 
@@ -65,6 +67,8 @@ from negocio import obtener_negocios
 load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY")
+app.register_blueprint(servicios_bp)
+
 
 
 # ================= CONTROL DE ACCESO =================
@@ -507,72 +511,6 @@ def ver_cliente(id_cliente):
         pagina=pagina,
         total_paginas=total_paginas
     )
-
-
-
-
-
-# ================= SERVICIOS =================
-@app.route("/servicios")
-def servicios():
-    q = request.args.get("q", "")
-    id_negocio = request.args.get("id_negocio", type=int)
-    pagina = request.args.get("pagina", 1, type=int)
-
-    por_pagina = 10
-    offset = (pagina - 1) * por_pagina
-
-    negocios = obtener_negocios()
-
-    total_servicios = contar_servicios(id_negocio=id_negocio, q=q)
-    total_paginas = (total_servicios + por_pagina - 1) // por_pagina
-
-    servicios = obtener_servicios(
-        id_negocio=id_negocio,
-        q=q,
-        limit=por_pagina,
-        offset=offset
-    )
-
-    return render_template(
-        "servicios.html",
-        servicios=servicios,
-        negocios=negocios,
-        id_negocio=id_negocio,
-        q=q,
-        pagina=pagina,
-        total_paginas=total_paginas
-    )
-
-
-
-@app.route("/servicios/guardar", methods=["POST"])
-def guardar_servicio():
-    id_servicio = request.form.get("id_servicio")
-    id_negocio = request.form["id_negocio"]
-
-    datos = (
-        id_negocio,
-        request.form["nombre"],
-        request.form["precio"]
-    )
-
-    if id_servicio:
-        actualizar_servicio(id_servicio, *datos)
-        flash("✅ Servicio actualizado correctamente.", "success")
-    else:
-        crear_servicio(*datos)
-        flash("✅ Servicio creado correctamente.", "success")
-
-    return redirect("/servicios")
-
-
-@app.route("/servicios/eliminar/<int:id_servicio>")
-def borrar_servicio(id_servicio):
-
-    eliminar_servicio(id_servicio)
-    flash("✅ Servicio eliminado correctamente.", "success")
-    return redirect("/servicios")
 
 
 # ================= VENTAS =================

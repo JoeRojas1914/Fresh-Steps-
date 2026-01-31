@@ -115,7 +115,7 @@
         {% endif %}
 
         {% if inicio > 1 %}
-            <a href="{{ url_for('servicios',
+            <a href="{{ url_for('servicios.servicios',
                 pagina=inicio-10,
                 q=q,
                 id_negocio=id_negocio
@@ -126,7 +126,7 @@
             {% if p == pagina %}
                 <strong>{{ p }}</strong>
             {% else %}
-                <a href="{{ url_for('servicios',
+                <a href="{{ url_for('servicios.servicios',
                     pagina=p,
                     q=q,
                     id_negocio=id_negocio
@@ -135,7 +135,7 @@
         {% endfor %}
 
         {% if fin < total_paginas %}
-            <a href="{{ url_for('servicios',
+            <a href="{{ url_for('servicios.servicios',
                 pagina=inicio+10,
                 q=q,
                 id_negocio=id_negocio

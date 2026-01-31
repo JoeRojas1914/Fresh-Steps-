@@ -200,17 +200,16 @@ def logout():
 # ================= HOME =================
 @app.route("/")
 def index():
-    if session.get("rol") == "caja":
-        return redirect(url_for("ventas"))
+    if not session.get("id_usuario"):
+        return redirect(url_for("login"))
 
-    if session.get("rol") == "admin":
-        total_entregas = contar_entregas_pendientes()
-        return render_template(
-            "index.html",
-            total_entregas=total_entregas
-        )
+    total_entregas = contar_entregas_pendientes()
 
-    return redirect(url_for("login"))
+    return render_template(
+        "index.html",
+        total_entregas=total_entregas
+    )
+
 
 
 

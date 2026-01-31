@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-
 {% block content %}
 
 <section class="dashboard-header">
@@ -17,6 +16,7 @@
 
 <section class="dashboard-cards">
 
+    {# ===== CAJA + ADMIN ===== #}
     <a href="/ventas/pendientes" class="card card-link card-gradient">
         <h3>📦 Entregas pendientes</h3>
         <p class="card-number">{{ total_entregas }}</p>
@@ -27,25 +27,30 @@
         <p class="card-number">Registrar Venta</p>
     </a>
 
-    <a href="/gastos" class="card card-link card-gradient">
-        <h3>💸 Gastos</h3>
-        <p class="card-number">Registrar Gasto</p>
-    </a>
+    {# ===== SOLO ADMIN ===== #}
+    {% if session.rol == "admin" %}
 
-    <a href="/estadisticas" class="card card-link card-gradient">
-        <h3>📊 Estadísticas</h3>
-        <p class="card-number">Ver reportes</p>
-    </a>
+        <a href="/gastos" class="card card-link card-gradient">
+            <h3>💸 Gastos</h3>
+            <p class="card-number">Registrar Gasto</p>
+        </a>
 
-    <a href="/clientes" class="card card-link card-gradient">
-        <h3>👥 Clientes</h3>
-        <p class="card-number">Gestión de Clientes</p>
-    </a>
+        <a href="/estadisticas" class="card card-link card-gradient">
+            <h3>📊 Estadísticas</h3>
+            <p class="card-number">Ver reportes</p>
+        </a>
 
-    <a href="/servicios" class="card card-link card-gradient">
-        <h3>🏬 Servicios</h3>
-        <p class="card-number">Gestión de Servicios</p>
-    </a>
+        <a href="/clientes" class="card card-link card-gradient">
+            <h3>👥 Clientes</h3>
+            <p class="card-number">Gestión de Clientes</p>
+        </a>
+
+        <a href="/servicios" class="card card-link card-gradient">
+            <h3>🏬 Servicios</h3>
+            <p class="card-number">Gestión de Servicios</p>
+        </a>
+
+    {% endif %}
 
 </section>
 

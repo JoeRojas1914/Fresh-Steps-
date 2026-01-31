@@ -72,6 +72,7 @@ RUTAS_PUBLICAS = [
 ]
 
 RUTAS_CAJA = [
+    "index",
     "ventas",
     "guardar_venta",
     "ventas_pendientes",

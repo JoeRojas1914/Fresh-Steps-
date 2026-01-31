@@ -1,10 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 from datetime import date, datetime
 import os
 from dotenv import load_dotenv
 from db import get_connection
 from werkzeug.security import check_password_hash
-from flask import session
+
 
 # ================= IMPORTS DE MODULOS =================
 from clientes import (
@@ -62,6 +62,55 @@ from negocio import obtener_negocios
 load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY")
+
+
+# ================= CONTROL DE ACCESO =================
+
+RUTAS_PUBLICAS = [
+    "login",
+    "static"
+]
+
+RUTAS_CAJA = [
+    "ventas",
+    "guardar_venta",
+    "ventas_pendientes",
+    "entregar_venta",
+    "registrar_pago_final",
+    "venta_ticket",
+    "api_clientes",
+    "api_crear_cliente",
+    "api_servicios",
+]
+
+
+
+
+
+@app.before_request
+def control_acceso():
+    endpoint = request.endpoint
+
+    if endpoint is None:
+        return
+
+    if endpoint.startswith("static"):
+        return
+
+    if endpoint in RUTAS_PUBLICAS:
+        return
+
+    if not session.get("id_usuario"):
+        return redirect(url_for("login"))
+
+    if session.get("rol") == "admin":
+        return
+
+    if session.get("rol") == "caja" and endpoint in RUTAS_CAJA:
+        return
+
+    return "⛔ Acceso denegado", 403
+
 
 
 # ================= UTILIDADES =================
@@ -149,8 +198,18 @@ def logout():
 # ================= HOME =================
 @app.route("/")
 def index():
-    total_entregas = contar_entregas_pendientes()
-    return render_template("index.html", total_entregas=total_entregas)
+    if session.get("rol") == "caja":
+        return redirect(url_for("ventas"))
+
+    if session.get("rol") == "admin":
+        total_entregas = contar_entregas_pendientes()
+        return render_template(
+            "index.html",
+            total_entregas=total_entregas
+        )
+
+    return redirect(url_for("login"))
+
 
 
 

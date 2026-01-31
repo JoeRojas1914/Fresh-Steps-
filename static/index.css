@@ -1,0 +1,144 @@
+/* =============================
+   DASHBOARD / INDEX PAGE
+============================= */
+
+/* ===== HEADER ===== */
+.dashboard-header {
+    margin-bottom: 40px;
+}
+
+.dashboard-title {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+}
+
+.dashboard-text h1 {
+    font-size: 32px;
+    margin: 0;
+    color: #0b3c5d;
+}
+
+.dashboard-text p {
+    margin-top: 6px;
+    color: #6b7280;
+}
+
+.dashboard-logo {
+    height: 140px;
+    object-fit: contain;
+}
+
+
+/* ===== CARDS GRID ===== */
+.dashboard-cards {
+    display: grid;
+    gap: 22px;
+
+    /* desktop default */
+    grid-template-columns: repeat(4, 1fr);
+}
+
+
+/* ===== CARD BASE ===== */
+.card {
+    padding: 24px;
+    border-radius: 18px;
+
+    background: white;
+    box-shadow: 0 8px 20px rgba(0,0,0,.08);
+
+    transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 28px rgba(0,0,0,.12);
+}
+
+
+/* clickable cards */
+.card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+
+/* gradient look */
+.card-gradient {
+    background: linear-gradient(135deg, #f8fbff, #e6f3ff);
+    border: 1px solid #dbeafe;
+}
+
+.card-gradient:hover {
+    background: linear-gradient(135deg, #e6f3ff, #dbeafe);
+}
+
+
+/* ===== TEXT ===== */
+.card h3 {
+    font-size: 15px;
+    color: #0b3c5d;
+    margin-bottom: 12px;
+}
+
+.card-number {
+    font-size: 26px;
+    font-weight: 800;
+    color: #1e7fd6;
+}
+
+
+
+/* ========================================
+   RESPONSIVE BREAKPOINTS
+======================================== */
+
+
+/* ===== Tablet ===== */
+@media (max-width: 1024px) {
+
+    .dashboard-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dashboard-logo {
+        height: 110px;
+    }
+}
+
+
+/* ===== Mobile ===== */
+@media (max-width: 640px) {
+
+    .dashboard-title {
+        flex-direction: column;
+        text-align: center;
+        gap: 12px;
+    }
+
+    .dashboard-logo {
+        height: 90px;
+    }
+
+    .dashboard-text h1 {
+        font-size: 22px;
+    }
+
+    .dashboard-text p {
+        font-size: 14px;
+    }
+
+    .dashboard-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .card {
+        padding: 20px;
+    }
+
+    .card-number {
+        font-size: 22px;
+    }
+}

@@ -27,90 +27,6 @@ body {
 }
 
 
-/* ====== DASHBOARD ====== */
-.dashboard-header {
-    margin-bottom: 30px;
-}
-
-.dashboard-header h1 {
-    font-size: 32px;
-    margin-bottom: 5px;
-}
-
-.dashboard-header p {
-    color: #4b5563;
-}
-
-.dashboard-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-}
-
-.card {
-    background: white;
-    padding: 20px;
-    border-radius: 16px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-}
-
-.card h3 {
-    margin-bottom: 10px;
-    font-size: 16px;
-    color: #0b3c5d;
-}
-
-.card-number {
-    font-size: 28px;
-    font-weight: bold;
-    color: #1e7fd6;
-}
-
-.dashboard-actions {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-}
-
-.action-btn {
-    text-decoration: none;
-    padding: 12px 20px;
-    border-radius: 10px;
-    font-weight: 600;
-    color: white;
-    background: linear-gradient(to right, #2fa4ff, #1e7fd6);
-    box-shadow: 0 6px 14px rgba(30, 127, 214, 0.25);
-}
-
-.action-btn:hover {
-    background: linear-gradient(to right, #1e7fd6, #155fa0);
-}
-
-
-.dashboard-title {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.dashboard-logo {
-    height: 150px;   
-    width: auto;
-    object-fit: contain;
-}
-
-.dashboard-header h1 {
-    font-size: 32px;
-    margin-bottom: 5px;
-}
-
-.dashboard-header p {
-    color: #4b5563;
-}
-
-
-
 input {
     display: block;
     width: 100%;
@@ -161,17 +77,6 @@ button:active {
     backdrop-filter: blur(2px);
     z-index: 1000;
 }
-
-.modal-content {
-    background: #ffffff;
-    padding: 25px;
-    width: 320px;
-    margin: 10% auto;
-    border-radius: 14px;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-    animation: fadeIn 0.3s ease;
-}
-
 
 .close {
     float: right;
@@ -406,13 +311,6 @@ td .btn-delete {
     max-height: 320px;
 }
 
-.stats-page {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-    margin-bottom: 20px;
-}
-
 .stats-card.full-width {
     grid-column: 1 / -1; 
 }
@@ -477,40 +375,6 @@ td .btn-delete {
     font-weight: 500;
 }
 
-
-.card-link {
-    text-decoration: none;
-    color: inherit;
-    cursor: pointer;
-    display: block;
-}
-
-
-.card-gradient {
-    background: linear-gradient(
-        135deg,
-        #f8fbff 0%,
-        #e6f3ff 100%
-    );
-    border: 1px solid #dbeafe;
-}
-
-
-.card-gradient:hover {
-    background: linear-gradient(
-        135deg,
-        #e6f3ff 0%,
-        #dbeafe 100%
-    );
-}
-
-.dashboard-cards {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(220px, 1fr));
-    gap: 20px;
-    margin-top: 30px;
-    justify-content: center;
-}
 
 .alert {
     padding: 10px;

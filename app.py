@@ -77,6 +77,7 @@ RUTAS_CAJA = [
     "guardar_venta",
     "ventas_pendientes",
     "entregar_venta",
+    "logout",
     "registrar_pago_final",
     "venta_ticket",
     "api_clientes",

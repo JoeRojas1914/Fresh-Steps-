@@ -7,31 +7,41 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='footer.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
 </head>
 <body>
-    <div class="page-content">
-        <nav class="navbar">
-            <div class="nav-logo">
-                <img src="{{ url_for('static', filename='logo.png') }}" alt="Fresh Steps">
-            </div>
 
-            <div class="nav-links">
-                <a href="/">Inicio</a>
+{% if session.get("id_usuario") %}
+<div class="page-content">
+    <nav class="navbar">
+        <div class="nav-logo">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Fresh Steps">
+        </div>
+
+        <div class="nav-links">
+            <a href="/">Inicio</a>
+
+            {% if session.rol == "admin" %}
                 <a href="/clientes">Clientes</a>
                 <a href="/servicios">Servicios</a>
-                <a href="/ventas">Venta</a>
-                <a href="/ventas/pendientes">Entregas pendientes</a>
                 <a href="/gastos">Gastos</a>
                 <a href="/estadisticas">Estadísticas</a>
-            </div>
-        </nav>
+            {% endif %}
 
-        <hr>
-        {% block content %}{% endblock %}
-    </div>
+            <a href="/ventas">Venta</a>
+            <a href="/ventas/pendientes">Entregas pendientes</a>
+
+            <a href="/logout" class="logout">
+                <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+            </a>
+        </div>
+    </nav>
+
+    <hr>
+{% endif %}
+
+{% block content %}{% endblock %}
+</div>
 
     <footer class="footer">
         <div class="footer-container">
@@ -53,5 +63,6 @@
             </div>
         </div>
     </footer>
+
 </body>
 </html>

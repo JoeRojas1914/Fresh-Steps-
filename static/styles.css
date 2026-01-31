@@ -1,6 +1,7 @@
 html, body {
     width: 100%;
     overflow-x: hidden;
+    margin: 0;
 }
 
 body {
@@ -747,7 +748,7 @@ button:disabled:hover {
 }
 
 
-
+.zapato-item {
     padding: 12px 14px;
     margin-bottom: 12px;
     background: #f8faff;
@@ -1704,5 +1705,4 @@ hr {
     transform: translateX(0);
   }
 }
-
 

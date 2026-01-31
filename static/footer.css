@@ -1,11 +1,11 @@
 .footer {
     width: 100%;
-    margin-top: auto;
     padding: 40px 20px;
     background: linear-gradient(135deg, #f0f4ff, #e6f3ff);
     border-top: 1px solid #dbeafe;
     box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
 }
+
 
 .footer-container {
     max-width: 1200px;

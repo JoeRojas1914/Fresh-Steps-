@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Acceso rápido</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='pin.css') }}">
+</head>
+<body>
+
+<div class="pin-container">
+    <h2>Acceso rápido</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, msg in messages %}
+        <div class="alert {{ category }}">{{ msg }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <form method="POST" class="pin-form">
+        <input
+            type="password"
+            name="pin"
+            maxlength="4"
+            inputmode="numeric"
+            pattern="[0-9]{4}"
+            placeholder="••••"
+            class="pin-input"
+            required
+        >
+
+        <button type="submit" class="pin-btn">Entrar</button>
+    </form>
+
+
+    <a href="/login" class="link-login">
+        Usar usuario y contraseña
+    </a>
+</div>
+
+</body>
+</html>

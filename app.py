@@ -68,7 +68,8 @@ app.secret_key = os.environ.get("SECRET_KEY")
 
 RUTAS_PUBLICAS = [
     "login",
-    "static"
+    "static",
+    "pin_login"
 ]
 
 RUTAS_CAJA = [
@@ -105,12 +106,11 @@ def control_acceso():
 
     if not session.get("id_usuario"):
         return redirect(url_for("login"))
-    
+
     ultima = session.get("ultima_actividad")
 
     if ultima:
         ultima = datetime.fromisoformat(ultima)
-
         ahora = datetime.now()
 
         limite = (
@@ -118,13 +118,12 @@ def control_acceso():
             else TIMEOUT_CAJA
         )
 
-        if ahora - ultima > timedelta(minutes==limite):
+        if ahora - ultima > timedelta(minutes=limite):
             session.clear()
             flash("Tu sesión expiró por inactividad.", "error")
             return redirect(url_for("login"))
 
     session["ultima_actividad"] = datetime.now().isoformat()
-
 
     if session.get("rol") == "admin":
         return
@@ -133,6 +132,7 @@ def control_acceso():
         return
 
     return render_template("403.html"), 403
+
 
 
 
@@ -217,6 +217,36 @@ def login():
 def logout():
     session.clear()
     return redirect(url_for("login"))
+
+
+@app.route("/pin", methods=["GET", "POST"])
+def pin_login():
+    if request.method == "POST":
+        pin = request.form.get("pin")
+
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT * FROM usuario
+            WHERE rol = 'caja' AND activo = 1
+        """)
+        usuario = cursor.fetchone()
+        cursor.close()
+        conn.close()
+
+        if usuario and usuario["pin_hash"] and check_password_hash(usuario["pin_hash"], pin):
+            session.clear()
+            session["id_usuario"] = usuario["id_usuario"]
+            session["usuario"] = usuario["usuario"]
+            session["rol"] = "caja"
+            session["ultima_actividad"] = datetime.now().isoformat()
+
+            return redirect(url_for("index"))
+
+        flash("❌ PIN incorrecto", "error")
+
+    return render_template("pin.html")
+
 
 
 # ================= HOME =================

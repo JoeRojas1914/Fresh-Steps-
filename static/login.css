@@ -156,3 +156,28 @@
     right: 16px;
     font-size: 17px;
 }
+
+.login-divider {
+    margin: 18px 0 12px;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.btn-pin {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    text-decoration: none;
+    font-weight: 600;
+    color: #1e7fd6;
+    border: 2px dashed #1e7fd6;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.btn-pin:hover {
+    background: #e6f3ff;
+    color: #155fa0;
+}
+

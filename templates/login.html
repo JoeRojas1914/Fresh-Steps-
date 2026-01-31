@@ -15,24 +15,35 @@
         </div>
 
         <h2>BIENVENIDO</h2>
-        <br>
+
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% for category, msg in messages %}
             <div class="alert {{ category }}">{{ msg }}</div>
           {% endfor %}
         {% endwith %}
 
+        <!-- FORMULARIO ÚNICO -->
         <form method="POST" class="login-form">
+
             <div class="input-group">
                 <input type="text" name="usuario" placeholder="Usuario" required>
             </div>
 
             <div class="input-group password-group">
-                <input type="password" name="password" id="password" placeholder="Contraseña" required>
+                <input type="password" name="password" placeholder="Contraseña" required>
             </div>
 
-            <button type="submit">Ingresar</button>
+            <button type="submit" class="btn-login">
+                Ingresar
+            </button>
+
         </form>
+
+        <div class="login-divider">o</div>
+
+        <a href="/pin" class="btn-pin">
+            Acceso rápido con PIN
+        </a>
 
     </div>
 </div>

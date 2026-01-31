@@ -1,4 +1,6 @@
-from flask import Blueprint, render_template, request, redirect, flash
+from flask import Blueprint, render_template, request, redirect, flash, jsonify
+
+
 from services.servicios_service import (
     listar_servicios,
     guardar_servicio_service,
@@ -63,3 +65,17 @@ def eliminar_servicio(id_servicio):
     eliminar_servicio_service(id_servicio)
     flash("✅ Servicio eliminado correctamente.", "success")
     return redirect("/servicios")
+
+
+@servicios_bp.route("/api/servicios")
+def api_servicios():
+    id_negocio = request.args.get("id_negocio", type=int)
+
+    data = listar_servicios(
+        id_negocio=id_negocio,
+        pagina=1,
+        por_pagina=1000
+    )
+
+    return jsonify(data["servicios"])
+

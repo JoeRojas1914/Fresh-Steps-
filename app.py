@@ -198,13 +198,6 @@ def api_crear_cliente():
     })
 
 
-
-@app.route("/api/servicios")
-def api_servicios():
-    id_negocio = request.args.get("id_negocio", type=int)
-    return jsonify(obtener_servicios(id_negocio=id_negocio, limit=1000, offset=0))
-
-
 # ================= LOGIN =================
 @app.route("/login", methods=["GET", "POST"])
 def login():

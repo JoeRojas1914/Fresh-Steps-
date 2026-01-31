@@ -1706,3 +1706,51 @@ hr {
   }
 }
 
+
+.error-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+}
+
+.error-card {
+    background: white;
+    padding: 40px 50px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+    max-width: 420px;
+}
+
+.error-icon {
+    font-size: 60px;
+    margin-bottom: 15px;
+}
+
+.error-card h1 {
+    font-size: 26px;
+    margin-bottom: 10px;
+    color: #0b3c5d;
+}
+
+.error-card p {
+    font-size: 15px;
+    color: #4b5563;
+    margin-bottom: 25px;
+}
+
+.error-btn {
+    display: inline-block;
+    padding: 10px 22px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    color: white;
+    background: linear-gradient(to right, #2fa4ff, #1e7fd6);
+    box-shadow: 0 6px 14px rgba(30,127,214,0.25);
+}
+
+.error-btn:hover {
+    background: linear-gradient(to right, #1e7fd6, #155fa0);
+}

@@ -111,7 +111,7 @@ def control_acceso():
     if session.get("rol") == "caja" and endpoint in RUTAS_CAJA:
         return
 
-    return "⛔ Acceso denegado", 403
+    return render_template("403.html"), 403
 
 
 

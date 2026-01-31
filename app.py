@@ -292,8 +292,10 @@ def index():
 
     return render_template(
         "index.html",
-        total_entregas=total_entregas
+        total_entregas=total_entregas,
+        nombre_usuario=session.get("usuario") 
     )
+
 
 
 

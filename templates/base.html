@@ -36,9 +36,19 @@
             <a href="/ventas">Venta</a>
             <a href="/ventas/pendientes">Entregas pendientes</a>
 
-            <a href="/logout" class="logout">
-                <i class="fas fa-sign-out-alt"></i> Cerrar sesión
-            </a>
+            <div class="nav-user-dropdown" id="userDropdown">
+                <button class="nav-user-btn" id="userBtn">
+                    {{ session.get("usuario") }}
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+
+                <div class="nav-user-menu" id="userMenu">
+                    <a href="/logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Cerrar sesión
+                    </a>
+                </div>
+            </div>
         </div>
     </nav>
 
@@ -78,6 +88,20 @@
         navToggle.addEventListener("click", () => {
             navLinks.classList.toggle("active");
         });
+
+        const userBtn = document.getElementById("userBtn");
+        const userMenu = document.getElementById("userMenu");
+
+        userBtn.addEventListener("click", () => {
+            userMenu.classList.toggle("show");
+        });
+
+        document.addEventListener("click", (e) => {
+            if (!document.getElementById("userDropdown").contains(e.target)) {
+                userMenu.classList.remove("show");
+            }
+        });
+
     </script>
 
 </body>

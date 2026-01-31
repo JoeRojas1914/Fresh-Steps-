@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import os
 from dotenv import load_dotenv
 from db import get_connection
@@ -86,7 +86,8 @@ RUTAS_CAJA = [
 ]
 
 
-
+TIMEOUT_CAJA = 20 
+TIMEOUT_ADMIN = 15
 
 
 @app.before_request
@@ -104,6 +105,26 @@ def control_acceso():
 
     if not session.get("id_usuario"):
         return redirect(url_for("login"))
+    
+    ultima = session.get("ultima_actividad")
+
+    if ultima:
+        ultima = datetime.fromisoformat(ultima)
+
+        ahora = datetime.now()
+
+        limite = (
+            TIMEOUT_ADMIN if session.get("rol") == "admin"
+            else TIMEOUT_CAJA
+        )
+
+        if ahora - ultima > timedelta(minutes==limite):
+            session.clear()
+            flash("Tu sesión expiró por inactividad.", "error")
+            return redirect(url_for("login"))
+
+    session["ultima_actividad"] = datetime.now().isoformat()
+
 
     if session.get("rol") == "admin":
         return
@@ -183,6 +204,7 @@ def login():
             session["id_usuario"] = usuario["id_usuario"]
             session["usuario"] = usuario["usuario"]
             session["rol"] = usuario["rol"]
+            session["ultima_actividad"] = datetime.now().isoformat()
 
             return redirect(url_for("index"))
 

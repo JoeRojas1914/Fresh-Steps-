@@ -10,7 +10,8 @@ def crear_venta(
     fecha_estimada,
     aplica_descuento,
     cantidad_descuento,
-    articulos
+    articulos,
+    id_usuario_creo 
 ):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
@@ -24,17 +25,20 @@ def crear_venta(
                 fecha_estimada,
                 aplica_descuento,
                 cantidad_descuento,
-                total
+                total,
+                id_usuario_creo
             )
-            VALUES (%s, %s, %s, %s, %s, %s, 0)
+            VALUES (%s, %s, %s, %s, %s, %s, 0, %s)
         """, (
             id_negocio,
             id_cliente,
             datetime.now(),
             fecha_estimada,
             aplica_descuento,
-            cantidad_descuento
+            cantidad_descuento,
+            id_usuario_creo
         ))
+
 
         id_venta = cursor.lastrowid
         total = Decimal("0.00")

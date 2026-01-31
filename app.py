@@ -711,6 +711,8 @@ def guardar_venta():
         id_cliente = request.form.get("id_cliente") or None
         fecha_estimada = request.form.get("fecha_estimada") or None
         tipo_pago = request.form.get("tipo_pago")
+        id_usuario_creo = session.get("id_usuario")
+
 
         prepago = request.form.get("prepago") == "si"
         monto_prepago = (
@@ -880,7 +882,8 @@ def guardar_venta():
             fecha_estimada=fecha_estimada,
             aplica_descuento=aplica_descuento,
             cantidad_descuento=cantidad_descuento,
-            articulos=articulos
+            articulos=articulos,
+            id_usuario_creo=id_usuario_creo
         )
 
         if prepago and monto_prepago > 0:
@@ -893,8 +896,10 @@ def guardar_venta():
             registrar_pago(
                 id_venta=id_venta,
                 monto=monto_prepago,
-                tipo_pago=tipo_pago
+                tipo_pago=tipo_pago,
+                id_usuario_cobro=session.get("id_usuario")
             )
+
 
         return jsonify({
             "ok": True,

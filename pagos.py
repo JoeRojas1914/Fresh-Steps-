@@ -1,6 +1,6 @@
 from db import get_connection
 
-def registrar_pago(id_venta, monto, tipo_pago):
+def registrar_pago(id_venta, monto, tipo_pago, id_usuario_cobro):
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -10,10 +10,12 @@ def registrar_pago(id_venta, monto, tipo_pago):
                 id_venta,
                 fecha_pago,
                 monto,
-                tipo_pago
+                tipo_pago,
+                id_usuario_cobro
             )
-            VALUES (%s, NOW(), %s, %s)
-        """, (id_venta, monto, tipo_pago))
+            VALUES (%s, NOW(), %s, %s, %s)
+        """, (id_venta, monto, tipo_pago, id_usuario_cobro))
+
 
         conn.commit()
 

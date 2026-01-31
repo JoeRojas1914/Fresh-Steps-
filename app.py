@@ -151,6 +151,25 @@ def buscar_clientes_por_nombre(texto):
     conn.close()
     return resultados
 
+def registrar_login(usuario, metodo, exito):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        INSERT INTO login_log (usuario, metodo, exito, ip)
+        VALUES (%s, %s, %s, %s)
+    """, (
+        usuario,
+        metodo,
+        exito,
+        request.remote_addr
+    ))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
 
 # ================= API =================
 @app.route("/api/clientes")
@@ -192,11 +211,14 @@ def login():
 
         conn = get_connection()
         cursor = conn.cursor(dictionary=True)
+
         cursor.execute("""
             SELECT * FROM usuario
             WHERE usuario = %s AND activo = 1
         """, (usuario_form,))
+
         usuario = cursor.fetchone()
+
         cursor.close()
         conn.close()
 
@@ -206,11 +228,15 @@ def login():
             session["rol"] = usuario["rol"]
             session["ultima_actividad"] = datetime.now().isoformat()
 
+            registrar_login(usuario_form, "password", True)
+
             return redirect(url_for("index"))
 
+        registrar_login(usuario_form, "password", False)
         flash("❌ Usuario o contraseña incorrectos", "error")
 
     return render_template("login.html")
+
 
 
 @app.route("/logout")
@@ -226,11 +252,14 @@ def pin_login():
 
         conn = get_connection()
         cursor = conn.cursor(dictionary=True)
+
         cursor.execute("""
             SELECT * FROM usuario
             WHERE rol = 'caja' AND activo = 1
         """)
+
         usuario = cursor.fetchone()
+
         cursor.close()
         conn.close()
 
@@ -241,11 +270,15 @@ def pin_login():
             session["rol"] = "caja"
             session["ultima_actividad"] = datetime.now().isoformat()
 
+            registrar_login(usuario["usuario"], "pin", True)
+
             return redirect(url_for("index"))
 
+        registrar_login("caja", "pin", False)
         flash("❌ PIN incorrecto", "error")
 
     return render_template("pin.html")
+
 
 
 

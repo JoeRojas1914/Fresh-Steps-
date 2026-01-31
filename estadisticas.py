@@ -1,6 +1,6 @@
 from collections import defaultdict
-from db import get_connection
 from datetime import date, timedelta
+from db import get_connection
 
 def generar_semanas_rango(inicio: date, fin: date):
     meses = [
@@ -298,7 +298,6 @@ def ejecutar_query(sql, params=None):
 
 
 def obtener_uso_servicios(inicio, fin, id_negocio):
-    conn = get_connection()
     sql = """
         SELECT s.nombre, COUNT(*) total
         FROM articulo_servicio aps

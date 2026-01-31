@@ -1,9 +1,10 @@
-from flask import Blueprint, render_template, request, redirect, flash, url_for
+from flask import Blueprint, render_template, request, redirect, flash, url_for, session, jsonify
 
 from services.gastos_service import (
     listar_gastos,
     guardar_gasto_service,
-    eliminar_gasto_service
+    eliminar_gasto_service,
+    obtener_historial_gasto
 )
 
 from negocio import obtener_negocios
@@ -41,6 +42,8 @@ def guardar_gasto():
 
     id_gasto = request.form.get("id_gasto")
 
+    id_usuario = session["id_usuario"]
+
     datos = (
         request.form["id_negocio"],
         request.form["descripcion"],
@@ -49,7 +52,7 @@ def guardar_gasto():
         request.form["fecha_registro"]
     )
 
-    resultado = guardar_gasto_service(id_gasto, datos)
+    resultado = guardar_gasto_service(id_gasto, datos, id_usuario)
 
     if resultado == "actualizado":
         flash("✅ Gasto editado correctamente.", "success")
@@ -61,6 +64,16 @@ def guardar_gasto():
 
 @gastos_bp.route("/gastos/eliminar/<int:id_gasto>")
 def eliminar_gasto(id_gasto):
-    eliminar_gasto_service(id_gasto)
+
+    id_usuario = session["id_usuario"]
+
+    eliminar_gasto_service(id_gasto, id_usuario)
+
     flash("✅ Gasto eliminado correctamente.", "success")
     return redirect(url_for("gastos.gastos"))
+
+
+@gastos_bp.route("/gastos/<int:id_gasto>/historial")
+def historial_gasto(id_gasto):
+    data = obtener_historial_gasto(id_gasto)
+    return jsonify(data)

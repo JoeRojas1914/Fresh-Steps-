@@ -1,6 +1,5 @@
 import os
-from datetime import date, datetime, timedelta
-import calendar
+from datetime import date
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 from dotenv import load_dotenv
 from db import get_connection

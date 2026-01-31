@@ -3,7 +3,8 @@ from gastos import (
     actualizar_gasto,
     obtener_gastos,
     eliminar_gasto,
-    contar_gastos
+    contar_gastos,
+    obtener_historial_gasto
 )
 
 
@@ -33,14 +34,19 @@ def listar_gastos(id_negocio=None, fecha_inicio=None, fecha_fin=None, pagina=1, 
     }
 
 
-def guardar_gasto_service(id_gasto, datos):
+def guardar_gasto_service(id_gasto, datos, id_usuario):
     if id_gasto:
-        actualizar_gasto(id_gasto, *datos)
+        actualizar_gasto(id_gasto, *datos, id_usuario)
         return "actualizado"
     else:
-        crear_gasto(*datos)
+        crear_gasto(*datos, id_usuario)
         return "creado"
 
 
-def eliminar_gasto_service(id_gasto):
-    eliminar_gasto(id_gasto)
+
+def eliminar_gasto_service(id_gasto, id_usuario):
+    eliminar_gasto(id_gasto, id_usuario)
+
+def obtener_historial_gasto_service(id_gasto):
+    return obtener_historial_gasto(id_gasto)
+

@@ -1,62 +1,95 @@
 from db import get_connection
+import json
+from decimal import Decimal
+from datetime import date, datetime
 
 
-def crear_gasto(id_negocio, descripcion, proveedor, total, fecha_registro):
+
+def crear_gasto(id_negocio, descripcion, proveedor, total, fecha_registro, id_usuario):
     conn = get_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
 
-    sql = """
-    INSERT INTO gastos (id_negocio, descripcion, proveedor, total, fecha_registro)
-    VALUES (%s, %s, %s, %s, %s)
-    """
+    try:
+        cursor.execute("""
+            INSERT INTO gastos
+            (id_negocio, descripcion, proveedor, total, fecha_registro, id_usuario)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (id_negocio, descripcion, proveedor, total, fecha_registro, id_usuario))
 
-    cursor.execute(sql, (id_negocio, descripcion, proveedor, total, fecha_registro))
-    conn.commit()
+        id_gasto = cursor.lastrowid
 
-    cursor.close()
-    conn.close()
+        despues = {
+            "descripcion": descripcion,
+            "proveedor": proveedor,
+            "total": total
+        }
+
+        registrar_historial(cursor, id_gasto, "CREADO", id_usuario, None, despues)
+
+        conn.commit()
+
+    finally:
+        cursor.close()
+        conn.close()
 
 
-def actualizar_gasto(id_gasto, id_negocio, descripcion, proveedor, total, fecha_registro):
+
+
+def actualizar_gasto(id_gasto, id_negocio, descripcion, proveedor, total, fecha_registro, id_usuario):
     conn = get_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("""
-        UPDATE gastos
-        SET id_negocio=%s,
-            descripcion=%s,
-            proveedor=%s,
-            total=%s,
-            fecha_registro=%s
-        WHERE id_gasto=%s
-    """, (id_negocio, descripcion, proveedor, total, fecha_registro, id_gasto))
+    try:
+        cursor.execute("SELECT * FROM gastos WHERE id_gasto=%s", (id_gasto,))
+        antes = cursor.fetchone()
 
-    conn.commit()
-    cursor.close()
-    conn.close()
+        cursor.execute("""
+            UPDATE gastos
+            SET id_negocio=%s,
+                descripcion=%s,
+                proveedor=%s,
+                total=%s,
+                fecha_registro=%s
+            WHERE id_gasto=%s
+        """, (id_negocio, descripcion, proveedor, total, fecha_registro, id_gasto))
+
+        despues = {
+            "descripcion": descripcion,
+            "proveedor": proveedor,
+            "total": total
+        }
+
+        registrar_historial(cursor, id_gasto, "EDITADO", id_usuario, antes, despues)
+
+        conn.commit()
+
+    finally:
+        cursor.close()
+        conn.close()
 
 
-def eliminar_gasto(id_gasto):
+
+def eliminar_gasto(id_gasto, id_usuario):
     conn = get_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
 
-    cursor.execute(
-        "DELETE FROM gastos WHERE id_gasto=%s",
-        (id_gasto,)
-    )
+    try:
+        cursor.execute("SELECT * FROM gastos WHERE id_gasto=%s", (id_gasto,))
+        antes = cursor.fetchone()
 
-    conn.commit()
-    cursor.close()
-    conn.close()
+        cursor.execute("DELETE FROM gastos WHERE id_gasto=%s", (id_gasto,))
+
+        registrar_historial(cursor, id_gasto, "ELIMINADO", id_usuario, antes, None)
+
+        conn.commit()
+
+    finally:
+        cursor.close()
+        conn.close()
 
 
-def obtener_gastos(
-    id_negocio=None,
-    fecha_inicio=None,
-    fecha_fin=None,
-    limit=10,
-    offset=0
-):
+
+def obtener_gastos(id_negocio=None, fecha_inicio=None, fecha_fin=None, limit=10, offset=0):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
@@ -68,9 +101,11 @@ def obtener_gastos(
             g.descripcion,
             g.proveedor,
             g.total,
-            g.fecha_registro
+            g.fecha_registro,
+            u.usuario AS creado_por
         FROM gastos g
-        JOIN Negocio n ON g.id_negocio = n.id_negocio
+        JOIN negocio n ON g.id_negocio = n.id_negocio
+        JOIN usuario u ON g.id_usuario = u.id_usuario
     """
 
     params = []
@@ -149,3 +184,56 @@ def contar_gastos(id_negocio=None, fecha_inicio=None, fecha_fin=None):
     conn.close()
     return total
 
+
+
+def registrar_historial(cursor, id_gasto, accion, id_usuario, antes=None, despues=None):
+
+    cursor.execute("""
+        INSERT INTO gastos_historial
+        (id_gasto, accion, id_usuario, datos_antes, datos_despues)
+        VALUES (%s, %s, %s, %s, %s)
+    """, (
+        id_gasto,
+        accion,
+        id_usuario,
+        json.dumps(to_json_safe(antes)) if antes else None,
+        json.dumps(to_json_safe(despues)) if despues else None
+    ))
+
+
+
+
+def obtener_historial_gasto(id_gasto):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT h.*, u.usuario AS usuario
+        FROM gastos_historial h
+        JOIN usuario u ON h.id_usuario = u.id_usuario
+        WHERE id_gasto=%s
+        ORDER BY fecha DESC
+    """, (id_gasto,))
+
+    data = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+    return data
+
+
+def to_json_safe(data):
+    if not data:
+        return None
+
+    safe = {}
+
+    for k, v in data.items():
+        if isinstance(v, Decimal):
+            safe[k] = float(v)
+        elif isinstance(v, (date, datetime)):
+            safe[k] = v.isoformat()
+        else:
+            safe[k] = v
+
+    return safe

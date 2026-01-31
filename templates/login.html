@@ -3,24 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <title>Iniciar sesión</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
 </head>
-<body>
 
-<div class="login-container">
-    <h2>🔐 Fresh Steps</h2>
+<body class="login-page">
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% for category, msg in messages %}
-        <div class="alert {{ category }}">{{ msg }}</div>
-      {% endfor %}
-    {% endwith %}
+<div class="login-wrapper">
+    <div class="login-card">
+        <div class="login-logo">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Fresh Steps">
+        </div>
 
-    <form method="POST">
-        <input type="text" name="usuario" placeholder="Usuario" required>
-        <input type="password" name="password" placeholder="Contraseña" required>
-        <button type="submit">Entrar</button>
-    </form>
+        <h2>BIENVENIDO</h2>
+        <br>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for category, msg in messages %}
+            <div class="alert {{ category }}">{{ msg }}</div>
+          {% endfor %}
+        {% endwith %}
+
+        <form method="POST" class="login-form">
+            <div class="input-group">
+                <input type="text" name="usuario" placeholder="Usuario" required>
+            </div>
+
+            <div class="input-group password-group">
+                <input type="password" name="password" id="password" placeholder="Contraseña" required>
+            </div>
+
+            <button type="submit">Ingresar</button>
+        </form>
+
+    </div>
 </div>
 
 </body>

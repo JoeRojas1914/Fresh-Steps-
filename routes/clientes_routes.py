@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
 
+
 from services.clientes_service import (
     listar_clientes_service,
     guardar_cliente_service,
@@ -101,4 +102,11 @@ def ver_cliente(id_cliente):
     filtros = request.args
     data = obtener_cliente_detalle_service(id_cliente, filtros)
     return render_template("cliente_perfil.html", **data)
+
+
+@clientes_bp.route("/api/clientes/crear", methods=["POST"])
+def api_crear_cliente():
+    id_usuario = session["id_usuario"]
+    cliente = guardar_cliente_service(request.form, id_usuario, api=True)
+    return jsonify(cliente)
 

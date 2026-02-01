@@ -4,7 +4,8 @@ from services.gastos_service import (
     listar_gastos,
     guardar_gasto_service,
     eliminar_gasto_service,
-    obtener_historial_gasto
+    obtener_historial_gasto,
+    restaurar_gasto_service
 )
 
 from negocio import obtener_negocios
@@ -20,12 +21,15 @@ def gastos():
     fecha_inicio = request.args.get("fecha_inicio")
     fecha_fin = request.args.get("fecha_fin")
     pagina = request.args.get("pagina", 1, type=int)
+    incluir_eliminados = request.args.get("eliminados") == "1"
+
 
     data = listar_gastos(
         id_negocio=id_negocio,
         fecha_inicio=fecha_inicio,
         fecha_fin=fecha_fin,
-        pagina=pagina
+        pagina=pagina,
+        incluir_eliminados=incluir_eliminados
     )
 
     return render_template(
@@ -33,7 +37,8 @@ def gastos():
         gastos=data["gastos"],
         negocios=obtener_negocios(),
         pagina=pagina,
-        total_paginas=data["total_paginas"]
+        total_paginas=data["total_paginas"],
+        incluir_eliminados=incluir_eliminados
     )
 
 
@@ -77,3 +82,15 @@ def eliminar_gasto(id_gasto):
 def historial_gasto(id_gasto):
     data = obtener_historial_gasto(id_gasto)
     return jsonify(data)
+
+
+@gastos_bp.route("/gastos/restaurar/<int:id_gasto>")
+def restaurar_gasto_route(id_gasto):
+
+    id_usuario = session["id_usuario"]
+
+    restaurar_gasto_service(id_gasto, id_usuario)
+
+    flash("♻️ Gasto restaurado correctamente.", "success")
+
+    return redirect(request.referrer or url_for("gastos.gastos"))

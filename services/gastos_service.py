@@ -4,34 +4,39 @@ from gastos import (
     obtener_gastos,
     eliminar_gasto,
     contar_gastos,
-    obtener_historial_gasto
+    obtener_historial_gasto,
+    restaurar_gasto
 )
 
 
-def listar_gastos(id_negocio=None, fecha_inicio=None, fecha_fin=None, pagina=1, por_pagina=10):
+def listar_gastos(id_negocio=None, fecha_inicio=None, fecha_fin=None, pagina=1, por_pagina=10, incluir_eliminados=False):
+
     offset = (pagina - 1) * por_pagina
 
     total = contar_gastos(
         id_negocio=id_negocio,
         fecha_inicio=fecha_inicio,
-        fecha_fin=fecha_fin
+        fecha_fin=fecha_fin,
+        incluir_eliminados=incluir_eliminados
     )
-
-    total_paginas = (total + por_pagina - 1) // por_pagina
 
     gastos = obtener_gastos(
         id_negocio=id_negocio,
         fecha_inicio=fecha_inicio,
         fecha_fin=fecha_fin,
         limit=por_pagina,
-        offset=offset
+        offset=offset,
+        incluir_eliminados=incluir_eliminados
     )
+
+    total_paginas = (total + por_pagina - 1) // por_pagina
 
     return {
         "gastos": gastos,
         "total": total,
         "total_paginas": total_paginas
     }
+
 
 
 def guardar_gasto_service(id_gasto, datos, id_usuario):
@@ -50,3 +55,7 @@ def eliminar_gasto_service(id_gasto, id_usuario):
 def obtener_historial_gasto_service(id_gasto):
     return obtener_historial_gasto(id_gasto)
 
+
+
+def restaurar_gasto_service(id_gasto, id_usuario):
+    restaurar_gasto(id_gasto, id_usuario)

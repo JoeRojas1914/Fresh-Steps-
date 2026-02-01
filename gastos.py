@@ -91,7 +91,7 @@ def eliminar_gasto(id_gasto, id_usuario):
 
 
 
-def obtener_gastos(id_negocio=None, fecha_inicio=None, fecha_fin=None, limit=10, offset=0):
+def obtener_gastos(id_negocio=None, fecha_inicio=None, fecha_fin=None, limit=10, offset=0,  incluir_eliminados=False):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
@@ -104,30 +104,32 @@ def obtener_gastos(id_negocio=None, fecha_inicio=None, fecha_fin=None, limit=10,
             g.proveedor,
             g.total,
             g.fecha_registro,
-            u.usuario AS creado_por
+            u.usuario AS creado_por,
+            g.activo
         FROM gastos g
-        WHERE g.activo = 1
         JOIN negocio n ON g.id_negocio = n.id_negocio
         JOIN usuario u ON g.id_usuario = u.id_usuario
+        WHERE 1=1
     """
 
+
     params = []
-    where = []
 
     if id_negocio:
-        where.append("g.id_negocio = %s")
+        sql += " AND g.id_negocio = %s"
         params.append(id_negocio)
 
     if fecha_inicio:
-        where.append("g.fecha_registro >= %s")
+        sql += " AND g.fecha_registro >= %s"
         params.append(fecha_inicio)
 
     if fecha_fin:
-        where.append("g.fecha_registro <= %s")
+        sql += " AND g.fecha_registro <= %s"
         params.append(fecha_fin)
+    
+    if not incluir_eliminados:
+     sql += " AND g.activo = 1"
 
-    if where:
-        sql += " WHERE " + " AND ".join(where)
 
     sql += " ORDER BY g.fecha_registro DESC LIMIT %s OFFSET %s"
     params.extend([limit, offset])
@@ -138,6 +140,7 @@ def obtener_gastos(id_negocio=None, fecha_inicio=None, fecha_fin=None, limit=10,
     cursor.close()
     conn.close()
     return gastos
+
 
 
 
@@ -161,12 +164,15 @@ def obtener_gastos_por_proveedor(id_negocio, fecha_inicio, fecha_fin):
     return resultados
 
 
-def contar_gastos(id_negocio=None, fecha_inicio=None, fecha_fin=None):
+def contar_gastos(id_negocio=None, fecha_inicio=None, fecha_fin=None, incluir_eliminados=False):
     conn = get_connection()
     cursor = conn.cursor()
 
     sql = "SELECT COUNT(*) FROM gastos WHERE 1=1"
     params = []
+
+    if not incluir_eliminados:
+        sql += " AND activo = 1"
 
     if id_negocio:
         sql += " AND id_negocio = %s"
@@ -186,6 +192,7 @@ def contar_gastos(id_negocio=None, fecha_inicio=None, fecha_fin=None):
     cursor.close()
     conn.close()
     return total
+
 
 
 
@@ -240,3 +247,23 @@ def to_json_safe(data):
             safe[k] = v
 
     return safe
+
+
+def restaurar_gasto(id_gasto, id_usuario):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT * FROM gastos WHERE id_gasto=%s", (id_gasto,))
+    antes = cursor.fetchone()
+
+    cursor.execute("""
+        UPDATE gastos
+        SET activo = 1
+        WHERE id_gasto=%s
+    """, (id_gasto,))
+
+    registrar_historial(cursor, id_gasto, "RESTAURADO", id_usuario, antes, None)
+
+    conn.commit()
+    cursor.close()
+    conn.close()

@@ -59,6 +59,25 @@
   </div>
 </form>
 
+<form method="GET" action="{{ url_for('gastos.gastos') }}" class="filtro-toggle">
+
+    <input type="hidden" name="id_negocio" value="{{ request.args.get('id_negocio','') }}">
+    <input type="hidden" name="fecha_inicio" value="{{ request.args.get('fecha_inicio','') }}">
+    <input type="hidden" name="fecha_fin" value="{{ request.args.get('fecha_fin','') }}">
+
+    <label class="switch">
+        <input type="checkbox"
+               name="eliminados"
+               value="1"
+               onchange="this.form.submit()"
+               {% if incluir_eliminados %}checked{% endif %}>
+        <span class="slider"></span>
+    </label>
+
+    <span class="toggle-text">Mostrar eliminados</span>
+</form>
+
+
 
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
@@ -131,6 +150,7 @@
             <th>Proveedor</th>
             <th>Total</th>
             <th>Fecha de registro</th>
+            <th>Estado</th>
             <th>Acciones</th>
         </tr>
     </thead>
@@ -143,20 +163,38 @@
             <td>{{ g.total }}</td>
             <td>{{ g.fecha_registro }}</td>
             <td>
-            <button class="btn-edit"
-                onclick='editarGasto(
-                    {{ g.id_gasto }}, {{ g.id_negocio }}, {{ g.descripcion|tojson }}, {{ g.proveedor|tojson }}, {{ g.total|tojson }}, "{{ g.fecha_registro.strftime("%Y-%m-%d") if g.fecha_registro else "" }}")'>
-                Edit
-            </button>
+                {% if g.activo %}
+                    <span class="status status-completado">Activo</span>
+                {% else %}
+                    <span class="status status-pendiente">Eliminado</span>
+                {% endif %}
+            </td>
 
-            <button class="btn-info" onclick="verHistorial({{ g.id_gasto }})">
-                Historial
-            </button>
+            <td>
 
+                {% if g.activo %}
+
+                <button class="btn-edit"
+                    onclick='editarGasto(
+                        {{ g.id_gasto }}, {{ g.id_negocio }}, {{ g.descripcion|tojson }}, {{ g.proveedor|tojson }}, {{ g.total|tojson }}, "{{ g.fecha_registro.strftime("%Y-%m-%d") if g.fecha_registro else "" }}")'>
+                    Editar
+                </button>
+
+                <button class="btn-info" onclick="verHistorial({{ g.id_gasto }})">
+                    Historial
+                </button>
 
                 <a href="/gastos/eliminar/{{ g.id_gasto }}" class="btn-delete" onclick="return confirm('¿Seguro que desea eliminar el gasto?')">
-                    Delete
+                    Eliminar
                 </a>
+
+            {% else %}
+                <a href="/gastos/restaurar/{{ g.id_gasto }}"
+                class="btn-edit"
+                style="background:linear-gradient(to right,#3b82f6,#2563eb);">
+                Restaurar
+                </a>
+            {% endif %}
             </td>
         </tr>
         {% endfor %}
@@ -270,7 +308,14 @@
 
             let cambios = "";
 
-            if (antes && despues) {
+            if (h.accion === "RESTAURADO") {
+                cambios = `
+                    <span">
+                        Registro restaurado
+                    </span>
+                `;
+            }
+            else if (antes && despues) {
                 Object.keys(despues).forEach(k => {
                     if (antes[k] !== despues[k]) {
                         cambios += `
@@ -282,9 +327,11 @@
                         `;
                     }
                 });
-            } else if (despues) {
+            }
+            else if (despues) {
                 cambios = "Registro creado";
-            } else {
+            }
+            else {
                 cambios = "Registro eliminado";
             }
 

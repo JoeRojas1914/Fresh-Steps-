@@ -159,13 +159,20 @@ def obtener_servicios(id_negocio=None, q=None, limit=10, offset=0):
     return servicios
 
 def servicio_tiene_ventas(cursor, id_servicio):
+
     cursor.execute("""
-        SELECT COUNT(*)
+        SELECT COUNT(*) AS total
         FROM articulo_servicio
         WHERE id_servicio = %s
     """, (id_servicio,))
 
-    return cursor.fetchone()[0] > 0
+    row = cursor.fetchone()
+
+    if isinstance(row, dict):
+        return row["total"] > 0
+    else:
+        return row[0] > 0
+
 
 
 

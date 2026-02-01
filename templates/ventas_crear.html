@@ -842,16 +842,24 @@ function validarFormulario() {
 
 
     if (negocio === "1" || negocio === "2") {
-        document.querySelectorAll(".servicios-box").forEach(box => {
-            let tieneServicio = false;
 
-            box.querySelectorAll("select").forEach(sel => {
-                if (sel.value) tieneServicio = true;
+        document.querySelectorAll(".servicios-box").forEach(box => {
+
+            const selects = box.querySelectorAll("select");
+            let todosCompletos = true;
+
+            selects.forEach(sel => {
+                if (!sel.value || sel.value.trim() === "") {
+                    todosCompletos = false;
+                }
             });
 
-            if (!tieneServicio) valido = false;
+            if (!todosCompletos) {
+                valido = false;
+            }
         });
     }
+
 
     if (prepago === "si") {
         if (!tipoPago || montoPrepago <= 0) {

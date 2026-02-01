@@ -113,6 +113,23 @@ body {
 }
 
 
+
+.alert {
+    padding: 12px 14px;
+    border-radius: 14px;
+    margin-bottom: 14px;
+    font-size: 13px;
+    font-weight: 600;
+    animation: fadeSlide .25s ease;
+}
+
+.alert.timeout {
+    background: #fff7ed;
+    color: #c2410c;
+}
+
+
+
 @keyframes fadeIn {
     from {
         opacity: 0;

@@ -1,6 +1,7 @@
 from flask import session, redirect, url_for, flash, render_template, request
 from datetime import datetime, timedelta
 
+
 RUTAS_PUBLICAS = [
     "auth.login",
     "static"
@@ -37,7 +38,6 @@ def init_auth_middleware(app):
         if endpoint.startswith("static"):
             return
 
-
         hoy = datetime.now().date().isoformat()
 
 
@@ -54,18 +54,20 @@ def init_auth_middleware(app):
             if session.get("pin_habilitado_fecha") == hoy:
                 return redirect(url_for("auth.pin_login"))
 
-
         if endpoint in RUTAS_PUBLICAS:
             return
 
-
         if not session.get("id_usuario"):
-            return redirect(url_for("auth.pin_login"))
 
+            if session.get("pin_habilitado_fecha") == hoy:
+                return redirect(url_for("auth.pin_login"))
+
+            return redirect(url_for("auth.login"))
 
         ultima = session.get("ultima_actividad")
 
         if ultima:
+
             ultima = datetime.fromisoformat(ultima)
             ahora = datetime.now()
 
@@ -75,9 +77,18 @@ def init_auth_middleware(app):
             )
 
             if ahora - ultima > timedelta(minutes=limite):
+
+                fecha = session.get("pin_habilitado_fecha")
+
                 session.clear()
 
-                if session.get("pin_habilitado_fecha") == hoy:
+                flash(
+                    "Sesión cerrada por inactividad. Ingresa tu PIN",
+                    "timeout"
+                )
+
+                if fecha == hoy:
+                    session["pin_habilitado_fecha"] = fecha
                     return redirect(url_for("auth.pin_login"))
 
                 return redirect(url_for("auth.login"))

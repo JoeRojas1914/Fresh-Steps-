@@ -5,6 +5,7 @@
     <title>Acceso rápido</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='pin.css') }}">
 </head>
+
 <body>
 
 <div class="pin-container">
@@ -17,6 +18,10 @@
     {% endwith %}   
 
     <form method="POST" class="pin-form">
+
+        <!-- 🔐 CSRF correcto -->
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
         <input
             type="password"
             name="pin"
@@ -30,7 +35,6 @@
 
         <button type="submit" class="pin-btn">Entrar</button>
     </form>
-
 
     <a href="/login" class="link-login">
         Usar usuario y contraseña

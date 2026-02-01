@@ -4,6 +4,8 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from dotenv import load_dotenv
 from db import get_connection
 from werkzeug.security import check_password_hash
+from flask_wtf import CSRFProtect
+
 
 
 from routes.servicios_routes import servicios_bp
@@ -36,6 +38,7 @@ from negocio import obtener_negocios
 load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY")
+csrf = CSRFProtect(app)
 app.register_blueprint(servicios_bp)
 app.register_blueprint(gastos_bp)
 app.register_blueprint(clientes_bp)

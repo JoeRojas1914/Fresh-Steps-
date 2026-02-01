@@ -155,7 +155,7 @@ def obtener_cliente_por_id(id_cliente):
         SELECT *,
                DATE_FORMAT(fecha_registro, '%d/%m/%Y') as fecha_registro_fmt
         FROM cliente
-        WWHERE id_cliente = %s AND activo = 1
+        WHERE id_cliente = %s
     """, (id_cliente,))
 
     data = cursor.fetchone()
@@ -163,6 +163,7 @@ def obtener_cliente_por_id(id_cliente):
     cursor.close()
     conn.close()
     return data
+
 
 
 

@@ -5,7 +5,8 @@ from services.servicios_service import (
     listar_servicios,
     guardar_servicio_service,
     eliminar_servicio_service,
-    obtener_historial_servicio_service
+    obtener_historial_servicio_service,
+    restaurar_servicio_service
 )
 from negocio import obtener_negocios
 
@@ -17,13 +18,14 @@ def servicios():
     id_negocio = request.args.get("id_negocio", type=int)
     pagina = request.args.get("pagina", 1, type=int)
 
-    por_pagina = 10
+    incluir_eliminados = bool(request.args.get("eliminados"))
 
     data = listar_servicios(
         id_negocio=id_negocio,
         q=q,
         pagina=pagina,
-        por_pagina=por_pagina
+        por_pagina=10,
+        incluir_eliminados=incluir_eliminados 
     )
 
     negocios = obtener_negocios()
@@ -35,8 +37,10 @@ def servicios():
         id_negocio=id_negocio,
         q=q,
         pagina=pagina,
-        total_paginas=data["total_paginas"]
+        total_paginas=data["total_paginas"],
+        incluir_eliminados=incluir_eliminados 
     )
+
 
 
 @servicios_bp.route("/servicios/guardar", methods=["POST"])
@@ -68,15 +72,16 @@ def guardar_servicio():
 def eliminar_servicio(id_servicio):
 
     id_usuario = session["id_usuario"]
+    ok = eliminar_servicio_service(id_servicio, id_usuario)
 
-    eliminado = eliminar_servicio_service(id_servicio, id_usuario)
 
-    if not eliminado:
-        flash("❌ No puedes eliminar este servicio porque ya tiene ventas registradas.", "error")
+    if not ok:
+        flash("❌ No puedes eliminar el servicio porque ya tiene ventas.", "error")
     else:
         flash("✅ Servicio eliminado correctamente.", "success")
 
     return redirect("/servicios")
+
 
 
 
@@ -98,3 +103,14 @@ def api_servicios():
 def historial_servicio(id_servicio):
     data = obtener_historial_servicio_service(id_servicio)
     return jsonify(data)
+
+
+@servicios_bp.route("/servicios/restaurar/<int:id_servicio>")
+def restaurar_servicio(id_servicio):
+    id_usuario = session["id_usuario"]
+
+    restaurar_servicio_service(id_servicio, id_usuario)
+
+    flash("♻️ Servicio restaurado correctamente.", "success")
+    return redirect(request.referrer or "/servicios")
+

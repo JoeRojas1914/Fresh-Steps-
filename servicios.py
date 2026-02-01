@@ -61,15 +61,32 @@ def eliminar_servicio(id_servicio, id_usuario):
     cursor = conn.cursor(dictionary=True)
 
     try:
-        if servicio_tiene_ventas(cursor, id_servicio):
-            return False  
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+            FROM articulo_servicio
+            WHERE id_servicio=%s
+        """, (id_servicio,))
+
+        if cursor.fetchone()["total"] > 0:
+            return False
 
         cursor.execute("SELECT * FROM servicio WHERE id_servicio=%s", (id_servicio,))
         antes = cursor.fetchone()
 
-        cursor.execute("DELETE FROM servicio WHERE id_servicio=%s", (id_servicio,))
+        cursor.execute("""
+            UPDATE servicio
+            SET activo = 0
+            WHERE id_servicio=%s
+        """, (id_servicio,))
 
-        registrar_historial(cursor, id_servicio, "ELIMINADO", id_usuario, antes, None)
+        registrar_historial(
+            cursor,
+            id_servicio,
+            "ELIMINADO",
+            id_usuario,
+            antes,
+            None
+        )
 
         conn.commit()
         return True
@@ -77,6 +94,9 @@ def eliminar_servicio(id_servicio, id_usuario):
     finally:
         cursor.close()
         conn.close()
+
+
+
 
 
 def obtener_servicio_por_id(id_servicio):
@@ -92,6 +112,7 @@ def obtener_servicio_por_id(id_servicio):
         FROM servicio s
         JOIN Negocio n ON s.id_negocio = n.id_negocio
         WHERE s.id_servicio = %s
+          AND s.activo = 1
     """, (id_servicio,))
 
     servicio = cursor.fetchone()
@@ -100,7 +121,8 @@ def obtener_servicio_por_id(id_servicio):
     return servicio
 
 
-def contar_servicios(id_negocio=None, q=None):
+def contar_servicios(id_negocio=None, q=None, incluir_eliminados=False):
+
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -115,6 +137,9 @@ def contar_servicios(id_negocio=None, q=None):
         sql += " AND nombre LIKE %s"
         params.append(f"%{q}%")
 
+    if not incluir_eliminados:
+        sql += " AND activo = 1"
+
     cursor.execute(sql, params)
     total = cursor.fetchone()[0]
 
@@ -124,16 +149,18 @@ def contar_servicios(id_negocio=None, q=None):
 
 
 
-def obtener_servicios(id_negocio=None, q=None, limit=10, offset=0):
+def obtener_servicios(id_negocio=None, q=None, incluir_eliminados=False, limit=10, offset=0):
+
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
     sql = """
         SELECT s.id_servicio,
-               s.nombre,
-               s.precio,
-               s.id_negocio,
-               n.nombre AS negocio
+            s.nombre,
+            s.precio,
+            s.id_negocio,
+            s.activo,
+            n.nombre AS negocio
         FROM servicio s
         JOIN negocio n ON n.id_negocio = s.id_negocio
         WHERE 1=1
@@ -147,6 +174,9 @@ def obtener_servicios(id_negocio=None, q=None, limit=10, offset=0):
     if q:
         sql += " AND s.nombre LIKE %s"
         params.append(f"%{q}%")
+
+    if not incluir_eliminados:
+        sql += " AND s.activo = 1"
 
     sql += " ORDER BY s.nombre ASC LIMIT %s OFFSET %s"
     params.extend([limit, offset])
@@ -227,3 +257,32 @@ def obtener_historial_servicio(id_servicio):
     cursor.close()
     conn.close()
     return data
+
+
+def restaurar_servicio(id_servicio, id_usuario):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        cursor.execute("SELECT * FROM servicio WHERE id_servicio=%s", (id_servicio,))
+        antes = cursor.fetchone()
+
+        cursor.execute("""
+            UPDATE servicio
+            SET activo = 1
+            WHERE id_servicio=%s
+        """, (id_servicio,))
+
+        registrar_historial(
+            cursor,
+            id_servicio,
+            "RESTAURADO",
+            id_usuario,
+            antes,
+            None
+        )
+
+        conn.commit()
+    finally:
+        cursor.close()
+        conn.close()

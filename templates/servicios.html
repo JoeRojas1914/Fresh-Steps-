@@ -30,6 +30,25 @@
     </select>
 </form>
 
+<form method="GET" action="/servicios" class="filtro-toggle">
+    <input type="hidden" name="id_negocio" value="{{ id_negocio or '' }}">
+
+    <label class="switch">
+        <input type="checkbox"
+               name="eliminados"
+               value="1"
+               onchange="this.form.submit()"
+               {% if incluir_eliminados %}checked{% endif %}>
+        <span class="slider"></span>
+    </label>
+
+    <span class="toggle-text">
+        Mostrar eliminados
+    </span>
+</form>
+
+
+
 
 
 <button onclick="abrirModal()">➕ Agregar servicio</button>
@@ -78,6 +97,7 @@
             <th>Negocio</th>
             <th>Servicio</th>
             <th>Precio</th>
+            <th>Estado</th>
             <th>Acciones</th>
         </tr>
     </thead>
@@ -88,22 +108,47 @@
             <td>{{ s.nombre }}</td>
             <td>${{ s.precio }}</td>
             <td>
-            <button class="btn-edit"
-                data-id="{{ s.id_servicio }}"
-                data-negocio="{{ s.id_negocio }}"
-                data-nombre="{{ s.nombre }}"
-                data-precio="{{ s.precio }}"
-                onclick="editarServicio(this)">
-                Editar
-            </button>
+                {% if s.activo %}
+                    <span class="status status-completado">Activo</span>
+                {% else %}
+                    <span class="status status-pendiente">Eliminado</span>
+                {% endif %}
+            </td>
 
-            <button class="btn-info"
+            <td>
+
+            {% if s.activo %}
+
+                <button class="btn-edit"
+                    data-id="{{ s.id_servicio }}"
+                    data-negocio="{{ s.id_negocio }}"
+                    data-nombre="{{ s.nombre }}"
+                    data-precio="{{ s.precio }}"
+                    onclick="editarServicio(this)">
+                    Editar
+                </button>
+
+                <button class="btn-info"
                     onclick="verHistorialServicio({{ s.id_servicio }})">
-                Historial
-            </button>
+                    Historial
+                </button>
 
-                <a href="/servicios/eliminar/{{ s.id_servicio }}" class="btn-delete"
-                   onclick="return confirm('¿Seguro que desea eliminar el servicio?')">Delete</a>
+                <a href="/servicios/eliminar/{{ s.id_servicio }}"
+                class="btn-delete"
+                onclick="return confirm('¿Eliminar servicio?')">
+                Eliminar
+                </a>
+
+            {% else %}
+
+                <a href="/servicios/restaurar/{{ s.id_servicio }}"
+                class="btn-edit"
+                style="background:linear-gradient(to right,#3b82f6,#2563eb);">
+                Restaurar
+                </a>
+
+            {% endif %}
+
             </td>
         </tr>
         {% endfor %}
@@ -224,7 +269,10 @@
 
             let cambios = "";
 
-            if (antes && despues) {
+            if (h.accion === "CREADO") {
+                cambios = "Servicio creado";
+            }
+            else if (h.accion === "EDITADO") {
                 Object.keys(despues).forEach(k => {
                     if (antes[k] !== despues[k]) {
                         cambios += `
@@ -237,11 +285,14 @@
                         `;
                     }
                 });
-            } else if (despues) {
-                cambios = "Servicio creado";
-            } else {
+            }
+            else if (h.accion === "ELIMINADO") {
                 cambios = "Servicio eliminado";
             }
+            else if (h.accion === "RESTAURADO") {
+                cambios = "Servicio restaurado";
+            }
+
 
             tbody.innerHTML += `
                 <tr>

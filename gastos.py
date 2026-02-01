@@ -73,19 +73,21 @@ def eliminar_gasto(id_gasto, id_usuario):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-    try:
-        cursor.execute("SELECT * FROM gastos WHERE id_gasto=%s", (id_gasto,))
-        antes = cursor.fetchone()
+    cursor.execute("SELECT * FROM gastos WHERE id_gasto=%s", (id_gasto,))
+    antes = cursor.fetchone()
 
-        cursor.execute("DELETE FROM gastos WHERE id_gasto=%s", (id_gasto,))
+    cursor.execute("""
+        UPDATE gastos
+        SET activo = 0
+        WHERE id_gasto=%s
+    """, (id_gasto,))
 
-        registrar_historial(cursor, id_gasto, "ELIMINADO", id_usuario, antes, None)
+    registrar_historial(cursor, id_gasto, "ELIMINADO", id_usuario, antes, None)
 
-        conn.commit()
+    conn.commit()
+    cursor.close()
+    conn.close()
 
-    finally:
-        cursor.close()
-        conn.close()
 
 
 
@@ -104,6 +106,7 @@ def obtener_gastos(id_negocio=None, fecha_inicio=None, fecha_fin=None, limit=10,
             g.fecha_registro,
             u.usuario AS creado_por
         FROM gastos g
+        WHERE g.activo = 1
         JOIN negocio n ON g.id_negocio = n.id_negocio
         JOIN usuario u ON g.id_usuario = u.id_usuario
     """

@@ -846,19 +846,24 @@ function validarFormulario() {
         document.querySelectorAll(".servicios-box").forEach(box => {
 
             const selects = box.querySelectorAll("select");
-            let todosCompletos = true;
+
+            let cantidadSeleccionados = 0;
+            let hayVacio = false;
 
             selects.forEach(sel => {
-                if (!sel.value || sel.value.trim() === "") {
-                    todosCompletos = false;
+                if (sel.value && sel.value.trim() !== "") {
+                    cantidadSeleccionados++;
+                } else {
+                    hayVacio = true;
                 }
             });
 
-            if (!todosCompletos) {
+            if (cantidadSeleccionados === 0 || hayVacio) {
                 valido = false;
             }
         });
     }
+
 
 
     if (prepago === "si") {

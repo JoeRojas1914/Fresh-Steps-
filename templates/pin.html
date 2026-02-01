@@ -19,7 +19,6 @@
 
     <form method="POST" class="pin-form">
 
-        <!-- 🔐 CSRF correcto -->
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
         <input
@@ -36,8 +35,8 @@
         <button type="submit" class="pin-btn">Entrar</button>
     </form>
 
-    <a href="/login" class="link-login">
-        Usar usuario y contraseña
+    <a href="/login?admin=1" class="link-login">
+        Entrar como administrador
     </a>
 </div>
 

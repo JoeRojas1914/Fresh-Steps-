@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 
 RUTAS_PUBLICAS = [
     "auth.login",
-    "auth.pin_login",
     "static"
 ]
 
@@ -38,11 +37,23 @@ def init_auth_middleware(app):
         if endpoint.startswith("static"):
             return
 
+
+        if endpoint == "auth.pin_login":
+            hoy = datetime.now().date().isoformat()
+
+            if session.get("pin_habilitado_fecha") == hoy:
+                return   
+
+            return redirect(url_for("auth.login"))
+
+
         if endpoint in RUTAS_PUBLICAS:
             return
 
+
         if not session.get("id_usuario"):
             return redirect(url_for("auth.login"))
+
 
         ultima = session.get("ultima_actividad")
 
@@ -62,6 +73,7 @@ def init_auth_middleware(app):
 
         session["ultima_actividad"] = datetime.now().isoformat()
 
+
         if session.get("rol") == "admin":
             return
 
@@ -69,3 +81,4 @@ def init_auth_middleware(app):
             return
 
         return render_template("403.html"), 403
+

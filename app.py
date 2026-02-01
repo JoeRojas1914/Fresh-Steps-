@@ -48,18 +48,28 @@ app.register_blueprint(usuarios_bp)
 init_auth_middleware(app)
 
 # ================= HOME =================
+# ================= HOME =================
 @app.route("/")
 def index():
+
+    hoy = date.today().isoformat()
+
     if not session.get("id_usuario"):
-        return redirect(url_for("login"))
+
+        if session.get("pin_habilitado_fecha") == hoy:
+            return redirect(url_for("auth.pin_login"))
+
+        return redirect(url_for("auth.login"))
 
     total_entregas = contar_entregas_pendientes()
 
     return render_template(
         "index.html",
         total_entregas=total_entregas,
-        nombre_usuario=session.get("usuario") 
+        nombre_usuario=session.get("usuario")
     )
+
+
 
 
 

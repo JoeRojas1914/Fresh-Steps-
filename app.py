@@ -117,20 +117,27 @@ def entregar_venta(id_venta):
 
     try:
         if marcar_entregada(id_venta, id_usuario):
-            flash("✅ Venta entregada correctamente", "success")
+            return jsonify({
+                "ok": True,
+                "message": "Venta entregada correctamente"
+            })
         else:
-            flash("⚠️ La venta ya fue entregada o no existe", "warning")
+            return jsonify({
+                "ok": False,
+                "error": "La venta ya fue entregada o no existe"
+            })
 
     except Exception as e:
-        flash(f"❌ Error: {e}", "error")
+        return jsonify({
+            "ok": False,
+            "error": str(e)
+        }), 500
 
-    return redirect(url_for("ventas_pendientes"))
 
 
 @app.route("/ventas/pago-final", methods=["POST"])
 def registrar_pago_final():
     data = request.json
-
     id_usuario = session["id_usuario"]
 
     conn = get_connection()
@@ -158,15 +165,18 @@ def registrar_pago_final():
 
         marcar_entregada(data["id_venta"], id_usuario)
 
-        return jsonify({"ok": True})
+        return jsonify({
+            "ok": True,
+            "message": "Pago registrado y venta entregada correctamente"
+        })
 
     except Exception as e:
         conn.rollback()
-        return jsonify({"ok": False, "error": str(e)}), 500
+        return jsonify({
+            "ok": False,
+            "error": str(e)
+        }), 500
 
-    finally:
-        cursor.close()
-        conn.close()
 
 
 

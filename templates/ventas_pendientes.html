@@ -336,7 +336,7 @@ function cerrarModalEntrega() {
 }
 
 function confirmarEntregaSinPago() {
-  fetch(`/ventas/entregar/${ventaEntregaActual}`, { method: "POST" })
+  csrfFetch(`/ventas/entregar/${ventaEntregaActual}`, { method: "POST" })
     .then(r => r.json())
     .then(res => {
       if (res.ok) {
@@ -358,7 +358,7 @@ function confirmarPagoYEntrega() {
     return;
   }
 
-  fetch("/ventas/pago-final", {
+  csrfFetch("/ventas/pago-final", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

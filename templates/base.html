@@ -125,6 +125,19 @@
             });
         });
 
+        function csrfFetch(url, options = {}) {
+            const token = document
+                .querySelector('meta[name="csrf-token"]')
+                .getAttribute("content");
+
+            options.headers = {
+                ...options.headers,
+                "X-CSRFToken": token,
+                "Content-Type": "application/json"
+            };
+
+            return fetch(url, options);
+        }
     </script>
 
 </body>

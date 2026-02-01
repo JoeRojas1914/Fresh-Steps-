@@ -1,10 +1,11 @@
-from flask import Blueprint, render_template, request, redirect, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, flash, jsonify, session
 
 
 from services.servicios_service import (
     listar_servicios,
     guardar_servicio_service,
-    eliminar_servicio_service
+    eliminar_servicio_service,
+    obtener_historial_servicio_service
 )
 from negocio import obtener_negocios
 
@@ -44,13 +45,16 @@ def guardar_servicio():
     id_negocio = request.form["id_negocio"]
     nombre = request.form["nombre"]
     precio = request.form["precio"]
+    id_usuario = session["id_usuario"]
 
     resultado = guardar_servicio_service(
-        id_servicio=id_servicio,
-        id_negocio=id_negocio,
-        nombre=nombre,
-        precio=precio
+        id_servicio,
+        id_negocio,
+        nombre,
+        precio,
+        id_usuario
     )
+
 
     if resultado == "actualizado":
         flash("✅ Servicio actualizado correctamente.", "success")
@@ -62,9 +66,18 @@ def guardar_servicio():
 
 @servicios_bp.route("/servicios/eliminar/<int:id_servicio>")
 def eliminar_servicio(id_servicio):
-    eliminar_servicio_service(id_servicio)
-    flash("✅ Servicio eliminado correctamente.", "success")
+
+    id_usuario = session["id_usuario"]
+
+    eliminado = eliminar_servicio_service(id_servicio, id_usuario)
+
+    if not eliminado:
+        flash("❌ No puedes eliminar este servicio porque ya tiene ventas registradas.", "error")
+    else:
+        flash("✅ Servicio eliminado correctamente.", "success")
+
     return redirect("/servicios")
+
 
 
 @servicios_bp.route("/api/servicios")
@@ -79,3 +92,9 @@ def api_servicios():
 
     return jsonify(data["servicios"])
 
+
+
+@servicios_bp.route("/servicios/<int:id_servicio>/historial")
+def historial_servicio(id_servicio):
+    data = obtener_historial_servicio_service(id_servicio)
+    return jsonify(data)

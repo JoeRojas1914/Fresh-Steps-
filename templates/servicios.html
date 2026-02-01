@@ -96,6 +96,12 @@
                 onclick="editarServicio(this)">
                 Editar
             </button>
+
+            <button class="btn-info"
+                    onclick="verHistorialServicio({{ s.id_servicio }})">
+                Historial
+            </button>
+
                 <a href="/servicios/eliminar/{{ s.id_servicio }}" class="btn-delete"
                    onclick="return confirm('¿Seguro que desea eliminar el servicio?')">Delete</a>
             </td>
@@ -103,6 +109,27 @@
         {% endfor %}
     </tbody>
 </table>
+
+<div id="modalHistorialServicio" class="modal">
+  <div class="modal-content" style="width:750px; max-width:95vw;">
+    <span class="close" onclick="cerrarHistorialServicio()">&times;</span>
+
+    <h2>Historial del servicio</h2>
+
+    <table id="tablaHistorialServicio">
+      <thead>
+        <tr>
+          <th>Acción</th>
+          <th>Usuario</th>
+          <th>Fecha</th>
+          <th>Cambios</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
 
 <div class="paginacion">
     {% if total_paginas > 1 %}
@@ -166,6 +193,67 @@
         document.querySelector("[name=nombre]").value = btn.dataset.nombre;
         document.querySelector("[name=precio]").value = btn.dataset.precio;
     }
+
+    function cerrarHistorialServicio() {
+        document.getElementById("modalHistorialServicio").style.display = "none";
+    }
+
+
+    async function verHistorialServicio(id) {
+
+        const modal = document.getElementById("modalHistorialServicio");
+        const tbody = document.querySelector("#tablaHistorialServicio tbody");
+
+        tbody.innerHTML = "<tr><td colspan='4'>Cargando...</td></tr>";
+        modal.style.display = "block";
+
+        const res = await fetch(`/servicios/${id}/historial`);
+        const data = await res.json();
+
+        if (!data.length) {
+            tbody.innerHTML = "<tr><td colspan='4'>Sin historial</td></tr>";
+            return;
+        }
+
+        tbody.innerHTML = "";
+
+        data.forEach(h => {
+
+            const antes = h.datos_antes ? JSON.parse(h.datos_antes) : null;
+            const despues = h.datos_despues ? JSON.parse(h.datos_despues) : null;
+
+            let cambios = "";
+
+            if (antes && despues) {
+                Object.keys(despues).forEach(k => {
+                    if (antes[k] !== despues[k]) {
+                        cambios += `
+                            <div>
+                                <b>${k}</b>:
+                                <span style="color:#ef4444">${antes[k]}</span>
+                                →
+                                <span style="color:#22c55e">${despues[k]}</span>
+                            </div>
+                        `;
+                    }
+                });
+            } else if (despues) {
+                cambios = "Servicio creado";
+            } else {
+                cambios = "Servicio eliminado";
+            }
+
+            tbody.innerHTML += `
+                <tr>
+                    <td><b>${h.accion}</b></td>
+                    <td>${h.usuario}</td>
+                    <td>${new Date(h.fecha).toLocaleString()}</td>
+                    <td>${cambios}</td>
+                </tr>
+            `;
+        });
+    }
+
 </script>
 
 

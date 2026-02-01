@@ -3,7 +3,8 @@ from servicios import (
     obtener_servicios,
     crear_servicio,
     actualizar_servicio,
-    eliminar_servicio
+    eliminar_servicio,
+    obtener_historial_servicio
 )
 
 def listar_servicios(id_negocio=None, q="", pagina=1, por_pagina=10):
@@ -26,14 +27,19 @@ def listar_servicios(id_negocio=None, q="", pagina=1, por_pagina=10):
     }
 
 
-def guardar_servicio_service(id_servicio, id_negocio, nombre, precio):
+def guardar_servicio_service(id_servicio, id_negocio, nombre, precio, id_usuario):
     if id_servicio:
-        actualizar_servicio(id_servicio, id_negocio, nombre, precio)
+        actualizar_servicio(id_servicio, id_negocio, nombre, precio, id_usuario)
         return "actualizado"
     else:
-        crear_servicio(id_negocio, nombre, precio)
+        crear_servicio(id_negocio, nombre, precio, id_usuario)
         return "creado"
 
 
-def eliminar_servicio_service(id_servicio):
-    eliminar_servicio(id_servicio)
+def eliminar_servicio_service(id_servicio, id_usuario):
+    return eliminar_servicio(id_servicio, id_usuario)
+
+
+def obtener_historial_servicio_service(id_servicio):
+    return obtener_historial_servicio(id_servicio)
+

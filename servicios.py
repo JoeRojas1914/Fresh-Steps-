@@ -1,49 +1,82 @@
+import datetime
+from decimal import Decimal
+import json
 from db import get_connection
 
 
-def crear_servicio(id_negocio, nombre, precio):
+def crear_servicio(id_negocio, nombre, precio, id_usuario):
     conn = get_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("""
-        INSERT INTO servicio (id_negocio, nombre, precio)
-        VALUES (%s, %s, %s)
-    """, (id_negocio, nombre, precio))
+    try:
+        cursor.execute("""
+            INSERT INTO servicio (id_negocio, nombre, precio)
+            VALUES (%s, %s, %s)
+        """, (id_negocio, nombre, precio))
 
-    conn.commit()
-    cursor.close()
-    conn.close()
+        id_servicio = cursor.lastrowid
+
+        despues = {
+            "nombre": nombre,
+            "precio": precio
+        }
+
+        registrar_historial(cursor, id_servicio, "CREADO", id_usuario, None, despues)
+
+        conn.commit()
+    finally:
+        cursor.close()
+        conn.close()
 
 
-def actualizar_servicio(id_servicio, id_negocio, nombre, precio):
+def actualizar_servicio(id_servicio, id_negocio, nombre, precio, id_usuario):
     conn = get_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("""
-        UPDATE servicio
-        SET id_negocio=%s,
-            nombre=%s,
-            precio=%s
-        WHERE id_servicio=%s
-    """, (id_negocio, nombre, precio, id_servicio))
+    try:
+        cursor.execute("SELECT * FROM servicio WHERE id_servicio=%s", (id_servicio,))
+        antes = cursor.fetchone()
 
-    conn.commit()
-    cursor.close()
-    conn.close()
+        cursor.execute("""
+            UPDATE servicio
+            SET id_negocio=%s, nombre=%s, precio=%s
+            WHERE id_servicio=%s
+        """, (id_negocio, nombre, precio, id_servicio))
+
+        despues = {
+            "nombre": nombre,
+            "precio": precio
+        }
+
+        registrar_historial(cursor, id_servicio, "EDITADO", id_usuario, antes, despues)
+
+        conn.commit()
+    finally:
+        cursor.close()
+        conn.close()
 
 
-def eliminar_servicio(id_servicio):
+def eliminar_servicio(id_servicio, id_usuario):
     conn = get_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
 
-    cursor.execute(
-        "DELETE FROM servicio WHERE id_servicio=%s",
-        (id_servicio,)
-    )
+    try:
+        if servicio_tiene_ventas(cursor, id_servicio):
+            return False  
 
-    conn.commit()
-    cursor.close()
-    conn.close()
+        cursor.execute("SELECT * FROM servicio WHERE id_servicio=%s", (id_servicio,))
+        antes = cursor.fetchone()
+
+        cursor.execute("DELETE FROM servicio WHERE id_servicio=%s", (id_servicio,))
+
+        registrar_historial(cursor, id_servicio, "ELIMINADO", id_usuario, antes, None)
+
+        conn.commit()
+        return True
+
+    finally:
+        cursor.close()
+        conn.close()
 
 
 def obtener_servicio_por_id(id_servicio):
@@ -125,4 +158,65 @@ def obtener_servicios(id_negocio=None, q=None, limit=10, offset=0):
     conn.close()
     return servicios
 
+def servicio_tiene_ventas(cursor, id_servicio):
+    cursor.execute("""
+        SELECT COUNT(*)
+        FROM articulo_servicio
+        WHERE id_servicio = %s
+    """, (id_servicio,))
 
+    return cursor.fetchone()[0] > 0
+
+
+
+def to_json_safe(data):
+    if not data:
+        return None
+
+    safe = {}
+
+    for k, v in data.items():
+
+        if isinstance(v, Decimal):
+            safe[k] = float(v)
+
+        elif isinstance(v, (datetime.date, datetime.datetime)):
+            safe[k] = str(v)
+
+        else:
+            safe[k] = v
+
+    return safe
+
+
+
+def registrar_historial(cursor, id_servicio, accion, id_usuario, antes=None, despues=None):
+    cursor.execute("""
+        INSERT INTO servicios_historial
+        (id_servicio, accion, id_usuario, datos_antes, datos_despues)
+        VALUES (%s, %s, %s, %s, %s)
+    """, (
+        id_servicio,
+        accion,
+        id_usuario,
+        json.dumps(to_json_safe(antes)) if antes else None,
+        json.dumps(to_json_safe(despues)) if despues else None
+    ))
+
+def obtener_historial_servicio(id_servicio):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT h.*, u.usuario AS usuario
+        FROM servicios_historial h
+        JOIN usuario u ON u.id_usuario = h.id_usuario
+        WHERE id_servicio=%s
+        ORDER BY fecha DESC
+    """, (id_servicio,))
+
+    data = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+    return data

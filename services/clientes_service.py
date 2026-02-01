@@ -4,20 +4,25 @@ from clientes import (
     obtener_clientes,
     crear_cliente,
     actualizar_cliente,
-    eliminar_cliente
+    eliminar_cliente,
+    restaurar_cliente,
+    obtener_historial_cliente
 )
 
 from pagos import obtener_pagos_por_venta
 from negocio import obtener_negocios
 from ventas import contar_ventas_cliente, obtener_detalles_venta, obtener_ventas_cliente
 
-def listar_clientes_service(q="", pagina=1, por_pagina=10):
+
+
+def listar_clientes_service(q="", pagina=1, por_pagina=10, incluir_eliminados=False):
+
     offset = (pagina - 1) * por_pagina
 
-    total = contar_clientes(q)
-    total_paginas = (total + por_pagina - 1) // por_pagina
+    total = contar_clientes(q, incluir_eliminados)
+    clientes = obtener_clientes(q, por_pagina, offset, incluir_eliminados)
 
-    clientes = obtener_clientes(q, por_pagina, offset)
+    total_paginas = (total + por_pagina - 1) // por_pagina
 
     return {
         "clientes": clientes,
@@ -25,7 +30,9 @@ def listar_clientes_service(q="", pagina=1, por_pagina=10):
     }
 
 
-def guardar_cliente_service(form, api=False):
+
+def guardar_cliente_service(form, id_usuario, api=False):
+
     id_cliente = form.get("id_cliente")
 
     nombre = form.get("nombre", "").strip()
@@ -35,10 +42,10 @@ def guardar_cliente_service(form, api=False):
     direccion = form.get("direccion")
 
     if id_cliente:
-        actualizar_cliente(id_cliente, nombre, apellido, correo, telefono, direccion)
+        actualizar_cliente(id_cliente, nombre, apellido, correo, telefono, direccion, id_usuario)
         return "actualizado"
 
-    nuevo_id = crear_cliente(nombre, apellido, correo, telefono, direccion)
+    nuevo_id = crear_cliente(nombre, apellido, correo, telefono, direccion, id_usuario)
 
     if api:
         return {
@@ -50,8 +57,20 @@ def guardar_cliente_service(form, api=False):
     return "creado"
 
 
-def eliminar_cliente_service(id_cliente):
-    eliminar_cliente(id_cliente)
+
+def eliminar_cliente_service(id_cliente, id_usuario):
+    return eliminar_cliente(id_cliente, id_usuario)
+
+
+
+def restaurar_cliente_service(id_cliente, id_usuario):
+    restaurar_cliente(id_cliente, id_usuario)
+
+
+
+def obtener_historial_cliente_service(id_cliente):
+    return obtener_historial_cliente(id_cliente)
+
 
 
 def buscar_clientes_service(q):
@@ -85,7 +104,6 @@ def obtener_cliente_detalle_service(id_cliente, filtros, pedidos_por_pagina=5):
 
     for p in pedidos:
         p["detalles"] = obtener_detalles_venta(p["id_venta"])
-
         pagos = obtener_pagos_por_venta(p["id_venta"])
 
         total_pagado = sum(float(pg["monto"]) for pg in pagos)

@@ -23,6 +23,22 @@
     <button type="submit">Buscar</button>
 </form>
 
+<form method="GET" action="{{ url_for('clientes.clientes') }}" class="filtro-toggle">
+
+    <input type="hidden" name="q" value="{{ q or '' }}">
+
+    <label class="switch">
+        <input type="checkbox"
+               name="eliminados"
+               value="1"
+               onchange="this.form.submit()"
+               {% if incluir_eliminados %}checked{% endif %}>
+        <span class="slider"></span>
+    </label>
+
+    <span class="toggle-text">Mostrar eliminados</span>
+</form>
+
 
 <button onclick="abrirModal()">➕ Agregar cliente</button>
 
@@ -57,7 +73,7 @@
             </div>
 
             <div class="modal-field">
-                <label for="cliente_direccion">Dirección(opcional)</label>
+                <label for="cliente_direccion">Codigo Postal (opcional)</label>
                 <input id="cliente_direccion" type="text" name="direccion">
             </div>
 
@@ -76,31 +92,83 @@
     <thead>
         <tr>
             <th>Nombre</th>
-            <th>Correo</th>
             <th>Teléfono</th>
+            <th>Estado</th>
             <th>Acciones</th>
         </tr>
     </thead>
     <tbody>
         {% for c in clientes %}
         <tr onclick="window.location.href='/clientes/{{ c.id_cliente }}'" style="cursor:pointer;">
-            <td>{{ c.nombre }} {{ c.apellido }}</td>
-            <td>{{ c.correo }}</td>
-            <td>{{ c.telefono }}</td>
-            <td>
-                <button type="button" class="btn-edit"
-                    onclick='editarCliente(event, {{ c.id_cliente }}, {{ c.nombre|tojson }}, {{ c.apellido|tojson }}, {{ c.correo|tojson }}, {{ c.telefono|tojson }}, {{ c.direccion|tojson }})'>
-                    Edit
-                </button>
 
-                <a href="/clientes/eliminar/{{ c.id_cliente }}" class="btn-delete" onclick="return confirm('¿Seguro que desea eliminar al cliente?')">
-                    Delete
-                </a>
+            <td>{{ c.nombre }} {{ c.apellido }}</td>
+
+            <td>{{ c.telefono }}</td>
+
+            <td>
+                {% if c.activo %}
+                    <span class="status status-completado">Activo</span>
+                {% else %}
+                    <span class="status status-pendiente">Eliminado</span>
+                {% endif %}
+            </td>
+
+            <td>
+
+                {% if c.activo %}
+
+                    <button type="button" class="btn-edit"
+                        onclick='editarCliente(event, {{ c.id_cliente }}, {{ c.nombre|tojson }}, {{ c.apellido|tojson }}, {{ c.correo|tojson }}, {{ c.telefono|tojson }}, {{ c.direccion|tojson }})'>
+                        Editar
+                    </button>
+
+                    <button type="button"
+                            class="btn-info"
+                            onclick="verHistorialCliente(event, {{ c.id_cliente }})">
+                        Historial
+                    </button>
+
+                    <a href="/clientes/eliminar/{{ c.id_cliente }}"
+                    class="btn-delete"
+                    onclick="return confirm('¿Seguro que desea desactivar al cliente?')">
+                        Eliminar
+                    </a>
+
+                {% else %}
+                    <a href="/clientes/restaurar/{{ c.id_cliente }}"
+                    class="btn-edit"
+                    style="background:linear-gradient(to right,#3b82f6,#2563eb);">
+                        Restaurar
+                    </a>
+
+                {% endif %}
             </td>
         </tr>
+
         {% endfor %}
     </tbody>
 </table>
+
+<div id="modalHistorialCliente" class="modal">
+  <div class="modal-content" style="width:750px; max-width:95vw;">
+    <span class="close" onclick="cerrarHistorialCliente()">&times;</span>
+
+    <h2>Historial del cliente</h2>
+
+    <table id="tablaHistorialCliente">
+      <thead>
+        <tr>
+          <th>Acción</th>
+          <th>Usuario</th>
+          <th>Fecha</th>
+          <th>Cambios</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
 
 <div class="paginacion">
     {% if total_paginas > 1 %}
@@ -172,6 +240,73 @@
         document.querySelector("[name=correo]").value = correo;
         document.querySelector("[name=telefono]").value = telefono;
         document.querySelector("[name=direccion]").value = direccion;
+    }
+
+
+    function cerrarHistorialCliente() {
+        document.getElementById("modalHistorialCliente").style.display = "none";
+    }
+
+    async function verHistorialCliente(e, id) {
+
+        e.stopPropagation(); // evita que abra el perfil
+
+        const modal = document.getElementById("modalHistorialCliente");
+        const tbody = document.querySelector("#tablaHistorialCliente tbody");
+
+        tbody.innerHTML = "<tr><td colspan='4'>Cargando...</td></tr>";
+        modal.style.display = "block";
+
+        const res = await fetch(`/clientes/${id}/historial`);
+        const data = await res.json();
+
+        if (!data.length) {
+            tbody.innerHTML = "<tr><td colspan='4'>Sin historial</td></tr>";
+            return;
+        }
+
+        tbody.innerHTML = "";
+
+        data.forEach(h => {
+
+            const antes = h.datos_antes ? JSON.parse(h.datos_antes) : null;
+            const despues = h.datos_despues ? JSON.parse(h.datos_despues) : null;
+
+            let cambios = "";
+
+            if (h.accion === "RESTAURADO") {
+                cambios = "<span>Cliente restaurado</span>";
+
+            } else if (antes && despues) {
+
+                Object.keys(despues).forEach(k => {
+                    if (antes[k] !== despues[k]) {
+                        cambios += `
+                            <div>
+                                <b>${k}</b>:
+                                <span style="color:#ef4444">${antes[k]}</span>
+                                →
+                                <span style="color:#22c55e">${despues[k]}</span>
+                            </div>
+                        `;
+                    }
+                });
+
+            } else if (despues) {
+                cambios = "Cliente creado";
+            } else {
+                cambios = "Cliente eliminado";
+            }
+
+            tbody.innerHTML += `
+                <tr>
+                    <td><b>${h.accion}</b></td>
+                    <td>${h.usuario}</td>
+                    <td>${new Date(h.fecha).toLocaleString()}</td>
+                    <td>${cambios}</td>
+                </tr>
+            `;
+        });
     }
 
     </script>

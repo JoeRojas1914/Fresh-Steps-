@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from db import get_connection
 
 
@@ -48,3 +49,83 @@ def registrar_login_log(usuario, metodo, exito, ip):
     conn.commit()
     cursor.close()
     conn.close()
+
+
+def obtener_intentos(usuario, ip):
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT *
+        FROM login_intentos
+        WHERE usuario=%s AND ip=%s
+    """, (usuario, ip))
+
+    row = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+
+    return row
+
+
+
+def registrar_fallo(usuario, ip, max_intentos=5, bloqueo_min=10):
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # 🔥 MISMA CONEXIÓN
+    cursor.execute("""
+        SELECT *
+        FROM login_intentos
+        WHERE usuario=%s AND ip=%s
+    """, (usuario, ip))
+
+    row = cursor.fetchone()
+
+    if not row:
+
+        cursor.execute("""
+            INSERT INTO login_intentos (usuario, ip, intentos)
+            VALUES (%s,%s,1)
+        """, (usuario, ip))
+
+    else:
+        intentos = row["intentos"] + 1
+
+        if intentos >= max_intentos:
+
+            bloqueo = datetime.now() + timedelta(minutes=bloqueo_min)
+
+            cursor.execute("""
+                UPDATE login_intentos
+                SET intentos=%s, bloqueado_hasta=%s
+                WHERE usuario=%s AND ip=%s
+            """, (intentos, bloqueo, usuario, ip))
+
+        else:
+            cursor.execute("""
+                UPDATE login_intentos
+                SET intentos=%s
+                WHERE usuario=%s AND ip=%s
+            """, (intentos, usuario, ip))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
+
+def limpiar_intentos(usuario, ip):
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        DELETE FROM login_intentos
+        WHERE usuario=%s AND ip=%s
+    """, (usuario, ip))
+
+    conn.commit()

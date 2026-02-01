@@ -20,6 +20,10 @@ def login():
             request.remote_addr
         )
 
+        if usuario == "LOCKED":
+            flash("🚫 Cuenta bloqueada por demasiados intentos. Espera 10 minutos.", "error")
+            return render_template("login.html")
+
         if not usuario:
             flash("❌ Usuario o contraseña incorrectos", "error")
             return render_template("login.html")
@@ -44,10 +48,15 @@ def pin_login():
             request.remote_addr
         )
 
+        if usuario == "LOCKED":
+            flash("🚫 PIN bloqueado por demasiados intentos. Espera 10 minutos.", "error")
+            return render_template("pin.html")
+
         if not usuario:
             flash("❌ PIN incorrecto", "error")
             return render_template("pin.html")
 
+        # ✅ OK
         session.clear()
 
         session["id_usuario"] = usuario["id_usuario"]

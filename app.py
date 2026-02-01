@@ -11,6 +11,7 @@ from routes.gastos_routes import gastos_bp
 from routes.clientes_routes import clientes_bp
 from routes.estadisticas_routes import estadisticas_bp
 from routes.auth_routes import auth_bp
+from routes.usuarios_routes import usuarios_bp
 from middleware.auth_middleware import init_auth_middleware
 
 
@@ -40,6 +41,7 @@ app.register_blueprint(gastos_bp)
 app.register_blueprint(clientes_bp)
 app.register_blueprint(estadisticas_bp)
 app.register_blueprint(auth_bp)
+app.register_blueprint(usuarios_bp)
 init_auth_middleware(app)
 
 # ================= HOME =================

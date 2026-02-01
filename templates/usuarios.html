@@ -1,0 +1,314 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>👤 Usuarios</h1>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="alert {{ category }}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<button onclick="abrirModal()">➕ Agregar usuario</button>
+
+<hr>
+
+<table>
+    <thead>
+        <tr>
+            <th>Usuario</th>
+            <th>Rol</th>
+            <th>Estado</th>
+            <th>Creado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for u in usuarios %}
+        <tr>
+
+            <td>{{ u.usuario }}</td>
+
+            <td>
+                {% if u.rol == "admin" %}
+                    <span class="status status-completado">Admin</span>
+                {% else %}
+                    <span class="status status-pendiente">Caja</span>
+                {% endif %}
+            </td>
+
+            <td>
+                {% if u.activo %}
+                    <span class="status status-completado">Activo</span>
+                {% else %}
+                    <span class="status status-pendiente">Inactivo</span>
+                {% endif %}
+            </td>
+
+            <td>{{ u.creado_en }}</td>
+
+            <td>
+
+                {% if u.rol != "admin" %}
+
+                    <button class="btn-edit"
+                        onclick='editarUsuario(event,
+                            {{ u.id_usuario }},
+                            {{ u.usuario|tojson }},
+                            {{ u.rol|tojson }}
+                        )'>
+                        Editar
+                    </button>
+
+                    <a href="/usuarios/toggle/{{ u.id_usuario }}"
+                    class="btn-delete"
+                    onclick="return confirm('¿Cambiar estado del usuario?')">
+                        Activar/Desactivar
+                    </a>
+                    
+                    <button class="btn-info"
+                        onclick="verHistorialUsuario(event, {{ u.id_usuario }})">
+                        Historial
+                    </button>
+
+                {% else %}
+                    <span style="opacity:.5;">Protegido</span>
+                {% endif %}
+
+
+            </td>
+
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="cerrarModal()">&times;</span>
+
+        <h2 id="modalTitulo">Agregar usuario</h2>
+
+        <form method="POST" action="/usuarios/guardar" class="modal-form">
+
+            <input type="hidden" name="id_usuario" id="id_usuario">
+            <input type="hidden" name="rol" id="rol" value="caja">
+
+            <div class="modal-field">
+                <label>Usuario</label>
+                <input 
+                    type="text"
+                    name="usuario"
+                    id="usuario"
+                    required
+                    minlength="3"
+                    pattern="^[a-zA-Z0-9_]+$"
+                >
+            </div>
+
+
+            <div class="modal-field">
+                <label>Contraseña</label>
+                <input 
+                    type="password"
+                    name="password"
+                    id="password"
+                    minlength="6"
+                    pattern="^(?=.*\d).{6,}$"
+                    placeholder="Mínimo 6 caracteres y 1 número"
+                >
+            </div>
+
+
+            <div class="modal-field">
+                <label>PIN (4 dígitos)</label>
+                <input 
+                    type="password"
+                    name="pin"
+                    id="pin"
+                    maxlength="4"
+                    pattern="\d{4}"
+                    placeholder="1234"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="btn-guardar-modal">
+                Guardar usuario
+            </button>
+
+        </form>
+    </div>
+</div>
+
+
+<div id="modalHistorialUsuario" class="modal">
+  <div class="modal-content" style="width:750px; max-width:95vw;">
+    <span class="close" onclick="cerrarHistorialUsuario()">&times;</span>
+
+    <h2>Historial del usuario</h2>
+
+    <table id="tablaHistorialUsuario">
+      <thead>
+        <tr>
+          <th>Acción</th>
+          <th>Admin</th>
+          <th>Fecha</th>
+          <th>Cambios</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+
+
+<script>
+
+document.querySelector(".modal-form").addEventListener("submit", function(e){
+
+const id = document.getElementById("id_usuario").value;
+const password = document.getElementById("password").value.trim();
+const pin = document.getElementById("pin").value.trim();
+const username = document.getElementById("usuario").value.trim();
+
+const creando = !id;
+
+if (creando && !password) {
+    alert("La contraseña es obligatoria al crear el usuario.");
+    e.preventDefault();
+    return;
+}
+
+if (password && !/^(?=.*\d).{6,}$/.test(password)) {
+    alert("🔒 La contraseña debe tener mínimo 6 caracteres y al menos 1 número.");
+    e.preventDefault();
+    return;
+}
+
+
+if (creando && !/^\d{4}$/.test(pin)) {
+    alert("El PIN debe tener exactamente 4 dígitos.");
+    e.preventDefault();
+    return;
+}
+
+if (!/^[a-zA-Z0-9_]{3,}$/.test(username)) {
+    alert("El usuario debe tener mínimo 3 caracteres y solo letras, números o _");
+    e.preventDefault();
+    return;}
+
+
+});
+
+
+function abrirModal() {
+
+    document.getElementById("modal").style.display = "block";
+    document.getElementById("modalTitulo").innerText = "Agregar usuario";
+
+    document.getElementById("id_usuario").value = "";
+    document.getElementById("usuario").value = "";
+    document.getElementById("password").value = "";
+    document.getElementById("pin").value = "";
+
+    document.getElementById("password").required = true;
+    document.getElementById("pin").required = true;
+}
+
+
+function cerrarModal() {
+    document.getElementById("modal").style.display = "none";
+}
+
+function editarUsuario(e, id, usuario) {
+
+    e.stopPropagation();
+
+    abrirModal();
+
+    document.getElementById("modalTitulo").innerText = "Editar usuario";
+
+    document.getElementById("id_usuario").value = id;
+    document.getElementById("usuario").value = usuario;
+
+    document.getElementById("password").required = false;
+    document.getElementById("pin").required = false;
+}
+
+function cerrarHistorialUsuario() {
+    document.getElementById("modalHistorialUsuario").style.display = "none";
+}
+
+async function verHistorialUsuario(e, id) {
+
+    e.stopPropagation();
+
+    const modal = document.getElementById("modalHistorialUsuario");
+    const tbody = document.querySelector("#tablaHistorialUsuario tbody");
+
+    tbody.innerHTML = "<tr><td colspan='4'>Cargando...</td></tr>";
+    modal.style.display = "block";
+
+    const res = await fetch(`/usuarios/${id}/historial`);
+    const data = await res.json();
+
+    if (!data.length) {
+        tbody.innerHTML = "<tr><td colspan='4'>Sin historial</td></tr>";
+        return;
+    }
+
+    tbody.innerHTML = "";
+
+    data.forEach(h => {
+
+        const antes = h.datos_antes ? JSON.parse(h.datos_antes) : null;
+        const despues = h.datos_despues ? JSON.parse(h.datos_despues) : null;
+
+        let cambios = "";
+
+        if (antes && despues) {
+
+            Object.keys(despues).forEach(k => {
+
+                if (antes[k] !== despues[k]) {
+                    cambios += `
+                        <div>
+                            <b>${k}</b>:
+                            <span style="color:#ef4444">${antes[k]}</span>
+                            →
+                            <span style="color:#22c55e">${despues[k]}</span>
+                        </div>
+                    `;
+                }
+            });
+
+        } else if (despues) {
+            cambios = "Usuario creado";
+        } else {
+            cambios = h.accion;
+        }
+
+        tbody.innerHTML += `
+            <tr>
+                <td><b>${h.accion}</b></td>
+                <td>${h.usuario_admin}</td>
+                <td>${new Date(h.fecha).toLocaleString()}</td>
+                <td>${cambios}</td>
+            </tr>
+        `;
+    });
+}
+
+
+</script>
+
+{% endblock %}

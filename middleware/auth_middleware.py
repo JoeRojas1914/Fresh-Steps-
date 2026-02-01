@@ -38,13 +38,21 @@ def init_auth_middleware(app):
             return
 
 
+        hoy = datetime.now().date().isoformat()
+
+
         if endpoint == "auth.pin_login":
-            hoy = datetime.now().date().isoformat()
 
             if session.get("pin_habilitado_fecha") == hoy:
-                return   
+                return
 
             return redirect(url_for("auth.login"))
+
+
+        if endpoint == "auth.login" and not request.args.get("admin"):
+
+            if session.get("pin_habilitado_fecha") == hoy:
+                return redirect(url_for("auth.pin_login"))
 
 
         if endpoint in RUTAS_PUBLICAS:
@@ -52,7 +60,7 @@ def init_auth_middleware(app):
 
 
         if not session.get("id_usuario"):
-            return redirect(url_for("auth.login"))
+            return redirect(url_for("auth.pin_login"))
 
 
         ultima = session.get("ultima_actividad")
@@ -68,11 +76,13 @@ def init_auth_middleware(app):
 
             if ahora - ultima > timedelta(minutes=limite):
                 session.clear()
-                flash("Tu sesión expiró por inactividad.", "error")
+
+                if session.get("pin_habilitado_fecha") == hoy:
+                    return redirect(url_for("auth.pin_login"))
+
                 return redirect(url_for("auth.login"))
 
         session["ultima_actividad"] = datetime.now().isoformat()
-
 
         if session.get("rol") == "admin":
             return
@@ -81,4 +91,3 @@ def init_auth_middleware(app):
             return
 
         return render_template("403.html"), 403
-

@@ -9,7 +9,7 @@
 <body>
 
 <div class="pin-container">
-    <h2>Acceso rápido</h2>
+    <h2>Acceso</h2>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% for category, msg in messages %}
@@ -35,9 +35,10 @@
         <button type="submit" class="pin-btn">Entrar</button>
     </form>
 
-    <a href="/login?admin=1" class="link-login">
-        Entrar como administrador
+    <a href="{{ url_for('auth.login', admin=1) }}" class="admin-secret">
+        ⚙
     </a>
+
 </div>
 
 </body>

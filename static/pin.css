@@ -98,6 +98,21 @@ body {
     text-decoration: underline;
 }
 
+.admin-secret {
+    position: fixed;
+    bottom: 8px;
+    right: 10px;
+    font-size: 14px;
+    opacity: 0.15;
+    text-decoration: none;
+    color: #000;
+}
+
+.admin-secret:hover {
+    opacity: 0.6;
+}
+
+
 @keyframes fadeIn {
     from {
         opacity: 0;

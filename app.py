@@ -48,7 +48,6 @@ app.register_blueprint(usuarios_bp)
 init_auth_middleware(app)
 
 # ================= HOME =================
-# ================= HOME =================
 @app.route("/")
 def index():
 
@@ -61,11 +60,10 @@ def index():
 
         return redirect(url_for("auth.login"))
 
-    total_entregas = contar_entregas_pendientes()
 
     return render_template(
         "index.html",
-        total_entregas=total_entregas,
+        total_entregas = contar_entregas_pendientes(),
         nombre_usuario=session.get("usuario")
     )
 

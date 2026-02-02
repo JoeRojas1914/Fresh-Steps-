@@ -33,7 +33,9 @@ def login():
 
         session.clear()
 
-        session["pin_habilitado"] = True
+        if usuario["rol"] == "admin":
+            session["pin_habilitado"] = True
+
 
 
         if admin_mode:

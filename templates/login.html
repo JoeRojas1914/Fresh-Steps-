@@ -41,20 +41,13 @@
             </button>
 
         </form>
-
-
-
         
-        {% set hoy = namespace(valor=cycler) %} 
-        {% if session.get("pin_habilitado_fecha") %}
+        {% if session.get("pin_habilitado") %}
             <div class="login-divider">o</div>
             <a href="/pin" class="btn-pin">
                 Acceso con PIN
             </a>
         {% endif %}
-
-
-
     </div>
 </div>
 

@@ -1,5 +1,6 @@
 from datetime import datetime
 from werkzeug.security import check_password_hash
+from flask import request
 
 from login import (
     obtener_usuario_por_username,
@@ -11,52 +12,85 @@ from login import (
 )
 
 
-def login_password_service(username, password, ip):
+
+def _ua():
+    return request.headers.get("User-Agent")
+
+
+def _esta_bloqueado(username, ip, metodo, id_usuario=None):
     intento = obtener_intentos(username, ip)
 
     if intento and intento["bloqueado_hasta"]:
         if datetime.now() < intento["bloqueado_hasta"]:
-            registrar_login_log(username, "password_locked", False, ip)
-            return "LOCKED"
 
+            registrar_login_log(
+                username,
+                f"{metodo}_locked",
+                False,
+                ip,
+                id_usuario=id_usuario,
+                user_agent=_ua()
+            )
+            return True
+
+    return False
+
+
+def _fallo(username, metodo, ip):
+    registrar_fallo(username, ip)
+
+    registrar_login_log(
+        username,
+        metodo,
+        False,
+        ip,
+        user_agent=_ua()
+    )
+
+
+def _exito(usuario, metodo, ip):
+    limpiar_intentos(usuario["usuario"], ip)
+
+    registrar_login_log(
+        usuario["usuario"],
+        metodo,
+        True,
+        ip,
+        id_usuario=usuario["id_usuario"],
+        user_agent=_ua()
+    )
+
+
+def login_password_service(username, password, ip):
+
+    if _esta_bloqueado(username, ip, "password_admin"):
+        return "LOCKED"
 
     usuario = obtener_usuario_por_username(username)
 
     if not usuario or not check_password_hash(usuario["password_hash"], password):
-
-        registrar_fallo(username, ip)
-        registrar_login_log(username, "password", False, ip)
+        _fallo(username, "password_admin", ip)
         return None
 
-
-    limpiar_intentos(username, ip)
-    registrar_login_log(username, "password", True, ip)
-
+    _exito(usuario, "password_admin", ip)
     return usuario
 
 
 def login_pin_service(pin, ip):
 
-    username = "caja" 
-
-    intento = obtener_intentos(username, ip)
-
-    if intento and intento["bloqueado_hasta"]:
-        if datetime.now() < intento["bloqueado_hasta"]:
-            registrar_login_log(username, "pin_locked", False, ip)
-            return "LOCKED"
-
-
     usuario = obtener_usuario_caja_activo()
 
-    if not usuario or not check_password_hash(usuario["pin_hash"], pin):
-
-        registrar_fallo(username, ip)
-        registrar_login_log(username, "pin", False, ip)
+    if not usuario:
         return None
 
+    username = usuario["usuario"]
 
-    limpiar_intentos(username, ip)
-    registrar_login_log(usuario["usuario"], "pin", True, ip)
+    if _esta_bloqueado(username, ip, "pin_caja", usuario["id_usuario"]):
+        return "LOCKED"
 
+    if not check_password_hash(usuario["pin_hash"], pin):
+        _fallo(username, "pin_caja", ip)
+        return None
+
+    _exito(usuario, "pin_caja", ip)
     return usuario

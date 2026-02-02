@@ -32,37 +32,36 @@ def init_auth_middleware(app):
 
         endpoint = request.endpoint
 
-        if endpoint is None:
+        if endpoint is None or endpoint.startswith("static"):
             return
 
-        if endpoint.startswith("static"):
-            return
 
-        hoy = datetime.now().date().isoformat()
+        pin_habilitado = session.get("pin_habilitado", False)
 
 
         if endpoint == "auth.pin_login":
 
-            if session.get("pin_habilitado_fecha") == hoy:
+            if pin_habilitado:
                 return
 
             return redirect(url_for("auth.login"))
 
 
-        if endpoint == "auth.login" and not request.args.get("admin"):
+        if endpoint == "auth.login" and pin_habilitado and not request.args.get("admin"):
+            return redirect(url_for("auth.pin_login"))
 
-            if session.get("pin_habilitado_fecha") == hoy:
-                return redirect(url_for("auth.pin_login"))
 
         if endpoint in RUTAS_PUBLICAS:
             return
 
+
         if not session.get("id_usuario"):
 
-            if session.get("pin_habilitado_fecha") == hoy:
+            if pin_habilitado:
                 return redirect(url_for("auth.pin_login"))
 
             return redirect(url_for("auth.login"))
+
 
         ultima = session.get("ultima_actividad")
 
@@ -78,22 +77,21 @@ def init_auth_middleware(app):
 
             if ahora - ultima > timedelta(minutes=limite):
 
-                fecha = session.get("pin_habilitado_fecha")
+                habilitado = session.get("pin_habilitado")
 
                 session.clear()
 
-                flash(
-                    "Sesión cerrada por inactividad. Ingresa tu PIN",
-                    "timeout"
-                )
+                flash("Sesión cerrada por inactividad. Ingresa tu PIN", "timeout")
 
-                if fecha == hoy:
-                    session["pin_habilitado_fecha"] = fecha
+                if habilitado:
+                    session["pin_habilitado"] = True
                     return redirect(url_for("auth.pin_login"))
 
                 return redirect(url_for("auth.login"))
 
+
         session["ultima_actividad"] = datetime.now().isoformat()
+
 
         if session.get("rol") == "admin":
             return

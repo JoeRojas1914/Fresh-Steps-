@@ -37,14 +37,35 @@ def obtener_usuario_caja_activo():
     return usuario
 
 
-def registrar_login_log(usuario, metodo, exito, ip):
+def registrar_login_log(
+    usuario,
+    metodo,
+    exito,
+    ip,
+    id_usuario=None,
+    user_agent=None
+):
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
-        INSERT INTO login_log (usuario, metodo, exito, ip)
-        VALUES (%s, %s, %s, %s)
-    """, (usuario, metodo, exito, ip))
+        INSERT INTO login_log (
+            id_usuario,
+            usuario,
+            metodo,
+            exito,
+            ip,
+            user_agent
+        )
+        VALUES (%s, %s, %s, %s, %s, %s)
+    """, (
+        id_usuario,
+        usuario,
+        metodo,
+        int(bool(exito)), 
+        ip,
+        user_agent
+    ))
 
     conn.commit()
     cursor.close()

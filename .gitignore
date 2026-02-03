@@ -1,5 +1,7 @@
 .env.test
 .env.prod
+.env
+.bat
 
 __pycache__/
 *.pyc

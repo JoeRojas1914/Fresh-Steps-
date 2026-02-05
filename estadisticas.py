@@ -170,45 +170,44 @@ def obtener_unidades_por_semana(inicio: date, fin: date, id_negocio: str):
 
         total_unidades = 0
 
-
         if id_negocio in ("1", "all"):
             query = """
                 SELECT COUNT(a.id_articulo) AS total
                 FROM venta v
                 JOIN articulo a ON a.id_venta = v.id_venta
+                JOIN articulo_calzado aca ON aca.id_articulo = a.id_articulo
                 WHERE v.fecha_recibo >= %s
-                AND v.fecha_recibo < DATE_ADD(%s, INTERVAL 1 DAY)
-                AND v.id_negocio = 1
-
+                  AND v.fecha_recibo < DATE_ADD(%s, INTERVAL 1 DAY)
+                  AND v.id_negocio = 1
             """
             cursor.execute(query, [semana_inicio, semana_fin])
-            total_unidades += cursor.fetchone()["total"] or 0
-
+            total_unidades += cursor.fetchone()["total"]
 
         if id_negocio in ("2", "all"):
             query = """
-                SELECT SUM(ac.cantidad) AS total
+                SELECT COALESCE(SUM(ac.cantidad), 0) AS total
                 FROM venta v
                 JOIN articulo a ON a.id_venta = v.id_venta
                 JOIN articulo_confeccion ac ON ac.id_articulo = a.id_articulo
-                WHERE v.fecha_recibo BETWEEN %s AND %s
+                WHERE v.fecha_recibo >= %s
+                  AND v.fecha_recibo < DATE_ADD(%s, INTERVAL 1 DAY)
                   AND v.id_negocio = 2
             """
             cursor.execute(query, [semana_inicio, semana_fin])
-            total_unidades += cursor.fetchone()["total"] or 0
-
+            total_unidades += cursor.fetchone()["total"]
 
         if id_negocio in ("3", "all"):
             query = """
-                SELECT SUM(am.cantidad) AS total
+                SELECT COALESCE(SUM(am.cantidad), 0) AS total
                 FROM venta v
                 JOIN articulo a ON a.id_venta = v.id_venta
                 JOIN articulo_maquila am ON am.id_articulo = a.id_articulo
-                WHERE v.fecha_recibo BETWEEN %s AND %s
+                WHERE v.fecha_recibo >= %s
+                  AND v.fecha_recibo < DATE_ADD(%s, INTERVAL 1 DAY)
                   AND v.id_negocio = 3
             """
             cursor.execute(query, [semana_inicio, semana_fin])
-            total_unidades += cursor.fetchone()["total"] or 0
+            total_unidades += cursor.fetchone()["total"]
 
         resultados.append({
             "label": s["label"],
@@ -219,6 +218,7 @@ def obtener_unidades_por_semana(inicio: date, fin: date, id_negocio: str):
     conn.close()
 
     return resultados
+
 
 
 def obtener_total_ingresos(inicio, fin, id_negocio):

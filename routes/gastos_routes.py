@@ -22,6 +22,7 @@ def gastos():
     fecha_fin = request.args.get("fecha_fin")
     pagina = request.args.get("pagina", 1, type=int)
     incluir_eliminados = request.args.get("eliminados") == "1"
+    tipo_comprobante = request.args.get("tipo_comprobante")
 
 
     data = listar_gastos(
@@ -54,8 +55,11 @@ def guardar_gasto():
         request.form["descripcion"],
         request.form["proveedor"],
         request.form["total"],
-        request.form["fecha_registro"]
+        request.form["fecha_registro"],
+        request.form["tipo_comprobante"],
+        request.form["tipo_pago"]
     )
+
 
     resultado = guardar_gasto_service(id_gasto, datos, id_usuario)
 

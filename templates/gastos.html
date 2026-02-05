@@ -123,12 +123,29 @@
 
             <div class="modal-field">
                 <label for="gasto_total">Total</label>
-                <input id="gasto_total" type="number" name="total" required>
+                <input id="gasto_total" type="number" name="total" step="0.01" min="0" inputmode="decimal" required>
             </div>
 
             <div class="modal-field">
                 <label for="gasto_fecha">Fecha de registro</label>
                 <input id="gasto_fecha" type="date" name="fecha_registro">
+            </div>
+
+            <div class="modal-field">
+                <label>Comprobante</label>
+                <select name="tipo_comprobante" id="tipo_comprobante" required>
+                    <option value="ticket">Ticket</option>
+                    <option value="factura">Factura</option>
+                </select>
+            </div>
+
+            <div class="modal-field">
+                <label>Método de pago</label>
+                <select name="tipo_pago" id="tipo_pago" required>
+                    <option value="efectivo">Efectivo</option>
+                    <option value="transferencia">Transferencia</option>
+                    <option value="tarjeta">Tarjeta</option>
+                </select>
             </div>
 
             <button type="submit" class="btn-guardar-modal">
@@ -149,6 +166,8 @@
             <th>Descripción</th>
             <th>Proveedor</th>
             <th>Total</th>
+            <th>Comprobante</th>
+            <th>Pago</th>
             <th>Fecha de registro</th>
             <th>Estado</th>
             <th>Acciones</th>
@@ -160,8 +179,26 @@
             <td>{{ badge_negocio(g.negocio) }}</td>
             <td>{{ g.descripcion }}</td>
             <td>{{ g.proveedor }}</td>
-            <td>{{ g.total }}</td>
-            <td>{{ g.fecha_registro }}</td>
+            <td>${{ "%.2f"|format(g.total) }}</td>
+            <td>
+                {% if g.tipo_comprobante == "factura" %}
+                    Factura
+                {% else %}
+                    Ticket
+                {% endif %}
+            </td>
+            <td>
+                {% if g.tipo_pago == "efectivo" %}
+                    Efectivo
+                {% elif g.tipo_pago == "transferencia" %}
+                    Transferencia
+                {% else %}
+                    Tarjeta
+                {% endif %}
+            </td>
+
+            <td>{{ g.fecha_registro.strftime("%d %b %Y") }}</td>
+
             <td>
                 {% if g.activo %}
                     <span class="status status-completado">Activo</span>
@@ -175,8 +212,7 @@
                 {% if g.activo %}
 
                 <button class="btn-edit"
-                    onclick='editarGasto(
-                        {{ g.id_gasto }}, {{ g.id_negocio }}, {{ g.descripcion|tojson }}, {{ g.proveedor|tojson }}, {{ g.total|tojson }}, "{{ g.fecha_registro.strftime("%Y-%m-%d") if g.fecha_registro else "" }}")'>
+                    onclick='editarGasto({{ g.id_gasto }}, {{ g.id_negocio }}, {{ g.descripcion|tojson }}, {{ g.proveedor|tojson }}, {{ g.total|tojson }}, "{{ g.fecha_registro.strftime("%Y-%m-%d") if g.fecha_registro else "" }}", "{{ g.tipo_comprobante }}", "{{ g.tipo_pago }}")'>
                     Editar
                 </button>
 
@@ -267,7 +303,8 @@
         document.getElementById("modal").style.display = "none";
     }
 
-    function editarGasto(id, id_negocio, descripcion, proveedor, total, fecha_registro) {
+    function editarGasto(id, id_negocio, descripcion, proveedor, total, fecha_registro, tipo_comprobante, tipo_pago)
+ {
         abrirModal();
         document.getElementById("modalTitulo").innerText = "Editar gasto";
 
@@ -277,6 +314,9 @@
         document.querySelector("[name=proveedor]").value = proveedor;
         document.querySelector("[name=total]").value = total;
         document.querySelector("[name=fecha_registro]").value = fecha_registro;
+        document.getElementById("tipo_comprobante").value = tipo_comprobante;
+        document.getElementById("tipo_pago").value = tipo_pago;
+
     }
 
     function cerrarHistorial() {

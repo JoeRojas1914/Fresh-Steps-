@@ -5,23 +5,44 @@ from datetime import date, datetime
 
 
 
-def crear_gasto(id_negocio, descripcion, proveedor, total, fecha_registro, id_usuario):
+def crear_gasto(
+    id_negocio,
+    descripcion,
+    proveedor,
+    total,
+    fecha_registro,
+    tipo_comprobante,
+    tipo_pago,
+    id_usuario
+):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
     try:
         cursor.execute("""
             INSERT INTO gastos
-            (id_negocio, descripcion, proveedor, total, fecha_registro, id_usuario)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        """, (id_negocio, descripcion, proveedor, total, fecha_registro, id_usuario))
+            (id_negocio, descripcion, proveedor, total, fecha_registro,
+             tipo_comprobante, tipo_pago, id_usuario)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        """, (
+            id_negocio,
+            descripcion,
+            proveedor,
+            total,
+            fecha_registro,
+            tipo_comprobante,
+            tipo_pago,
+            id_usuario
+        ))
 
         id_gasto = cursor.lastrowid
 
         despues = {
             "descripcion": descripcion,
             "proveedor": proveedor,
-            "total": total
+            "total": total,
+            "tipo_comprobante": tipo_comprobante,
+            "tipo_pago": tipo_pago
         }
 
         registrar_historial(cursor, id_gasto, "CREADO", id_usuario, None, despues)
@@ -35,7 +56,18 @@ def crear_gasto(id_negocio, descripcion, proveedor, total, fecha_registro, id_us
 
 
 
-def actualizar_gasto(id_gasto, id_negocio, descripcion, proveedor, total, fecha_registro, id_usuario):
+
+def actualizar_gasto(
+    id_gasto,
+    id_negocio,
+    descripcion,
+    proveedor,
+    total,
+    fecha_registro,
+    tipo_comprobante,
+    tipo_pago,
+    id_usuario
+):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
@@ -49,14 +81,27 @@ def actualizar_gasto(id_gasto, id_negocio, descripcion, proveedor, total, fecha_
                 descripcion=%s,
                 proveedor=%s,
                 total=%s,
-                fecha_registro=%s
+                fecha_registro=%s,
+                tipo_comprobante=%s,
+                tipo_pago=%s
             WHERE id_gasto=%s
-        """, (id_negocio, descripcion, proveedor, total, fecha_registro, id_gasto))
+        """, (
+            id_negocio,
+            descripcion,
+            proveedor,
+            total,
+            fecha_registro,
+            tipo_comprobante,
+            tipo_pago,
+            id_gasto
+        ))
 
         despues = {
             "descripcion": descripcion,
             "proveedor": proveedor,
-            "total": total
+            "total": total,
+            "tipo_comprobante": tipo_comprobante,
+            "tipo_pago": tipo_pago
         }
 
         registrar_historial(cursor, id_gasto, "EDITADO", id_usuario, antes, despues)
@@ -66,6 +111,7 @@ def actualizar_gasto(id_gasto, id_negocio, descripcion, proveedor, total, fecha_
     finally:
         cursor.close()
         conn.close()
+
 
 
 
@@ -104,6 +150,8 @@ def obtener_gastos(id_negocio=None, fecha_inicio=None, fecha_fin=None, limit=10,
             g.proveedor,
             g.total,
             g.fecha_registro,
+            g.tipo_comprobante,
+            g.tipo_pago,
             u.usuario AS creado_por,
             g.activo
         FROM gastos g
@@ -111,7 +159,6 @@ def obtener_gastos(id_negocio=None, fecha_inicio=None, fecha_fin=None, limit=10,
         JOIN usuario u ON g.id_usuario = u.id_usuario
         WHERE 1=1
     """
-
 
     params = []
 

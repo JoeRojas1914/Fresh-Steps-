@@ -1,0 +1,67 @@
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  font-size: 14px;
+
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+
+.table thead {
+  background: linear-gradient(to right, #2fa4ff, #1e7fd6);
+  color: #ffffff;
+}
+
+.table th {
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.table td {
+  padding: 12px 16px;
+  color: #1f2933;
+  border-bottom: 1px solid #edf2f7;
+  vertical-align: middle;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table--striped tbody tr:nth-child(even) {
+  background-color: #f8fbff;
+}
+
+.table--hover tbody tr:hover {
+  background-color: #e6f3ff;
+  transform: scale(1.002);
+  transition: all 0.15s ease;
+}
+
+.table--details td {
+  padding: 0;
+  background: #f8fbff;
+}
+
+
+.table__row--danger {
+  background-color: #fdecea;
+}
+
+.clickable-row {
+  cursor: pointer;
+}
+
+
+.entrega-hoy {
+    background-color: #fff3cd;  
+}

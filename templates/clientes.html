@@ -94,7 +94,7 @@
 <hr>
 
 
-<table>
+<table class="table table--striped table--hover">
     <thead>
         <tr>
             <th>Nombre</th>
@@ -105,7 +105,10 @@
     </thead>
     <tbody>
         {% for c in clientes %}
-        <tr onclick="window.location.href='/clientes/{{ c.id_cliente }}'" style="cursor:pointer;">
+        <tr
+            data-href="{{ url_for('clientes.ver_cliente', id_cliente=c.id_cliente) }}"
+            class="clickable-row"
+        >
 
             <td>{{ c.nombre }} {{ c.apellido }}</td>
 
@@ -120,39 +123,45 @@
             </td>
 
             <td>
-
                 {% if c.activo %}
 
-                    <button type="button" class="btn btn--success btn--sm"
-                        onclick='editarCliente(event, {{ c.id_cliente }}, {{ c.nombre|tojson }}, {{ c.apellido|tojson }}, {{ c.correo|tojson }}, {{ c.telefono|tojson }}, {{ c.direccion|tojson }})'>
+                    <button type="button"
+                        class="btn btn--success btn--sm no-row-click"
+                        data-id="{{ c.id_cliente }}"
+                        data-nombre="{{ c.nombre }}"
+                        data-apellido="{{ c.apellido }}"
+                        data-correo="{{ c.correo or '' }}"
+                        data-telefono="{{ c.telefono }}"
+                        data-direccion="{{ c.direccion or '' }}"
+                        onclick="editarClienteBtn(event, this)">
                         Editar
                     </button>
 
                     <button type="button"
-                            class="btn btn--info btn--sm"
+                            class="btn btn--info btn--sm no-row-click"
                             onclick="verHistorialCliente(event, {{ c.id_cliente }})">
                         Historial
                     </button>
 
-                    <a href="/clientes/eliminar/{{ c.id_cliente }}"
-                    class="btn btn--danger btn--sm"
-                    onclick="return confirm('¿Seguro que desea desactivar al cliente?')">
+                    <button type="button"
+                            class="btn btn--danger btn--sm no-row-click"
+                            onclick="confirmarEliminarCliente({{ c.id_cliente }})">
                         Eliminar
-                    </a>
+                    </button>
 
                 {% else %}
-                    <a href="/clientes/restaurar/{{ c.id_cliente }}"
-                    class="btn btn--primary btn--sm">
+                    <button type="button"
+                            class="btn btn--primary btn--sm no-row-click"
+                            onclick="restaurarCliente({{ c.id_cliente }})">
                         Restaurar
-                    </a>
-
+                    </button>
                 {% endif %}
             </td>
         </tr>
-
         {% endfor %}
     </tbody>
 </table>
+
 
 <div id="modalHistorialCliente" class="modal">
   <div class="modal-content" style="width:750px; max-width:95vw;">
@@ -160,7 +169,7 @@
 
     <h2>Historial del cliente</h2>
 
-    <table id="tablaHistorialCliente">
+    <table id="tablaHistorialCliente" class="table table--striped table--hover">
       <thead>
         <tr>
           <th>Acción</th>

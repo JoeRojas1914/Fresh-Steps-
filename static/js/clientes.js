@@ -107,3 +107,35 @@ window.verHistorialCliente = async function (e, id) {
         `;
     });
 };
+
+window.confirmarEliminarCliente = function (idCliente) {
+    if (!confirm("¿Seguro que desea desactivar al cliente?")) return;
+    window.location.href = `/clientes/eliminar/${idCliente}`;
+};
+
+window.restaurarCliente = function (idCliente) {
+    window.location.href = `/clientes/restaurar/${idCliente}`;
+};
+
+document.addEventListener("click", function (e) {
+    const row = e.target.closest("tr[data-href]");
+    if (!row) return;
+
+    if (e.target.closest(".no-row-click")) return;
+
+    window.location.href = row.dataset.href;
+});
+
+
+window.editarClienteBtn = function(e, btn) {
+    e.stopPropagation();
+    
+    const id = btn.dataset.id;
+    const nombre = btn.dataset.nombre;
+    const apellido = btn.dataset.apellido;
+    const correo = btn.dataset.correo;
+    const telefono = btn.dataset.telefono;
+    const direccion = btn.dataset.direccion;
+    
+    editarCliente(e, id, nombre, apellido, correo, telefono, direccion);
+};

@@ -411,6 +411,7 @@ def obtener_ventas_pendientes(id_negocio=None):
             v.total,
             c.nombre,
             c.apellido,
+            c.telefono,
             n.nombre AS negocio
         FROM venta v
         JOIN cliente c ON c.id_cliente = v.id_cliente

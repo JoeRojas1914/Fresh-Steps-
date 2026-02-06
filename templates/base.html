@@ -9,7 +9,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='navbar.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/FreshStepsLogo.png') }}">
+
 </head>
 <body>
 
@@ -17,7 +18,7 @@
 <div class="page-content">
     <nav class="navbar">
         <div class="nav-logo">
-            <img src="{{ url_for('static', filename='logo.png') }}" alt="Fresh Steps">
+            <img src="{{ url_for('static', filename='images/FreshStepsLogo.png') }}" alt="Fresh Steps">
         </div>
 
         <button class="nav-toggle" id="navToggle">
@@ -64,7 +65,7 @@
     <footer class="footer">
         <div class="footer-container">
             <div class="footer-brand">
-                <img src="{{ url_for('static', filename='logo.png') }}" alt="Fresh Steps">
+                <img src="{{ url_for('static', filename='images/FreshStepsLogo.png') }}" alt="Fresh Steps">
                 <p>Fresh Steps</p>
             </div>
 
@@ -83,62 +84,11 @@
     </footer>
 
 
-    <script>
-        const navToggle = document.getElementById("navToggle");
-        const navLinks = document.getElementById("navLinks");
+    <script src="{{ url_for('static', filename='js/base/navbar.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/base/csrf.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/base/helpers.js') }}"></script>
 
-        navToggle.addEventListener("click", () => {
-            navLinks.classList.toggle("active");
-        });
-
-        const userBtn = document.getElementById("userBtn");
-        const userMenu = document.getElementById("userMenu");
-
-        userBtn.addEventListener("click", () => {
-            userMenu.classList.toggle("show");
-        });
-
-        document.addEventListener("click", (e) => {
-            if (!document.getElementById("userDropdown").contains(e.target)) {
-                userMenu.classList.remove("show");
-            }
-        });
-
-            document.addEventListener("DOMContentLoaded", () => {
-
-        const token = document.querySelector('meta[name="csrf-token"]').content;
-
-        document.querySelectorAll("form").forEach(form => {
-
-                if (form.method.toUpperCase() === "POST") {
-
-                    if (!form.querySelector("input[name='csrf_token']")) {
-
-                        const input = document.createElement("input");
-                        input.type = "hidden";
-                        input.name = "csrf_token";
-                        input.value = token;
-
-                        form.appendChild(input);
-                    }
-                }
-            });
-        });
-
-        function csrfFetch(url, options = {}) {
-            const token = document
-                .querySelector('meta[name="csrf-token"]')
-                .getAttribute("content");
-
-            options.headers = {
-                ...options.headers,
-                "X-CSRFToken": token,
-                "Content-Type": "application/json"
-            };
-
-            return fetch(url, options);
-        }
-    </script>
+    {% block scripts %}{% endblock %}
 
 </body>
 </html>

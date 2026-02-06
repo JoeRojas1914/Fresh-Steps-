@@ -2,7 +2,6 @@ import os
 from datetime import date
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 from dotenv import load_dotenv
-from db import get_connection
 from werkzeug.security import check_password_hash
 from flask_wtf import CSRFProtect
 
@@ -20,20 +19,14 @@ from middleware.auth_middleware import init_auth_middleware
 
 # ================= IMPORTS DE MODULOS =================
 from pagos import (
-    obtener_pagos_venta, 
     registrar_pago
     )
 
 from ventas import (
     crear_venta,
-    marcar_entregada,
-    obtener_venta,
-    obtener_ventas_pendientes,
-    obtener_detalles_venta,
     contar_entregas_pendientes,
 )
 
-from negocio import obtener_negocios
 
 # ================= APP =================
 load_dotenv()

@@ -1678,3 +1678,20 @@ hr {
     color: #0b3c5d;
     font-size: 14px;
 }
+
+
+.mensaje-bloqueo {
+    display: none;
+    margin-top: 6px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 0.85em;
+    background: #fff4e5;
+    color: #8a4b00;
+    border: 1px solid #ffd8a8;
+    max-width: 320px;
+}
+
+.mensaje-bloqueo::before {
+    content: "ℹ️ ";
+}

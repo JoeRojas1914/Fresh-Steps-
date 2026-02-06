@@ -74,10 +74,6 @@
             <strong id="clienteSeleccionado"></strong>
             <button type="button" id="btnCambiarCliente">Cambiar cliente</button>
         </div>
-
-        <div id="errorCliente" style="color:red; font-size:0.9em; display:none; margin-top:5px;">
-            Debes seleccionar un cliente
-        </div>
     </div>
 
     <hr>
@@ -217,10 +213,16 @@
             Total: $0.00
         </div>
 
-        <button type="submit" id="btnCrear" disabled style="margin-left:auto;">
-            Crear recibo
-        </button>
+        <div style="margin-left:auto; text-align:right;">
+            <button type="submit" id="btnCrear" disabled>
+                Crear recibo
+            </button>
+
+            <div id="mensajeBloqueo" class="mensaje-bloqueo"></div>
+
+        </div>
     </div>
+
 </form>
 
 <script>
@@ -806,8 +808,6 @@ function articulosCompletos() {
 }
 
 
-
-
 function validarFormulario() {
     let valido = true;
 
@@ -823,29 +823,20 @@ function validarFormulario() {
     const descuento = parseFloat(document.getElementById("cantidad_descuento")?.value || 0);
 
 
-    if (!cliente) {
-        document.getElementById("errorCliente").style.display = "block";
-        valido = false;
-    } else {
-        document.getElementById("errorCliente").style.display = "none";
-    }
-
-
+    /* ---------- Negocio y fecha ---------- */
     if (!negocio || !fechaEstimada) {
         valido = false;
     }
 
-
+    /* ---------- Artículos ---------- */
     const articulos = document.querySelectorAll(".articulo-item");
     if (articulos.length === 0 || !articulosCompletos()) {
         valido = false;
     }
 
-
+    /* ---------- Servicios obligatorios ---------- */
     if (negocio === "1" || negocio === "2") {
-
         document.querySelectorAll(".servicios-box").forEach(box => {
-
             const selects = box.querySelectorAll("select");
 
             let cantidadSeleccionados = 0;
@@ -865,8 +856,7 @@ function validarFormulario() {
         });
     }
 
-
-
+    /* ---------- Prepago ---------- */
     if (prepago === "si") {
         if (!tipoPago || montoPrepago <= 0) {
             valido = false;
@@ -882,6 +872,7 @@ function validarFormulario() {
         document.getElementById("errorPrepago").style.display = "none";
     }
 
+    /* ---------- Descuento ---------- */
     if (aplicaDesc) {
         const totalBruto = calcularTotal(true);
 
@@ -895,9 +886,21 @@ function validarFormulario() {
         document.getElementById("errorDescuento").style.display = "none";
     }
 
+    /* ---------- MENSAJE DE BLOQUEO ---------- */
+    const motivos = obtenerMotivosBloqueo();
+    const btn = document.getElementById("btnCrear");
+    const msg = document.getElementById("mensajeBloqueo");
 
-    document.getElementById("btnCrear").disabled = !valido;
+    btn.disabled = !valido || motivos.length > 0;
+
+    if (motivos.length > 0) {
+        msg.innerText = "Falta: " + motivos.join(" · ");
+        msg.style.display = "block";
+    } else {
+        msg.style.display = "none";
+    }
 }
+
 
 
 function calcularTotal(bruto = false) {
@@ -975,6 +978,62 @@ function actualizarFechaEstimadaCompleta() {
         document.getElementById("fecha_estimada").value = "";
     }
 }
+
+
+function obtenerMotivosBloqueo() {
+    const motivos = [];
+
+    if (!document.getElementById("id_cliente").value) {
+        motivos.push("Seleccionar un cliente");
+    }
+
+    if (!document.getElementById("id_negocio").value) {
+        motivos.push("Eligir un negocio");
+    }
+
+    if (!document.getElementById("fecha_estimada").value) {
+        motivos.push("Definir fecha y hora");
+    }
+
+    const articulos = document.querySelectorAll(".articulo-item");
+    if (articulos.length === 0) {
+        motivos.push("Agregar al menos un artículo");
+    } else if (!articulosCompletos()) {
+        motivos.push("Completar los datos de los artículos");
+    }
+
+    const prepago = document.getElementById("prepago").value;
+    if (prepago === "si") {
+        const tipoPago = document.getElementById("tipo_pago").value;
+        const monto = parseFloat(document.getElementById("monto_prepago").value || 0);
+
+        if (!tipoPago) {
+            motivos.push("Seleccionar el tipo de pago");
+        }
+        if (monto <= 0) {
+            motivos.push("Ingresar un monto de prepago válido");
+        }
+        if (monto > calcularTotal()) {
+            motivos.push("El prepago supera el total");
+        }
+    }
+
+    const aplicaDesc = document.getElementById("aplica_descuento").value === "si";
+    if (aplicaDesc) {
+        const desc = parseFloat(document.getElementById("cantidad_descuento").value || 0);
+        const totalBruto = calcularTotal(true);
+
+        if (desc <= 0) {
+            motivos.push("El descuento debe ser mayor a 0");
+        } else if (desc > totalBruto) {
+            motivos.push("El descuento supera el total");
+        }
+    }
+
+    return motivos;
+}
+
+
 
 </script>
 

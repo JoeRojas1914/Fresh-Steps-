@@ -76,51 +76,6 @@ def index():
 
 
 # ================= VENTAS =================
-@app.route("/ventas/pago-final", methods=["POST"])
-def registrar_pago_final():
-    data = request.json
-    id_usuario = session["id_usuario"]
-
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    try:
-        cursor.execute("""
-            INSERT INTO pago_venta (
-                id_venta,
-                monto,
-                tipo_pago,
-                tipo_pago_venta,
-                fecha_pago,
-                id_usuario_cobro
-            )
-            VALUES (%s, %s, %s, 'final', NOW(), %s)
-        """, (
-            data["id_venta"],
-            data["monto"],
-            data["metodo_pago"],
-            id_usuario
-        ))
-
-        conn.commit()
-
-        marcar_entregada(data["id_venta"], id_usuario)
-
-        return jsonify({
-            "ok": True,
-            "message": "Pago registrado y venta entregada correctamente"
-        })
-
-    except Exception as e:
-        conn.rollback()
-        return jsonify({
-            "ok": False,
-            "error": str(e)
-        }), 500
-
-
-
-
 @app.route("/ventas/guardar", methods=["POST"])
 def guardar_venta():
     try:

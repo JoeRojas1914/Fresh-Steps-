@@ -20,6 +20,8 @@ RUTAS_CAJA = {
     "clientes.api_crear_cliente",
     "servicios.api_servicios",
 
+    "guardar_venta",
+
     "auth.logout",
 }
 

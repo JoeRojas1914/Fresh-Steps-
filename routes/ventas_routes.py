@@ -1,0 +1,89 @@
+from flask import Blueprint, render_template, jsonify, session, request
+from datetime import date
+
+from services.ventas_service import listar_ventas_pendientes_service, registrar_pago_final_service
+from ventas import (
+    marcar_entregada,
+    obtener_venta,
+    obtener_detalles_venta,
+)
+
+ventas_bp = Blueprint("ventas", __name__)
+
+
+@ventas_bp.route("/ventas")
+def ventas():
+    return render_template("ventas_crear.html")
+
+
+@ventas_bp.route("/ventas/entregar/<int:id_venta>", methods=["POST"])
+def entregar_venta(id_venta):
+    id_usuario = session.get("id_usuario")
+
+    try:
+        if marcar_entregada(id_venta, id_usuario):
+            return jsonify({
+                "ok": True,
+                "message": "Venta entregada correctamente"
+            })
+        else:
+            return jsonify({
+                "ok": False,
+                "error": "La venta ya fue entregada o no existe"
+            })
+
+    except Exception as e:
+        return jsonify({
+            "ok": False,
+            "error": str(e)
+        }), 500
+
+
+@ventas_bp.route("/ventas/ticket/<int:id_venta>")
+def venta_ticket(id_venta):
+    venta = obtener_venta(id_venta)
+    detalles = obtener_detalles_venta(id_venta)
+
+    return render_template(
+        "ticket_venta.html",
+        venta=venta,
+        detalles=detalles
+    )
+
+
+@ventas_bp.route("/ventas/pendientes")
+def ventas_pendientes():
+    id_negocio = request.args.get("id_negocio") or None
+
+    data = listar_ventas_pendientes_service(id_negocio)
+
+    return render_template(
+        "ventas_pendientes.html",
+        **data
+    )
+
+
+@ventas_bp.route("/ventas/pago-final", methods=["POST"])
+def registrar_pago_final():
+    data = request.json
+    id_usuario = session.get("id_usuario")
+
+    try:
+        ok, mensaje = registrar_pago_final_service(data, id_usuario)
+
+        if not ok:
+            return jsonify({
+                "ok": False,
+                "error": mensaje
+            }), 400
+
+        return jsonify({
+            "ok": True,
+            "message": mensaje
+        })
+
+    except Exception as e:
+        return jsonify({
+            "ok": False,
+            "error": str(e)
+        }), 500

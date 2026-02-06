@@ -7,19 +7,21 @@ RUTAS_PUBLICAS = [
     "static"
 ]
 
-RUTAS_CAJA = [
+RUTAS_CAJA = {
     "index",
-    "ventas",
-    "guardar_venta",
-    "ventas_pendientes",
-    "entregar_venta",
-    "auth.logout",
-    "registrar_pago_final",
-    "venta_ticket",
+
+    "ventas.ventas",
+    "ventas.ventas_pendientes",
+    "ventas.entregar_venta",
+    "ventas.venta_ticket",
+    "ventas.registrar_pago_final",
+
     "clientes.api_clientes",
     "clientes.api_crear_cliente",
     "servicios.api_servicios",
-]
+
+    "auth.logout",
+}
 
 TIMEOUT_CAJA = 20
 TIMEOUT_ADMIN = 15

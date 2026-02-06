@@ -73,3 +73,36 @@ def obtener_pagos_por_venta(id_venta):
     cursor.close()
     conn.close()
     return data
+
+
+def registrar_pago_final_db(id_venta, monto, metodo_pago, id_usuario):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            INSERT INTO pago_venta (
+                id_venta,
+                monto,
+                tipo_pago,
+                tipo_pago_venta,
+                fecha_pago,
+                id_usuario_cobro
+            )
+            VALUES (%s, %s, %s, 'final', NOW(), %s)
+        """, (
+            id_venta,
+            monto,
+            metodo_pago,
+            id_usuario
+        ))
+
+        conn.commit()
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        cursor.close()
+        conn.close()

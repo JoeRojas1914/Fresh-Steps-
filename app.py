@@ -14,6 +14,7 @@ from routes.clientes_routes import clientes_bp
 from routes.estadisticas_routes import estadisticas_bp
 from routes.auth_routes import auth_bp
 from routes.usuarios_routes import usuarios_bp
+from routes.ventas_routes import ventas_bp
 from middleware.auth_middleware import init_auth_middleware
 
 
@@ -47,6 +48,7 @@ csrf.exempt(clientes_bp)
 app.register_blueprint(estadisticas_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(usuarios_bp)
+app.register_blueprint(ventas_bp)
 init_auth_middleware(app)
 
 # ================= HOME =================
@@ -74,69 +76,6 @@ def index():
 
 
 # ================= VENTAS =================
-@app.route("/ventas")
-def ventas():
-    return render_template("ventas_crear.html")
-
-
-@app.route("/ventas/pendientes")
-def ventas_pendientes():
-    id_negocio = request.args.get("id_negocio") or None
-    ventas = obtener_ventas_pendientes(id_negocio)
-    negocios = obtener_negocios()
-
-    ventas_con_detalles = []
-
-    for v in ventas:
-        v["detalles"] = obtener_detalles_venta(v["id_venta"])
-
-        pagos = obtener_pagos_venta(v["id_venta"])
-        v["pagos"] = pagos
-
-        total_pagado = sum(float(p["monto"]) for p in pagos)
-
-        v["total"] = float(v.get("total") or 0)
-        v["total_pagado"] = total_pagado
-        v["saldo_pendiente"] = max(v["total"] - total_pagado, 0)
-
-        v["tiene_pagos"] = total_pagado > 0
-        v["esta_pagada"] = v["saldo_pendiente"] == 0
-
-        ventas_con_detalles.append(v)
-
-    return render_template(
-        "ventas_pendientes.html",
-        ventas=ventas_con_detalles,
-        negocios=negocios,
-        hoy=date.today()
-    )
-
-
-@app.route("/ventas/entregar/<int:id_venta>", methods=["POST"])
-def entregar_venta(id_venta):
-
-    id_usuario = session["id_usuario"]
-
-    try:
-        if marcar_entregada(id_venta, id_usuario):
-            return jsonify({
-                "ok": True,
-                "message": "Venta entregada correctamente"
-            })
-        else:
-            return jsonify({
-                "ok": False,
-                "error": "La venta ya fue entregada o no existe"
-            })
-
-    except Exception as e:
-        return jsonify({
-            "ok": False,
-            "error": str(e)
-        }), 500
-
-
-
 @app.route("/ventas/pago-final", methods=["POST"])
 def registrar_pago_final():
     data = request.json
@@ -390,17 +329,6 @@ def guardar_venta():
             "error": f"Error al guardar venta: {str(e)}"
         }), 500
 
-
-@app.route("/ventas/ticket/<int:id_venta>")
-def venta_ticket(id_venta):
-    venta = obtener_venta(id_venta)
-    detalles = obtener_detalles_venta(id_venta)
-
-    return render_template(
-        "ticket_venta.html",
-        venta=venta,
-        detalles=detalles
-    )
 
 
 # ================= RUN =================

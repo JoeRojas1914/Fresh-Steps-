@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
 
+{% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/index.css') }}">
+{% endblock %}
+
 <section class="dashboard-header">
     <div class="dashboard-title">
         <img src="{{ url_for('static', filename='images/FreshStepsLogo.png') }}"

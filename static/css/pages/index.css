@@ -1,8 +1,3 @@
-/* =============================
-   DASHBOARD / INDEX PAGE
-============================= */
-
-/* ===== HEADER ===== */
 .dashboard-header {
     margin-bottom: 40px;
 }
@@ -30,17 +25,14 @@
 }
 
 
-/* ===== CARDS GRID ===== */
 .dashboard-cards {
     display: grid;
     gap: 22px;
 
-    /* desktop default */
     grid-template-columns: repeat(4, 1fr);
 }
 
 
-/* ===== CARD BASE ===== */
 .card {
     padding: 24px;
     border-radius: 18px;
@@ -57,7 +49,6 @@
 }
 
 
-/* clickable cards */
 .card-link {
     text-decoration: none;
     color: inherit;
@@ -65,23 +56,23 @@
 }
 
 
-/* gradient look */
 .card-gradient {
     background: linear-gradient(135deg, #f8fbff, #e6f3ff);
     border: 1px solid #dbeafe;
 }
+
 
 .card-gradient:hover {
     background: linear-gradient(135deg, #e6f3ff, #dbeafe);
 }
 
 
-/* ===== TEXT ===== */
 .card h3 {
     font-size: 15px;
     color: #0b3c5d;
     margin-bottom: 12px;
 }
+
 
 .card-number {
     font-size: 26px;
@@ -90,13 +81,6 @@
 }
 
 
-
-/* ========================================
-   RESPONSIVE BREAKPOINTS
-======================================== */
-
-
-/* ===== Tablet ===== */
 @media (max-width: 1024px) {
 
     .dashboard-cards {
@@ -109,7 +93,6 @@
 }
 
 
-/* ===== Mobile ===== */
 @media (max-width: 640px) {
 
     .dashboard-title {

@@ -143,8 +143,8 @@
                 <label>Método de pago</label>
                 <select name="tipo_pago" id="tipo_pago" required>
                     <option value="efectivo">Efectivo</option>
+                    <option value="TDC">Tarjeta de crédito</option>
                     <option value="transferencia">Transferencia</option>
-                    <option value="tarjeta">Tarjeta</option>
                 </select>
             </div>
 
@@ -193,7 +193,7 @@
                 {% elif g.tipo_pago == "transferencia" %}
                     Transferencia
                 {% else %}
-                    Tarjeta
+                    Tarjeta de Crédito
                 {% endif %}
             </td>
 

@@ -42,7 +42,7 @@
                 <input id="cliente_cp" type="text" name="codigo_postal">
             </div>
 
-            <button type="submit" class="btn-guardar-modal">
+            <button type="submit" class="btn btn--primary btn--lg">
                 Guardar cliente
             </button>
 
@@ -66,13 +66,18 @@
                     placeholder="Nombre del cliente"
                     autocomplete="off"
                 >
-                <button type="button" id="btnNuevoCliente">➕ Nuevo cliente</button>
+                <button type="button" class="btn btn--primary btn--sm" id="btnNuevoCliente">
+                    ➕ Nuevo cliente
+                </button>
+
             </div>
             <div class="results-list" id="listaClientes"></div>
         </div>
         <div id="clienteBox" style="display:none;">
             <strong id="clienteSeleccionado"></strong>
-            <button type="button" id="btnCambiarCliente">Cambiar cliente</button>
+            <button type="button" class="btn btn--primary btn--sm" id="btnCambiarCliente">
+                Cambiar cliente
+            </button>
         </div>
     </div>
 
@@ -134,7 +139,12 @@
             <h2>Artículos</h2>
         </div>
         <div id="articulosContainer"></div>
-        <button type="button" onclick="agregarArticulo()">➕ Agregar Artículo</button>
+        <button type="button"
+        class="btn btn--primary btn--sm"
+        onclick="agregarArticulo()">
+            ➕ Agregar artículo
+        </button>
+
     </div>
 
     <hr>
@@ -214,7 +224,7 @@
         </div>
 
         <div style="margin-left:auto; text-align:right;">
-            <button type="submit" id="btnCrear" disabled>
+            <button type="submit" class="btn btn--primary btn--lg" id="btnCrear" disabled>
                 Crear recibo
             </button>
 
@@ -451,7 +461,11 @@ function agregarArticulo() {
     div.innerHTML = `
         <div class="zapato-header">
             <div class="zapato-titulo">🧾 Artículo ${index + 1}</div>
-            <button type="button" class="btn-eliminar-zapato" onclick="eliminarArticulo(this)">✕</button>
+            <button type="button"
+                    class="btn btn--danger btn--sm"
+                    onclick="eliminarArticulo(this)">
+                ✕
+            </button>
         </div>
 
         <input type="hidden" name="articulos[${index}][tipo_articulo]" value="${tipoArticulo}">
@@ -573,10 +587,12 @@ function crearServiciosSelect(indexArticulo) {
             <div class="servicios-header">
                 <label class="form-label">Servicios</label>
 
-                <button type="button" class="btn-agregar-servicio"
+                <button type="button"
+                        class="btn btn--info btn--sm"
                         onclick="agregarServicio(${indexArticulo})">
                     ➕ Agregar servicio
                 </button>
+
             </div>
 
             <div class="servicios-lista" id="serviciosLista_${indexArticulo}">
@@ -608,8 +624,9 @@ function crearFilaServicio(indexArticulo, indexServicio, opcionesHTML) {
                    oninput="marcarPrecioEditado(this); validarFormulario(); actualizarTotal()"
                    style="width:150px;">
 
-            <button type="button" onclick="eliminarServicioPro(this, ${indexArticulo})"
-                    style="padding:6px 10px;">
+            <button type="button"
+                    class="btn btn--danger btn--sm"
+                    onclick="eliminarServicioPro(this, ${indexArticulo})">
                 ✕
             </button>
         </div>

@@ -51,7 +51,7 @@
 
 
 
-<button onclick="abrirModal()">➕ Agregar servicio</button>
+<button onclick="abrirModal()"  class="btn btn--primary">➕ Agregar servicio</button>
 
 
 <div id="modal" class="modal">
@@ -82,7 +82,7 @@
                 <input id="servicio_precio" type="number" step="0.01" name="precio" required>
             </div>
 
-            <button type="submit" class="btn-guardar-modal">
+            <button type="submit"  class="btn btn--primary btn--lg">
                 Guardar servicio
             </button>
         </form>
@@ -119,7 +119,7 @@
 
             {% if s.activo %}
 
-                <button class="btn-edit"
+                <button class="btn btn--success btn--sm"
                     data-id="{{ s.id_servicio }}"
                     data-negocio="{{ s.id_negocio }}"
                     data-nombre="{{ s.nombre }}"
@@ -128,13 +128,13 @@
                     Editar
                 </button>
 
-                <button class="btn-info"
+                <button class="btn btn--info btn--sm"
                     onclick="verHistorialServicio({{ s.id_servicio }})">
                     Historial
                 </button>
 
                 <a href="/servicios/eliminar/{{ s.id_servicio }}"
-                class="btn-delete"
+                class="btn btn--danger btn--sm"
                 onclick="return confirm('¿Eliminar servicio?')">
                 Eliminar
                 </a>
@@ -142,8 +142,7 @@
             {% else %}
 
                 <a href="/servicios/restaurar/{{ s.id_servicio }}"
-                class="btn-edit"
-                style="background:linear-gradient(to right,#3b82f6,#2563eb);">
+                class="btn btn--primary btn--sm">
                 Restaurar
                 </a>
 

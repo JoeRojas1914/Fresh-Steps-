@@ -46,27 +46,6 @@ input:focus {
 }
 
 
-button {
-    margin-top: 12px;
-    padding: 10px 18px;
-    background: linear-gradient(to right, #2fa4ff, #1e7fd6);
-    border: none;
-    border-radius: 8px;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
-}
-
-button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 14px rgba(30, 127, 214, 0.25);
-    background: linear-gradient(to right, #1e7fd6, #155fa0);
-}
-
-button:active {
-    transform: translateY(0);
-}
 
 
 .modal {
@@ -163,56 +142,6 @@ tbody tr:hover {
     transition: all 0.15s ease;
 }
 
-
-
-.btn-edit,
-.btn-delete {
-    display: inline-flex;
-    align-items: center;
-    padding: 6px 14px;
-    font-size: 13px;
-    font-weight: 600;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-    color: white;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
-}
-
-
-.btn-edit {
-    background: linear-gradient(to right, #4ade80, #22c55e);
-}
-
-.btn-edit:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(34, 197, 94, 0.35);
-}
-
-
-.btn-delete {
-    background: linear-gradient(to right, #f87171, #ef4444);
-}
-
-.btn-delete:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.35);
-}
-
-
-.btn-edit:active,
-.btn-delete:active {
-    transform: translateY(0);
-    opacity: 0.9;
-}
-
-
-td .btn-edit,
-td .btn-delete {
-    margin-right: 6px;
-}
-
 .search-form {
     display: flex;
     gap: 10px;
@@ -222,10 +151,6 @@ td .btn-delete {
 
 .search-form input {
     max-width: 300px;
-}
-
-.search-form button {
-    margin-top: 0; 
 }
 
 
@@ -276,12 +201,6 @@ td .btn-delete {
     padding: 8px;
     margin: 0;            
     box-sizing: border-box;
-}
-
-.search-bar button {
-    padding: 8px 14px;  
-    margin: 0;          
-    height: 36px;         
 }
 
 .results-list {
@@ -354,15 +273,6 @@ td .btn-delete {
 }
 
 
-.date-form button {
-    margin-top: 0;
-    height: 38px;
-    padding: 0 22px;
-    white-space: nowrap;
-}
-
-
-
 #gastosChart {
     width: 100% !important;
     max-height: 320px;
@@ -416,11 +326,6 @@ td .btn-delete {
     color: #0b3c5d;
 }
 
-#btnCambiarCliente {
-    margin-top: 0;
-    padding: 8px 14px;
-    font-size: 13px;
-}
 
 
 .form-group {
@@ -477,49 +382,10 @@ select:focus {
     box-sizing: border-box;
 }
 
-
-
-
-button:disabled {
-    background: #cbd5e1 !important;   
-    color: #64748b;
-    cursor: not-allowed;
-    box-shadow: none;
-    opacity: 0.75;
-}
-
-button:disabled:hover {
-    transform: none;
-    box-shadow: none;
-    background: #cbd5e1;
-}
-
-
 .detalles-venta td {
     background-color: #f9f9f9;
 }
-.btn-info {
-    cursor: pointer;
-    background-color: #3498db;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 5px;
-}
-.btn-info:hover {
-    background-color: #2980b9;
-}
-.btn-entregar {
-    cursor: pointer;
-    background-color: #2ecc71;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 5px;
-    text-decoration: none;
-}
-.btn-entregar:hover {
-    background-color: #27ae60;
-}
+
 
 .cliente-header {
     background: linear-gradient(135deg, #e6f3ff, #f8fbff);
@@ -637,24 +503,6 @@ button:disabled:hover {
     font-weight: 600;
     color: #1e3a8a;
 }
-
-.btn-eliminar-zapato {
-    background: #f87171;
-    border: none;
-    border-radius: 6px;
-    padding: 2px 6px;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.btn-eliminar-zapato:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(239,68,68,0.35);
-}
-
-
 
 .kpi-card {
     position: relative;
@@ -1003,26 +851,6 @@ button:disabled:hover {
 }
 
 
-.total-row button {
-    padding: 8px 20px;
-    font-size: 1em;
-    background-color: #007BFF;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.total-row button:disabled {
-    background-color: #a0c4ff;
-    cursor: not-allowed;
-}
-
-.total-row button:hover:not(:disabled) {
-    background-color: #0056b3;
-}
-
 .total-amount {
     font-size: 28px;
     font-weight: 900;
@@ -1096,13 +924,6 @@ button:disabled:hover {
     width: 160px;
     max-width: 160px;
 }
-
-.btn-agregar-servicio {
-    margin-top: 0;
-    padding: 8px 14px;
-    font-size: 13px;
-}
-
 
 
 .articulo-row {
@@ -1288,38 +1109,6 @@ button:disabled:hover {
     box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.2);
 }
 
-.btn-guardar-modal {
-    margin-top: 10px;
-    padding: 10px;
-    border-radius: 8px;
-    border: none;
-    background: #2563eb;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.btn-guardar-modal:hover {
-    background: #1d4ed8;
-}
-
-.btn-ticket{
-    display:inline-block;
-    padding:6px 12px;
-    border-radius:8px;
-    border:1px solid #2b2b2b;
-    text-decoration:none;
-    font-size:13px;
-    background:#ffffff;
-    cursor:pointer;
-    white-space:nowrap;
-    color:#000 !important; 
-}
-
-.btn-ticket:hover{
-    background:#f2f2f2;
-    color:#000 !important; 
-}
 
 .search-form.filtros {
     display: flex;
@@ -1329,8 +1118,7 @@ button:disabled:hover {
 }
 
 .search-form select,
-.search-form input,
-.search-form button {
+.search-form input {
     padding: 6px 10px;
 }
 
@@ -1384,12 +1172,6 @@ button:disabled:hover {
     flex: 0 0 auto;         
 }
 
-.filtro-actions button {
-    margin-top: 0;
-    height: 42px;
-    padding: 0 22px;
-    white-space: nowrap;
-}
 
 .filtro-actions a {
     font-weight: 600;
@@ -1604,23 +1386,6 @@ hr {
     margin-bottom: 25px;
 }
 
-.error-btn {
-    display: inline-block;
-    padding: 10px 22px;
-    border-radius: 10px;
-    text-decoration: none;
-    font-weight: 600;
-    color: white;
-    background: linear-gradient(to right, #2fa4ff, #1e7fd6);
-    box-shadow: 0 6px 14px rgba(30,127,214,0.25);
-}
-
-.error-btn:hover {
-    background: linear-gradient(to right, #1e7fd6, #155fa0);
-}
-
-
-/* ===== Toggle moderno eliminados ===== */
 
 .filtro-toggle {
     display: flex;
@@ -1629,21 +1394,18 @@ hr {
     margin: 12px 0 18px 0;
 }
 
-/* switch base */
 .switch {
     position: relative;
     width: 46px;
     height: 24px;
 }
 
-/* ocultar checkbox real */
 .switch input {
     opacity: 0;
     width: 0;
     height: 0;
 }
 
-/* fondo */
 .slider {
     position: absolute;
     cursor: pointer;

@@ -14,7 +14,7 @@
     {% endif %}
     {% endwith %}
 
-    <button onclick="abrirModal()">➕ Agregar usuario</button>
+    <button onclick="abrirModal()" class="btn btn--primary">➕ Agregar usuario</button>
 
     <hr>
 
@@ -57,7 +57,7 @@
 
                     {% if u.rol != "admin" %}
 
-                        <button class="btn-edit"
+                        <button class="btn btn--success btn--sm"
                             onclick='editarUsuario(event,
                                 {{ u.id_usuario }},
                                 {{ u.usuario|tojson }},
@@ -67,12 +67,12 @@
                         </button>
 
                         <a href="/usuarios/toggle/{{ u.id_usuario }}"
-                        class="btn-delete"
+                        class="btn btn--danger btn--sm"
                         onclick="return confirm('¿Cambiar estado del usuario?')">
                             Activar/Desactivar
                         </a>
                         
-                        <button class="btn-info"
+                        <button class="btn btn--info btn--sm"
                             onclick="verHistorialUsuario(event, {{ u.id_usuario }})">
                             Historial
                         </button>
@@ -80,8 +80,6 @@
                     {% else %}
                         <span style="opacity:.5;">Protegido</span>
                     {% endif %}
-
-
                 </td>
 
             </tr>
@@ -140,7 +138,7 @@
                     >
                 </div>
 
-                <button type="submit" class="btn-guardar-modal">
+                <button type="submit" class="btn btn--primary btn--lg">
                     Guardar usuario
                 </button>
 

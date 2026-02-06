@@ -100,11 +100,11 @@
 
                 <td>${{ deuda | round(2) }}</td>
                 <td>
-                    <button class="btn-info" data-id="{{ v.id_venta }}">ℹ️ Info</button>
+                    <button class="btn btn--info btn--sm" data-id="{{ v.id_venta }}">ℹ️ Info</button>
                 </td>
                 <td>
                     <button
-                    class="btn-entregar"
+                    class="btn btn--success btn--sm btn-entregar"
                     data-id="{{ v.id_venta }}"
                     data-deuda="{{ deuda }}"
                     data-pagado="{{ pagado }}"
@@ -184,11 +184,11 @@
                             {% endfor %}
                         </ul>
 
-                        <div style="margin-top:12px; display:flex; justify-content:flex-end;">
+                        <div class="btn-row">
                             <a href="{{ url_for('ventas.venta_ticket', id_venta=v.id_venta) }}"
                             target="_blank"
-                            class="btn-ticket">
-                            🧾 Ver ticket
+                            class="btn btn--info btn--sm">
+                                🧾 Ver ticket
                             </a>
                         </div>
                     </div>
@@ -239,8 +239,9 @@
             </div>
 
             <div style="margin-top:16px; display:flex; justify-content:flex-end; gap:10px;">
-                <button onclick="cerrarModalEntrega()">Cancelar</button>
-                <button id="btnConfirmarEntrega">Confirmar</button>
+                <button class="btn btn--danger btn--sm" onclick="cerrarModalEntrega()">Cancelar</button>
+                <button id="btnConfirmarEntrega" class="btn btn--primary btn--lg">Confirmar</button>
+
             </div>
 
         </div>

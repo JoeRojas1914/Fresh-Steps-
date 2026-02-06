@@ -47,7 +47,7 @@
     </div>
 
     <div class="filtro-actions">
-      <button type="submit">Aplicar</button>
+      <button type="submit" class="btn btn--primary btn--sm">Aplicar</button>
 
       {% if request.args.get('id_negocio') or request.args.get('fecha_inicio') or request.args.get('fecha_fin') %}
         <a href="{{ url_for('gastos.gastos') }}">
@@ -89,7 +89,7 @@
   {% endif %}
 {% endwith %}
 
-<button onclick="abrirModal()">➕ Agregar gasto</button>
+<button onclick="abrirModal()" class="btn btn--primary">➕ Agregar gasto</button>
 
 
 <div id="modal" class="modal">
@@ -148,7 +148,7 @@
                 </select>
             </div>
 
-            <button type="submit" class="btn-guardar-modal">
+            <button type="submit"  class="btn btn--primary btn--lg">
                 Guardar gasto
             </button>
         </form>
@@ -211,23 +211,24 @@
 
                 {% if g.activo %}
 
-                <button class="btn-edit"
+                <button type="button" class="btn btn--success btn--sm"
                     onclick='editarGasto({{ g.id_gasto }}, {{ g.id_negocio }}, {{ g.descripcion|tojson }}, {{ g.proveedor|tojson }}, {{ g.total|tojson }}, "{{ g.fecha_registro.strftime("%Y-%m-%d") if g.fecha_registro else "" }}", "{{ g.tipo_comprobante }}", "{{ g.tipo_pago }}")'>
                     Editar
                 </button>
 
-                <button class="btn-info" onclick="verHistorial({{ g.id_gasto }})">
+                <button type="button"
+                        class="btn btn--info btn--sm" 
+                        onclick="verHistorial({{ g.id_gasto }})">
                     Historial
                 </button>
 
-                <a href="/gastos/eliminar/{{ g.id_gasto }}" class="btn-delete" onclick="return confirm('¿Seguro que desea eliminar el gasto?')">
+                <a href="/gastos/eliminar/{{ g.id_gasto }}" class="btn btn--danger btn--sm" onclick="return confirm('¿Seguro que desea eliminar el gasto?')">
                     Eliminar
                 </a>
 
             {% else %}
                 <a href="/gastos/restaurar/{{ g.id_gasto }}"
-                class="btn-edit"
-                style="background:linear-gradient(to right,#3b82f6,#2563eb);">
+                class="btn btn--primary btn--sm">
                 Restaurar
                 </a>
             {% endif %}

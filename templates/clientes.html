@@ -20,7 +20,10 @@
         placeholder="Buscar cliente por nombre o apellido"
         value="{{ q or '' }}"
     >
-    <button type="submit">Buscar</button>
+    <button type="submit" class="btn btn--primary btn--sm">
+        Buscar
+    </button>
+
 </form>
 
 <form method="GET" action="{{ url_for('clientes.clientes') }}" class="filtro-toggle">
@@ -40,7 +43,10 @@
 </form>
 
 
-<button onclick="abrirModal()">➕ Agregar cliente</button>
+<button onclick="abrirModal()" class="btn btn--primary">
+    ➕ Agregar cliente
+</button>
+
 
 
 <div id="modal" class="modal">
@@ -77,7 +83,7 @@
                 <input id="cliente_direccion" type="text" name="direccion">
             </div>
 
-            <button type="submit" class="btn-guardar-modal">
+            <button type="submit" class="btn btn--primary btn--lg">
                 Guardar cliente
             </button>
         </form>
@@ -117,27 +123,26 @@
 
                 {% if c.activo %}
 
-                    <button type="button" class="btn-edit"
+                    <button type="button" class="btn btn--success btn--sm"
                         onclick='editarCliente(event, {{ c.id_cliente }}, {{ c.nombre|tojson }}, {{ c.apellido|tojson }}, {{ c.correo|tojson }}, {{ c.telefono|tojson }}, {{ c.direccion|tojson }})'>
                         Editar
                     </button>
 
                     <button type="button"
-                            class="btn-info"
+                            class="btn btn--info btn--sm"
                             onclick="verHistorialCliente(event, {{ c.id_cliente }})">
                         Historial
                     </button>
 
                     <a href="/clientes/eliminar/{{ c.id_cliente }}"
-                    class="btn-delete"
+                    class="btn btn--danger btn--sm"
                     onclick="return confirm('¿Seguro que desea desactivar al cliente?')">
                         Eliminar
                     </a>
 
                 {% else %}
                     <a href="/clientes/restaurar/{{ c.id_cliente }}"
-                    class="btn-edit"
-                    style="background:linear-gradient(to right,#3b82f6,#2563eb);">
+                    class="btn btn--primary btn--sm">
                         Restaurar
                     </a>
 

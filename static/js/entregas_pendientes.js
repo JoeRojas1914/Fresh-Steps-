@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 : "none";
     }
 
-    document.querySelectorAll(".btn-info").forEach(btn => {
+    document.querySelectorAll(".btn--info").forEach(btn => {
         btn.addEventListener("click", () => {
             toggleDetalles(btn.dataset.id);
         });
@@ -59,7 +59,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 const mostrar = coincideNombre && coincideNegocio;
                 fila.style.display = mostrar ? "" : "none";
 
-                // Ocultar detalle si se filtra
                 const btnInfo = fila.querySelector(".btn-info");
                 if (btnInfo) {
                     const idVenta = btnInfo.dataset.id;

@@ -43,53 +43,69 @@
 </form>
 
 
-<button onclick="abrirModal()" class="btn btn--primary">
+<button onclick="abrirModal('modalCliente')" class="btn btn--primary">
     ➕ Agregar cliente
 </button>
 
 
+<div id="modalCliente" class="modal">
+  <div class="modal__dialog modal--md">
 
-<div id="modal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="cerrarModal()">&times;</span>
-
-        <h2 id="modalTitulo">Agregar cliente</h2>
-
-        <form method="POST" action="/clientes/guardar" class="modal-form">
-            <input type="hidden" name="id_cliente" id="id_cliente">
-
-            <div class="modal-field">
-                <label for="cliente_nombre">Nombre</label>
-                <input id="cliente_nombre" type="text" name="nombre" required>
-            </div>
-
-            <div class="modal-field">
-                <label for="cliente_apellido">Apellido</label>
-                <input id="cliente_apellido" type="text" name="apellido" required>
-            </div>
-
-            <div class="modal-field">
-                <label for="cliente_telefono">Teléfono</label>
-                <input id="cliente_telefono" type="text" name="telefono" required pattern="[0-9]{10}" title="Debe contener 10 dígitos">
-            </div>
-
-            <div class="modal-field">
-                <label for="cliente_correo">Correo (opcional)</label>
-                <input id="cliente_correo" type="email" name="correo">
-            </div>
-
-            <div class="modal-field">
-                <label for="cliente_direccion">Codigo Postal (opcional)</label>
-                <input id="cliente_direccion" type="text" name="direccion">
-            </div>
-
-            <button type="submit" class="btn btn--primary btn--lg">
-                Guardar cliente
-            </button>
-        </form>
-
+    <div class="modal__header">
+      <h2 class="modal__title" id="modalTitulo">Agregar cliente</h2>
+      <button class="modal__close" onclick="cerrarModal('modalCliente')">&times;</button>
     </div>
+
+    <div class="modal__body">
+      <form id="modalClienteForm" method="POST" action="/clientes/guardar" class="modal-form">
+        <input type="hidden" name="id_cliente" id="id_cliente">
+
+        <div class="modal-field">
+          <label for="cliente_nombre">Nombre</label>
+          <input id="cliente_nombre" type="text" name="nombre" required>
+        </div>
+
+        <div class="modal-field">
+          <label for="cliente_apellido">Apellido</label>
+          <input id="cliente_apellido" type="text" name="apellido" required>
+        </div>
+
+        <div class="modal-field">
+          <label for="cliente_telefono">Teléfono</label>
+          <input id="cliente_telefono"
+                 type="text"
+                 name="telefono"
+                 required
+                 pattern="[0-9]{10}">
+        </div>
+
+        <div class="modal-field">
+          <label for="cliente_correo">Correo (opcional)</label>
+          <input id="cliente_correo" type="email" name="correo">
+        </div>
+
+        <div class="modal-field">
+          <label for="cliente_direccion">Código Postal (opcional)</label>
+          <input id="cliente_direccion" type="text" name="direccion">
+        </div>
+      </form>
+    </div>
+
+    <div class="modal__footer">
+      <button class="btn btn--danger btn--sm"
+              onclick="cerrarModal('modalCliente')">
+        Cancelar
+      </button>
+      <button type="submit"
+              form="modalClienteForm"
+              class="btn btn--primary btn--lg">
+        Guardar cliente
+      </button>
+    </div>
+
+  </div>
 </div>
+
 
 <hr>
 
@@ -164,24 +180,32 @@
 
 
 <div id="modalHistorialCliente" class="modal">
-  <div class="modal-content" style="width:750px; max-width:95vw;">
-    <span class="close" onclick="cerrarHistorialCliente()">&times;</span>
+  <div class="modal__dialog modal--lg">
 
-    <h2>Historial del cliente</h2>
+    <div class="modal__header">
+      <h2 class="modal__title">Historial del cliente</h2>
+      <button class="modal__close"
+              onclick="cerrarModal('modalHistorialCliente')">&times;</button>
+    </div>
 
-    <table id="tablaHistorialCliente" class="table table--striped table--hover">
-      <thead>
-        <tr>
-          <th>Acción</th>
-          <th>Usuario</th>
-          <th>Fecha</th>
-          <th>Cambios</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <div class="modal__body">
+      <table id="tablaHistorialCliente"
+             class="table table--striped table--hover">
+        <thead>
+          <tr>
+            <th>Acción</th>
+            <th>Usuario</th>
+            <th>Fecha</th>
+            <th>Cambios</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
   </div>
 </div>
+
 
 
 <div class="paginacion">
@@ -217,7 +241,8 @@
 {% endblock %}
 
 {% block scripts %}
-    <script src="{{ url_for('static', filename='js/clientes.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/modal.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/clientes.js') }}"></script>
 {% endblock %}
 
 

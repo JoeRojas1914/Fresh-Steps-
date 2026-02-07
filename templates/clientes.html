@@ -5,6 +5,7 @@
 {% from "components/alerts.html" import alerts %}
 {% from "components/pagination.html" import pagination %}
 {% from "components/table.html" import table %}
+{% from "components/modal.html" import modal %}
 
 
 <h1>👥 Clientes</h1>
@@ -46,63 +47,53 @@
 </button>
 
 
-<div id="modalCliente" class="modal">
-  <div class="modal__dialog modal--md">
+{% call modal("modalCliente", "Agregar cliente", "md") %}
+<form id="modalClienteForm" method="POST" action="/clientes/guardar" class="modal-form">
+  <input type="hidden" name="id_cliente" id="id_cliente">
 
-    <div class="modal__header">
-      <h2 class="modal__title" id="modalTitulo">Agregar cliente</h2>
-      <button class="modal__close" onclick="cerrarModal('modalCliente')">&times;</button>
-    </div>
-
-    <div class="modal__body">
-      <form id="modalClienteForm" method="POST" action="/clientes/guardar" class="modal-form">
-        <input type="hidden" name="id_cliente" id="id_cliente">
-
-        <div class="modal-field">
-          <label for="cliente_nombre">Nombre</label>
-          <input id="cliente_nombre" type="text" name="nombre" required>
-        </div>
-
-        <div class="modal-field">
-          <label for="cliente_apellido">Apellido</label>
-          <input id="cliente_apellido" type="text" name="apellido" required>
-        </div>
-
-        <div class="modal-field">
-          <label for="cliente_telefono">Teléfono</label>
-          <input id="cliente_telefono"
-                 type="text"
-                 name="telefono"
-                 required
-                 pattern="[0-9]{10}">
-        </div>
-
-        <div class="modal-field">
-          <label for="cliente_correo">Correo (opcional)</label>
-          <input id="cliente_correo" type="email" name="correo">
-        </div>
-
-        <div class="modal-field">
-          <label for="cliente_direccion">Código Postal (opcional)</label>
-          <input id="cliente_direccion" type="text" name="direccion">
-        </div>
-      </form>
-    </div>
-
-    <div class="modal__footer">
-      <button class="btn btn--danger btn--sm"
-              onclick="cerrarModal('modalCliente')">
-        Cancelar
-      </button>
-      <button type="submit"
-              form="modalClienteForm"
-              class="btn btn--primary btn--lg">
-        Guardar cliente
-      </button>
-    </div>
-
+  <div class="modal-field">
+    <label for="cliente_nombre">Nombre</label>
+    <input id="cliente_nombre" type="text" name="nombre" required>
   </div>
-</div>
+
+  <div class="modal-field">
+    <label for="cliente_apellido">Apellido</label>
+    <input id="cliente_apellido" type="text" name="apellido" required>
+  </div>
+
+  <div class="modal-field">
+    <label for="cliente_telefono">Teléfono</label>
+    <input id="cliente_telefono"
+           type="text"
+           name="telefono"
+           required
+           pattern="[0-9]{10}">
+  </div>
+
+  <div class="modal-field">
+    <label for="cliente_correo">Correo (opcional)</label>
+    <input id="cliente_correo" type="email" name="correo">
+  </div>
+
+  <div class="modal-field">
+    <label for="cliente_direccion">Código Postal (opcional)</label>
+    <input id="cliente_direccion" type="text" name="direccion">
+  </div>
+
+  <div class="modal__footer">
+    <button type="button"
+            class="btn btn--danger btn--sm"
+            onclick="cerrarModal('modalCliente')">
+      Cancelar
+    </button>
+
+    <button type="submit"
+            class="btn btn--primary btn--lg">
+      Guardar cliente
+    </button>
+  </div>
+</form>
+{% endcall %}
 
 
 <hr>
@@ -177,32 +168,21 @@
 
 
 
-<div id="modalHistorialCliente" class="modal">
-  <div class="modal__dialog modal--lg">
+{% call modal("modalHistorialCliente", "Historial del cliente", "lg") %}
+<table id="tablaHistorialCliente"
+       class="table table--striped table--hover">
+  <thead>
+    <tr>
+      <th>Acción</th>
+      <th>Usuario</th>
+      <th>Fecha</th>
+      <th>Cambios</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+{% endcall %}
 
-    <div class="modal__header">
-      <h2 class="modal__title">Historial del cliente</h2>
-      <button class="modal__close"
-              onclick="cerrarModal('modalHistorialCliente')">&times;</button>
-    </div>
-
-    <div class="modal__body">
-      <table id="tablaHistorialCliente"
-             class="table table--striped table--hover">
-        <thead>
-          <tr>
-            <th>Acción</th>
-            <th>Usuario</th>
-            <th>Fecha</th>
-            <th>Cambios</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-  </div>
-</div>
 
 {% from "components/pagination.html" import pagination %}
 

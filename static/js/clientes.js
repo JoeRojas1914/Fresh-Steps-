@@ -28,7 +28,7 @@ window.editarClienteBtn = function (e, btn) {
 
   abrirModal("modalCliente");
 
-  document.getElementById("modalTitulo").innerText = "Editar cliente";
+  document.getElementById("modalCliente_title").innerText = "Editar cliente";
   document.getElementById("id_cliente").value = btn.dataset.id;
 
   document.querySelector("[name=nombre]").value = btn.dataset.nombre;

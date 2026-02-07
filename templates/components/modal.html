@@ -1,0 +1,16 @@
+{% macro modal(id, titulo, size="md") %}
+<div id="{{ id }}" class="modal">
+  <div class="modal__dialog modal--{{ size }}">
+
+    <div class="modal__header">
+      <h2 class="modal__title" id="{{ id }}_title">{{ titulo }}</h2>
+      <button class="modal__close" onclick="cerrarModal('{{ id }}')">&times;</button>
+    </div>
+
+    <div class="modal__body">
+      {{ caller() }}
+    </div>
+
+  </div>
+</div>
+{% endmacro %}

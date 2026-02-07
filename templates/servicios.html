@@ -2,18 +2,13 @@
 
 {% block content %}
 {% from "macros/badges.html" import badge_negocio %}
+{% from "components/alerts.html" import alerts %}
+{% from "components/pagination.html" import pagination %}
+
 
 <h1>🏬 Servicios</h1>
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    {% for category, message in messages %}
-      <div class="alert {{ category }}">
-        {{ message }}
-      </div>
-    {% endfor %}
-  {% endif %}
-{% endwith %}
+{{ alerts(get_flashed_messages(with_categories=true)) }}
 
 <form method="GET" action="/servicios" class="search-bar">
     <select name="id_negocio" onchange="this.form.submit()">
@@ -175,46 +170,19 @@
 </div>
 
 
-<div class="paginacion">
-    {% if total_paginas > 1 %}
+{% from "components/pagination.html" import pagination %}
 
-        {% set bloque = ((pagina - 1) // 10) %}
-        {% set inicio = bloque * 10 + 1 %}
-        {% set fin = inicio + 9 %}
-        {% if fin > total_paginas %}
-            {% set fin = total_paginas %}
-        {% endif %}
+{{ pagination(
+    pagina,
+    total_paginas,
+    'gastos.gastos',
+    {
+      "id_negocio": request.args.get('id_negocio'),
+      "fecha_inicio": request.args.get('fecha_inicio'),
+      "fecha_fin": request.args.get('fecha_fin')
+    }
+) }}
 
-        {% if inicio > 1 %}
-            <a href="{{ url_for('servicios.servicios',
-                pagina=inicio-10,
-                q=q,
-                id_negocio=id_negocio
-            ) }}">«</a>
-        {% endif %}
-
-        {% for p in range(inicio, fin + 1) %}
-            {% if p == pagina %}
-                <strong>{{ p }}</strong>
-            {% else %}
-                <a href="{{ url_for('servicios.servicios',
-                    pagina=p,
-                    q=q,
-                    id_negocio=id_negocio
-                ) }}">{{ p }}</a>
-            {% endif %}
-        {% endfor %}
-
-        {% if fin < total_paginas %}
-            <a href="{{ url_for('servicios.servicios',
-                pagina=inicio+10,
-                q=q,
-                id_negocio=id_negocio
-            ) }}">»</a>
-        {% endif %}
-
-    {% endif %}
-</div>
 
 {% endblock %}
 

@@ -1,17 +1,14 @@
 {% extends "base.html" %}
 
 {% block content %}
+
+{% from "components/alerts.html" import alerts %}
+{% from "components/pagination.html" import pagination %}
+
+
 <h1>👥 Clientes</h1>
 
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    {% for category, message in messages %}
-      <div class="alert {{ category }}">
-        {{ message }}
-      </div>
-    {% endfor %}
-  {% endif %}
-{% endwith %}
+{{ alerts(get_flashed_messages(with_categories=true)) }}
 
 <form method="GET" action="/clientes" class="search-bar">
     <input 
@@ -206,37 +203,17 @@
   </div>
 </div>
 
+{% from "components/pagination.html" import pagination %}
 
-
-<div class="paginacion">
-    {% if total_paginas > 1 %}
-
-        {% set bloque = ((pagina - 1) // 10) %}
-        {% set inicio = bloque * 10 + 1 %}
-        {% set fin = inicio + 9 %}
-        {% if fin > total_paginas %}
-            {% set fin = total_paginas %}
-        {% endif %}
-
-        {% if inicio > 1 %}
-            <a href="{{ url_for('clientes.clientes', pagina=inicio-10, q=q) }}">«</a>
-        {% endif %}
-
-        {% for p in range(inicio, fin + 1) %}
-            {% if p == pagina %}
-                <strong>{{ p }}</strong>
-            {% else %}
-                <a href="{{ url_for('clientes.clientes', pagina=p, q=q) }}">{{ p }}</a>
-            {% endif %}
-        {% endfor %}
-
-        {% if fin < total_paginas %}
-            <a href="{{ url_for('clientes.clientes', pagina=inicio+10, q=q) }}">»</a>
-        {% endif %}
-
-    {% endif %}
-</div>
-
+{{ pagination(
+    pagina,
+    total_paginas,
+    'clientes.clientes',
+    {
+      "q": q,
+      "eliminados": request.args.get('eliminados')
+    }
+) }}
 
 {% endblock %}
 

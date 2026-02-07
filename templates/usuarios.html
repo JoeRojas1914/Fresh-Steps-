@@ -2,17 +2,12 @@
 
 {% block content %}
 
+{% from "components/alerts.html" import alerts %}
+
     <h1>👤 Usuarios</h1>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-        <div class="alert {{ category }}">
-            {{ message }}
-        </div>
-        {% endfor %}
-    {% endif %}
-    {% endwith %}
+    {{ alerts(get_flashed_messages(with_categories=true)) }}
+
 
     <button onclick="abrirModalUsuario()" class="btn btn--primary">
         ➕ Agregar usuario

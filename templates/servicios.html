@@ -4,6 +4,7 @@
 {% from "macros/badges.html" import badge_negocio %}
 {% from "components/alerts.html" import alerts %}
 {% from "components/pagination.html" import pagination %}
+{% from "components/table.html" import table %}
 
 
 <h1>🏬 Servicios</h1>
@@ -86,68 +87,64 @@
 
 <hr>
 
-<table class="table table--striped table--hover">
-    <thead>
-        <tr>
-            <th>Negocio</th>
-            <th>Servicio</th>
-            <th>Precio</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for s in servicios %}
-        <tr>
-            <td>{{ badge_negocio(s.negocio) }}</td>
-            <td>{{ s.nombre }}</td>
-            <td>${{ s.precio }}</td>
-            <td>
-                {% if s.activo %}
-                    <span class="status status-completado">Activo</span>
-                {% else %}
-                    <span class="status status-pendiente">Eliminado</span>
-                {% endif %}
-            </td>
+{% call table([
+    "Negocio",
+    "Servicio",
+    "Precio",
+    "Estado",
+    "Acciones"
+]) %}
 
-            <td>
-
+    {% for s in servicios %}
+    <tr>
+        <td>{{ badge_negocio(s.negocio) }}</td>
+        <td>{{ s.nombre }}</td>
+        <td>${{ s.precio }}</td>
+        <td>
             {% if s.activo %}
-
-                <button class="btn btn--success btn--sm"
-                    data-id="{{ s.id_servicio }}"
-                    data-negocio="{{ s.id_negocio }}"
-                    data-nombre="{{ s.nombre }}"
-                    data-precio="{{ s.precio }}"
-                    onclick="editarServicio(this)">
-                    Editar
-                </button>
-
-                <button class="btn btn--info btn--sm"
-                    onclick="verHistorialServicio({{ s.id_servicio }})">
-                    Historial
-                </button>
-
-                <a href="/servicios/eliminar/{{ s.id_servicio }}"
-                class="btn btn--danger btn--sm"
-                onclick="return confirm('¿Eliminar servicio?')">
-                Eliminar
-                </a>
-
+                <span class="status status-completado">Activo</span>
             {% else %}
-
-                <a href="/servicios/restaurar/{{ s.id_servicio }}"
-                class="btn btn--primary btn--sm">
-                Restaurar
-                </a>
-
+                <span class="status status-pendiente">Eliminado</span>
             {% endif %}
+        </td>
 
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+        <td>
+        {% if s.activo %}
+
+            <button class="btn btn--success btn--sm"
+                data-id="{{ s.id_servicio }}"
+                data-negocio="{{ s.id_negocio }}"
+                data-nombre="{{ s.nombre }}"
+                data-precio="{{ s.precio }}"
+                onclick="editarServicio(this)">
+                Editar
+            </button>
+
+            <button class="btn btn--info btn--sm"
+                onclick="verHistorialServicio({{ s.id_servicio }})">
+                Historial
+            </button>
+
+            <a href="/servicios/eliminar/{{ s.id_servicio }}"
+               class="btn btn--danger btn--sm"
+               onclick="return confirm('¿Eliminar servicio?')">
+               Eliminar
+            </a>
+
+        {% else %}
+
+            <a href="/servicios/restaurar/{{ s.id_servicio }}"
+               class="btn btn--primary btn--sm">
+               Restaurar
+            </a>
+
+        {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+
+{% endcall %}
+
 
 <div id="modalHistorialServicio" class="modal">
   <div class="modal-content" style="width:750px; max-width:95vw;">

@@ -3,6 +3,8 @@
 {% block content %}
 
 {% from "components/alerts.html" import alerts %}
+{% from "components/table.html" import table %}
+
 
     <h1>👤 Usuarios</h1>
 
@@ -15,74 +17,70 @@
 
     <hr>
 
-    <table class="table table--striped table--hover">
-        <thead>
-            <tr>
-                <th>Usuario</th>
-                <th>Rol</th>
-                <th>Estado</th>
-                <th>Creado</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
+    {% call table([
+        "Usuario",
+        "Rol",
+        "Estado",
+        "Creado",
+        "Acciones"
+    ]) %}
 
-        <tbody>
-            {% for u in usuarios %}
-            <tr>
+        {% for u in usuarios %}
+        <tr>
 
-                <td>{{ u.usuario }}</td>
+            <td>{{ u.usuario }}</td>
 
-                <td>
-                    {% if u.rol == "admin" %}
-                        <span class="status status-completado">Admin</span>
-                    {% else %}
-                        <span class="status status-pendiente">Caja</span>
-                    {% endif %}
-                </td>
+            <td>
+                {% if u.rol == "admin" %}
+                    <span class="status status-completado">Admin</span>
+                {% else %}
+                    <span class="status status-pendiente">Caja</span>
+                {% endif %}
+            </td>
 
-                <td>
-                    {% if u.activo %}
-                        <span class="status status-completado">Activo</span>
-                    {% else %}
-                        <span class="status status-pendiente">Inactivo</span>
-                    {% endif %}
-                </td>
+            <td>
+                {% if u.activo %}
+                    <span class="status status-completado">Activo</span>
+                {% else %}
+                    <span class="status status-pendiente">Inactivo</span>
+                {% endif %}
+            </td>
 
-                <td>{{ u.creado_en }}</td>
+            <td>{{ u.creado_en }}</td>
 
-                <td>
+            <td>
+            {% if u.rol != "admin" %}
 
-                    {% if u.rol != "admin" %}
+                <button class="btn btn--success btn--sm"
+                    onclick='editarUsuario(event,
+                        {{ u.id_usuario }},
+                        {{ u.usuario|tojson }},
+                        {{ u.rol|tojson }}
+                    )'>
+                    Editar
+                </button>
 
-                        <button class="btn btn--success btn--sm"
-                            onclick='editarUsuario(event,
-                                {{ u.id_usuario }},
-                                {{ u.usuario|tojson }},
-                                {{ u.rol|tojson }}
-                            )'>
-                            Editar
-                        </button>
+                <a href="/usuarios/toggle/{{ u.id_usuario }}"
+                class="btn btn--danger btn--sm"
+                onclick="return confirm('¿Cambiar estado del usuario?')">
+                    Activar/Desactivar
+                </a>
+                
+                <button class="btn btn--info btn--sm"
+                    onclick="verHistorialUsuario(event, {{ u.id_usuario }})">
+                    Historial
+                </button>
 
-                        <a href="/usuarios/toggle/{{ u.id_usuario }}"
-                        class="btn btn--danger btn--sm"
-                        onclick="return confirm('¿Cambiar estado del usuario?')">
-                            Activar/Desactivar
-                        </a>
-                        
-                        <button class="btn btn--info btn--sm"
-                            onclick="verHistorialUsuario(event, {{ u.id_usuario }})">
-                            Historial
-                        </button>
+            {% else %}
+                <span style="opacity:.5;">Protegido</span>
+            {% endif %}
+            </td>
 
-                    {% else %}
-                        <span style="opacity:.5;">Protegido</span>
-                    {% endif %}
-                </td>
+        </tr>
+        {% endfor %}
 
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    {% endcall %}
+
 
 
     <div id="modalUsuario" class="modal">

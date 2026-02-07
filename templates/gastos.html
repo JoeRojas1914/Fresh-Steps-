@@ -4,6 +4,7 @@
 {% from "macros/badges.html" import badge_negocio %}
 {% from "components/alerts.html" import alerts %}
 {% from "components/pagination.html" import pagination %}
+{% from "components/table.html" import table %}
 
 
 <h1>💸 Gastos</h1>
@@ -152,84 +153,88 @@
 <hr>
 
 
-<table class="table table--striped table--hover">
-    <thead>
-        <tr>
-            <th>Negocio</th>
-            <th>Descripción</th>
-            <th>Proveedor</th>
-            <th>Total</th>
-            <th>Comprobante</th>
-            <th>Pago</th>
-            <th>Fecha de registro</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for g in gastos %}
-        <tr>
-            <td>{{ badge_negocio(g.negocio) }}</td>
-            <td>{{ g.descripcion }}</td>
-            <td>{{ g.proveedor }}</td>
-            <td>${{ "%.2f"|format(g.total) }}</td>
-            <td>
-                {% if g.tipo_comprobante == "factura" %}
-                    Factura
-                {% else %}
-                    Ticket
-                {% endif %}
-            </td>
-            <td>
-                {% if g.tipo_pago == "efectivo" %}
-                    Efectivo
-                {% elif g.tipo_pago == "transferencia" %}
-                    Transferencia
-                {% else %}
-                    Tarjeta de Crédito
-                {% endif %}
-            </td>
+{% call table([
+    "Negocio",
+    "Descripción",
+    "Proveedor",
+    "Total",
+    "Comprobante",
+    "Pago",
+    "Fecha de registro",
+    "Estado",
+    "Acciones"
+]) %}
 
-            <td>{{ g.fecha_registro.strftime("%d %b %Y") }}</td>
+    {% for g in gastos %}
+    <tr>
+        <td>{{ badge_negocio(g.negocio) }}</td>
+        <td>{{ g.descripcion }}</td>
+        <td>{{ g.proveedor }}</td>
+        <td>${{ "%.2f"|format(g.total) }}</td>
 
-            <td>
-                {% if g.activo %}
-                    <span class="status status-completado">Activo</span>
-                {% else %}
-                    <span class="status status-pendiente">Eliminado</span>
-                {% endif %}
-            </td>
-
-            <td>
-
-                {% if g.activo %}
-
-                <button type="button" class="btn btn--success btn--sm"
-                    onclick='editarGasto({{ g.id_gasto }}, {{ g.id_negocio }}, {{ g.descripcion|tojson }}, {{ g.proveedor|tojson }}, {{ g.total|tojson }}, "{{ g.fecha_registro.strftime("%Y-%m-%d") if g.fecha_registro else "" }}", "{{ g.tipo_comprobante }}", "{{ g.tipo_pago }}")'>
-                    Editar
-                </button>
-
-                <button type="button"
-                        class="btn btn--info btn--sm" 
-                        onclick="verHistorial({{ g.id_gasto }})">
-                    Historial
-                </button>
-
-                <a href="/gastos/eliminar/{{ g.id_gasto }}" class="btn btn--danger btn--sm" onclick="return confirm('¿Seguro que desea eliminar el gasto?')">
-                    Eliminar
-                </a>
-
+        <td>
+            {% if g.tipo_comprobante == "factura" %}
+                Factura
             {% else %}
-                <a href="/gastos/restaurar/{{ g.id_gasto }}"
-                class="btn btn--primary btn--sm">
-                Restaurar
-                </a>
+                Ticket
             {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+        </td>
+
+        <td>
+            {% if g.tipo_pago == "efectivo" %}
+                Efectivo
+            {% elif g.tipo_pago == "transferencia" %}
+                Transferencia
+            {% else %}
+                Tarjeta de Crédito
+            {% endif %}
+        </td>
+
+        <td>{{ g.fecha_registro.strftime("%d %b %Y") }}</td>
+
+        <td>
+            {% if g.activo %}
+                <span class="status status-completado">Activo</span>
+            {% else %}
+                <span class="status status-pendiente">Eliminado</span>
+            {% endif %}
+        </td>
+
+        <td>
+        {% if g.activo %}
+
+            <button type="button"
+                class="btn btn--success btn--sm"
+                onclick='editarGasto({{ g.id_gasto }}, {{ g.id_negocio }}, {{ g.descripcion|tojson }}, {{ g.proveedor|tojson }}, {{ g.total|tojson }}, "{{ g.fecha_registro.strftime("%Y-%m-%d") if g.fecha_registro else "" }}", "{{ g.tipo_comprobante }}", "{{ g.tipo_pago }}")'>
+                Editar
+            </button>
+
+            <button type="button"
+                    class="btn btn--info btn--sm" 
+                    onclick="verHistorial({{ g.id_gasto }})">
+                Historial
+            </button>
+
+            <a href="/gastos/eliminar/{{ g.id_gasto }}"
+               class="btn btn--danger btn--sm"
+               onclick="return confirm('¿Seguro que desea eliminar el gasto?')">
+               Eliminar
+            </a>
+
+        {% else %}
+
+            <a href="/gastos/restaurar/{{ g.id_gasto }}"
+               class="btn btn--primary btn--sm">
+               Restaurar
+            </a>
+
+        {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+
+{% endcall %}
+
 
 <div id="modalHistorial" class="modal">
   <div class="modal-content" style="width:700px; max-width:95vw;">

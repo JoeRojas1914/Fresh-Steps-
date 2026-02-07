@@ -14,7 +14,9 @@
     {% endif %}
     {% endwith %}
 
-    <button onclick="abrirModal()" class="btn btn--primary">➕ Agregar usuario</button>
+    <button onclick="abrirModalUsuario()" class="btn btn--primary">
+        ➕ Agregar usuario
+    </button>
 
     <hr>
 
@@ -88,84 +90,110 @@
     </table>
 
 
-    <div id="modal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="cerrarModal()">&times;</span>
+    <div id="modalUsuario" class="modal">
+        <div class="modal__dialog modal--sm">
 
-            <h2 id="modalTitulo">Agregar usuario</h2>
+            <div class="modal__header">
+            <h2 id="modalTitulo" class="modal__title">Agregar usuario</h2>
+            <button class="modal__close" onclick="cerrarModal('modalUsuario')">&times;</button>
+            </div>
 
-            <form method="POST" action="/usuarios/guardar" class="modal-form">
+            <form method="POST" action="/usuarios/guardar">
 
-                <input type="hidden" name="id_usuario" id="id_usuario">
-                <input type="hidden" name="rol" id="rol" value="caja">
+            <div class="modal__body">
 
-                <div class="modal-field">
-                    <label>Usuario</label>
-                    <input 
-                        type="text"
-                        name="usuario"
-                        id="usuario"
-                        required
-                        minlength="3"
-                        pattern="^[a-zA-Z0-9_]+$"
-                    >
-                </div>
+            <input type="hidden" name="id_usuario" id="id_usuario">
+            <input type="hidden" name="rol" id="rol" value="caja">
+
+            <div class="modal-field">
+                <label>Usuario</label>
+                <input 
+                type="text"
+                name="usuario"
+                id="usuario"
+                required
+                minlength="3"
+                pattern="^[a-zA-Z0-9_]+$"
+                >
+            </div>
+
+            <div class="modal-field">
+                <label>Contraseña</label>
+                <input 
+                type="password"
+                name="password"
+                id="password"
+                minlength="6"
+                pattern="^(?=.*\d).{6,}$"
+                placeholder="Mínimo 6 caracteres y 1 número"
+                >
+            </div>
+
+            <div class="modal-field">
+                <label>PIN (4 dígitos)</label>
+                <input 
+                type="password"
+                name="pin"
+                id="pin"
+                maxlength="4"
+                pattern="\d{4}"
+                placeholder="1234"
+                required
+                >
+            </div>
+
+            </div>
 
 
-                <div class="modal-field">
-                    <label>Contraseña</label>
-                    <input 
-                        type="password"
-                        name="password"
-                        id="password"
-                        minlength="6"
-                        pattern="^(?=.*\d).{6,}$"
-                        placeholder="Mínimo 6 caracteres y 1 número"
-                    >
-                </div>
-
-
-                <div class="modal-field">
-                    <label>PIN (4 dígitos)</label>
-                    <input 
-                        type="password"
-                        name="pin"
-                        id="pin"
-                        maxlength="4"
-                        pattern="\d{4}"
-                        placeholder="1234"
-                        required
-                    >
-                </div>
-
-                <button type="submit" class="btn btn--primary btn--lg">
-                    Guardar usuario
+            <div class="modal__footer">
+                <button type="button" class="btn btn--danger"
+                onclick="cerrarModal('modalUsuario')">
+                Cancelar
                 </button>
+
+                <button type="submit" class="btn btn--primary">
+                Guardar usuario
+                </button>
+            </div>
 
             </form>
         </div>
     </div>
 
 
+
     <div id="modalHistorialUsuario" class="modal">
-        <div class="modal-content" style="width:750px; max-width:95vw;">
-            <span class="close" onclick="cerrarHistorialUsuario()">&times;</span>
+        <div class="modal__dialog modal--lg">
 
-            <h2>Historial del usuario</h2>
+            <div class="modal__header">
+            <h2 class="modal__title">Historial del usuario</h2>
+            <button class="modal__close" onclick="cerrarModal('modalHistorialUsuario')">&times;</button>
+            </div>
 
+            <div class="modal__body">
             <table id="tablaHistorialUsuario" class="table table--striped table--hover">
-            <thead>
+                <thead>
                 <tr>
-                <th>Acción</th>
-                <th>Admin</th>
-                <th>Fecha</th>
-                <th>Cambios</th>
+                    <th>Acción</th>
+                    <th>Admin</th>
+                    <th>Fecha</th>
+                    <th>Cambios</th>
                 </tr>
-            </thead>
-            <tbody></tbody>
+                </thead>
+                <tbody></tbody>
             </table>
+            </div>
+
+            <div class="modal__footer">
+            <button class="btn btn--primary"
+                onclick="cerrarModal('modalHistorialUsuario')">
+                Cerrar
+            </button>
+            </div>
+
         </div>
     </div>
+
 
 {% endblock %}
 

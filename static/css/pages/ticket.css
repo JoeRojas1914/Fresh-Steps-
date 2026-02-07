@@ -101,10 +101,6 @@ hr {
   text-transform: uppercase;
 }
 
-.separador-copias {
-  margin: 10px 0;
-  border-top: 2px dashed #000;
-}
 
 @media print {
   @page {

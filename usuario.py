@@ -106,8 +106,8 @@ def registrar_historial_usuario(
     """, (
         id_usuario,
         accion,
-        json.dumps(antes) if antes else None,
-        json.dumps(despues) if despues else None,
+        json.dumps(antes, default=str) if antes else None,
+        json.dumps(despues, default=str) if despues else None,
         admin
     ))
 

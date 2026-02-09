@@ -23,18 +23,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-window.abrirModal = function () {
-    document.getElementById("modal").style.display = "block";
-    document.getElementById("modalTitulo").innerText = "Agregar gasto";
-    document.getElementById("id_gasto").value = "";
-
-    document.querySelector(".modal-form").reset();
-};
-
-window.cerrarModal = function () {
-    document.getElementById("modal").style.display = "none";
-};
-
 window.editarGasto = function (
     id,
     id_negocio,
@@ -45,8 +33,9 @@ window.editarGasto = function (
     tipo_comprobante,
     tipo_pago
 ) {
-    window.abrirModal();
-    document.getElementById("modalTitulo").innerText = "Editar gasto";
+    abrirModal("modalGasto");
+
+    document.getElementById("modalGasto_title").innerText = "Editar gasto";
 
     document.getElementById("id_gasto").value = id;
     document.getElementById("id_negocio").value = id_negocio;
@@ -60,17 +49,14 @@ window.editarGasto = function (
 
 
 
-window.cerrarHistorial = function () {
-    document.getElementById("modalHistorial").style.display = "none";
-};
 
 window.verHistorial = async function (id) {
 
     const modal = document.getElementById("modalHistorial");
-    const tbody = document.querySelector("#tablaHistorial tbody");
+    const tbody = document.getElementById("tablaHistorial");
 
     tbody.innerHTML = "<tr><td colspan='4'>Cargando...</td></tr>";
-    modal.style.display = "block";
+    abrirModal("modalHistorial");
 
     const res = await fetch(`/gastos/${id}/historial`);
     const data = await res.json();

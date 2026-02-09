@@ -47,7 +47,9 @@
 </button>
 
 
-{% call modal("modalCliente", "Agregar cliente", "md") %}
+{% call(section) modal("modalCliente", "Agregar cliente", "md") %}
+
+{% if section == 'body' %}
 <form id="modalClienteForm" method="POST" action="/clientes/guardar" class="modal-form">
   <input type="hidden" name="id_cliente" id="id_cliente">
 
@@ -80,20 +82,27 @@
     <input id="cliente_direccion" type="text" name="direccion">
   </div>
 
-  <div class="modal__footer">
-    <button type="button"
-            class="btn btn--danger btn--sm"
-            onclick="cerrarModal('modalCliente')">
-      Cancelar
-    </button>
-
-    <button type="submit"
-            class="btn btn--primary btn--lg">
-      Guardar cliente
-    </button>
-  </div>
 </form>
+{% endif %}
+
+
+{% if section == 'footer' %}
+<button type="button"
+        class="btn btn--danger btn--sm"
+        onclick="cerrarModal('modalCliente')">
+  Cancelar
+</button>
+
+<button type="submit"
+        form="modalClienteForm"
+        class="btn btn--primary btn--lg">
+  Guardar cliente
+</button>
+{% endif %}
+
 {% endcall %}
+
+
 
 
 <hr>
@@ -168,7 +177,9 @@
 
 
 
-{% call modal("modalHistorialCliente", "Historial del cliente", "lg") %}
+{% call(section) modal("modalHistorialCliente", "Historial del cliente", "lg") %}
+
+{% if section == 'body' %}
 <table id="tablaHistorialCliente"
        class="table table--striped table--hover">
   <thead>
@@ -181,7 +192,10 @@
   </thead>
   <tbody></tbody>
 </table>
+{% endif %}
+
 {% endcall %}
+
 
 
 {% from "components/pagination.html" import pagination %}

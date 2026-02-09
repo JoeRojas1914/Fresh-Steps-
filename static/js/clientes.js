@@ -26,17 +26,21 @@ document.addEventListener("DOMContentLoaded", () => {
 window.editarClienteBtn = function (e, btn) {
   e.stopPropagation();
 
+  const modal = document.getElementById("modalCliente");
+
   abrirModal("modalCliente");
 
-  document.getElementById("modalCliente_title").innerText = "Editar cliente";
-  document.getElementById("id_cliente").value = btn.dataset.id;
+  modal.querySelector(".modal__title").innerText = "Editar cliente";
 
-  document.querySelector("[name=nombre]").value = btn.dataset.nombre;
-  document.querySelector("[name=apellido]").value = btn.dataset.apellido;
-  document.querySelector("[name=correo]").value = btn.dataset.correo || "";
-  document.querySelector("[name=telefono]").value = btn.dataset.telefono;
-  document.querySelector("[name=direccion]").value = btn.dataset.direccion || "";
+  modal.querySelector("#id_cliente").value = btn.dataset.id;
+
+  modal.querySelector("[name=nombre]").value = btn.dataset.nombre;
+  modal.querySelector("[name=apellido]").value = btn.dataset.apellido;
+  modal.querySelector("[name=correo]").value = btn.dataset.correo || "";
+  modal.querySelector("[name=telefono]").value = btn.dataset.telefono;
+  modal.querySelector("[name=direccion]").value = btn.dataset.direccion || "";
 };
+
 
 
 window.cerrarHistorialCliente = function () {

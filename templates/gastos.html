@@ -5,6 +5,7 @@
 {% from "components/alerts.html" import alerts %}
 {% from "components/pagination.html" import pagination %}
 {% from "components/table.html" import table %}
+{% from "components/modal.html" import modal %}
 
 
 <h1>💸 Gastos</h1>
@@ -83,72 +84,88 @@
 </form>
 
 
-<button onclick="abrirModal()" class="btn btn--primary">➕ Agregar gasto</button>
+<button onclick="abrirModal('modalGasto')" class="btn btn--primary">➕ Agregar gasto</button>
 
 
-<div id="modal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="cerrarModal()">&times;</span>
+{% call(section) modal("modalGasto", "Agregar gasto", "md") %}
 
-        <h2 id="modalTitulo">Agregar gasto</h2>
+{% if section == 'body' %}
+<form method="POST" action="/gastos/guardar" class="modal-form" id="formGasto">
+    <input type="hidden" name="id_gasto" id="id_gasto">
 
-        <form method="POST" action="/gastos/guardar" class="modal-form">
-            <input type="hidden" name="id_gasto" id="id_gasto">
-
-            <div class="modal-field">
-                <label for="id_negocio">Negocio</label>
-                <select name="id_negocio" id="id_negocio" required>
-                    <option value="">Seleccione un negocio</option>
-                    {% for n in negocios %}
-                        <option value="{{ n.id_negocio }}">{{ n.nombre }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="modal-field">
-                <label for="gasto_descripcion">Descripción</label>
-                <input id="gasto_descripcion" type="text" name="descripcion" required>
-            </div>
-
-            <div class="modal-field">
-                <label for="gasto_proveedor">Proveedor</label>
-                <input id="gasto_proveedor" type="text" name="proveedor" required>
-            </div>
-
-            <div class="modal-field">
-                <label for="gasto_total">Total</label>
-                <input id="gasto_total" type="number" name="total" step="0.01" min="0" inputmode="decimal" required>
-            </div>
-
-            <div class="modal-field">
-                <label for="gasto_fecha">Fecha de registro</label>
-                <input id="gasto_fecha" type="date" name="fecha_registro">
-            </div>
-
-            <div class="modal-field">
-                <label>Comprobante</label>
-                <select name="tipo_comprobante" id="tipo_comprobante" required>
-                    <option value="ticket">Ticket</option>
-                    <option value="factura">Factura</option>
-                </select>
-            </div>
-
-            <div class="modal-field">
-                <label>Método de pago</label>
-                <select name="tipo_pago" id="tipo_pago" required>
-                    <option value="efectivo">Efectivo</option>
-                    <option value="TDC">Tarjeta de crédito</option>
-                    <option value="transferencia">Transferencia</option>
-                </select>
-            </div>
-
-            <button type="submit"  class="btn btn--primary btn--lg">
-                Guardar gasto
-            </button>
-        </form>
-
+    <div class="modal-field">
+        <label for="id_negocio">Negocio</label>
+        <div class="select-wrapper">
+            <select name="id_negocio" id="id_negocio" required>
+                <option value="">Seleccione un negocio</option>
+                {% for n in negocios %}
+                    <option value="{{ n.id_negocio }}">{{ n.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
     </div>
-</div>
+
+    <div class="modal-field">
+        <label for="gasto_descripcion">Descripción</label>
+        <input id="gasto_descripcion" type="text" name="descripcion" required>
+    </div>
+
+    <div class="modal-field">
+        <label for="gasto_proveedor">Proveedor</label>
+        <input id="gasto_proveedor" type="text" name="proveedor" required>
+    </div>
+
+    <div class="modal-field">
+        <label for="gasto_total">Total</label>
+        <input id="gasto_total" type="number" name="total" step="0.01" min="0" required>
+    </div>
+
+    <div class="modal-field">
+        <label for="gasto_fecha">Fecha de registro</label>
+        <input id="gasto_fecha" type="date" name="fecha_registro">
+    </div>
+
+    <div class="modal-field">
+        <label>Comprobante</label>
+        <div class="select-wrapper">
+            <select name="tipo_comprobante" required>
+                <option value="ticket">Ticket</option>
+                <option value="factura">Factura</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="modal-field">
+        <label>Método de pago</label>
+        <div class="select-wrapper">
+            <select name="tipo_pago" required>
+                <option value="efectivo">Efectivo</option>
+                <option value="TDC">Tarjeta de crédito</option>
+                <option value="transferencia">Transferencia</option>
+            </select>
+        </div>
+    </div>
+
+</form>
+{% endif %}
+
+{% if section == 'footer' %}
+<button type="button"
+        class="btn btn--danger btn--sm"
+        onclick="cerrarModal('modalGasto')">
+    Cancelar
+</button>
+
+<button type="submit"
+        form="formGasto"
+        class="btn btn--primary btn--lg">
+    Guardar gasto
+</button>
+{% endif %}
+
+{% endcall %}
+
+
 
 <hr>
 
@@ -236,25 +253,22 @@
 {% endcall %}
 
 
-<div id="modalHistorial" class="modal">
-  <div class="modal-content" style="width:700px; max-width:95vw;">
-    <span class="close" onclick="cerrarHistorial()">&times;</span>
+{% call(section) modal("modalHistorial", "Historial de cambios", "lg") %}
 
-    <h2>Historial de cambios</h2>
+{% if section == 'body' %}
+    {% call table([
+        "Acción",
+        "Usuario",
+        "Fecha",
+        "Cambios"
+    ]) %}
+    <tbody id="tablaHistorial"></tbody>
+    {% endcall %}
+{% endif %}
 
-    <table id="tablaHistorial" class="table table--striped table--hover">
-      <thead>
-        <tr>
-          <th>Acción</th>
-          <th>Usuario</th>
-          <th>Fecha</th>
-          <th>Cambios</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-</div>
+{% endcall %}
+
+
 
 
 {% from "components/pagination.html" import pagination %}
@@ -274,5 +288,6 @@
 {% endblock %}
 
 {% block scripts %}
+    <script src="{{ url_for('static', filename='js/modal.js') }}"></script>
     <script src="{{ url_for('static', filename='js/gastos.js') }}"></script>
 {% endblock %}

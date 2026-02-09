@@ -1,3 +1,4 @@
+
 .modal {
   display: none;
   position: fixed;
@@ -14,7 +15,6 @@
   display: flex;
 }
 
-
 .modal__dialog {
   background: #ffffff;
   border-radius: 18px;
@@ -25,10 +25,10 @@
   overflow: hidden;
 }
 
-
 .modal--sm { max-width: 380px; }
 .modal--md { max-width: 520px; }
 .modal--lg { max-width: 760px; }
+
 
 
 .modal__header {
@@ -42,7 +42,6 @@
   box-shadow: 0 6px 18px rgba(30, 127, 214, 0.35);
 }
 
-
 .modal__title {
   font-size: 17px;
   font-weight: 700;
@@ -50,7 +49,6 @@
   color: white;
   margin: 0;
 }
-
 
 .modal__close {
   width: 34px;
@@ -73,13 +71,21 @@
 .modal__close:hover {
   background: rgba(255,255,255,.28);
   transform: scale(1.05);
-  color: white;
 }
+
 
 
 .modal__body {
   padding: 22px;
+  padding-bottom: 10px;
 }
+
+.modal__body input,
+.modal__body select,
+.modal__body textarea {
+  box-sizing: border-box;
+}
+
 
 
 .modal__footer {
@@ -92,11 +98,76 @@
 }
 
 
-.modal__body input,
-.modal__body select,
-.modal__body textarea {
-  box-sizing: border-box;
+
+.modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
 }
+
+.modal-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #5b6b88;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+
+
+.modal__body .select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.modal__body .select-wrapper select {
+  width: 100%;
+  padding: 10px 42px 10px 14px; 
+  border-radius: 12px;
+  border: 1px solid #dbe3f0;
+  background: #fff;
+
+  font-size: 14px;
+  font-weight: 500;
+  color: #2c3e50;
+
+  outline: none;
+  cursor: pointer;
+
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  transition: all .2s ease;
+}
+
+.modal__body .select-wrapper select:hover {
+  border-color: #b8c7e6;
+}
+
+.modal__body .select-wrapper select:focus {
+  border-color: #2fa4ff;
+  box-shadow: 0 0 0 3px rgba(47,164,255,.15);
+}
+
+/* flecha */
+.modal__body .select-wrapper::after {
+  content: "▾";
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+
+  font-size: 14px;
+  color: #6b7a99;
+}
+
 
 
 @keyframes fadeIn {

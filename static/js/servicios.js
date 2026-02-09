@@ -23,21 +23,20 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-window.abrirModal = function () {
-    document.getElementById("modal").style.display = "block";
-    document.getElementById("tituloModal").innerText = "Agregar servicio";
+window.abrirNuevoServicio = function () {
+    abrirModal("modalServicio");
+
+    document.getElementById("modalServicio_title").innerText = "Agregar servicio";
     document.getElementById("id_servicio").value = "";
 
     document.querySelector(".modal-form").reset();
 };
 
-window.cerrarModal = function () {
-    document.getElementById("modal").style.display = "none";
-};
 
 window.editarServicio = function (btn) {
-    window.abrirModal();
-    document.getElementById("tituloModal").innerText = "Editar servicio";
+    abrirModal("modalServicio");
+
+    document.getElementById("modalServicio_title").innerText = "Editar servicio";
 
     document.getElementById("id_servicio").value = btn.dataset.id;
     document.getElementById("id_negocio").value = btn.dataset.negocio;
@@ -46,18 +45,13 @@ window.editarServicio = function (btn) {
 };
 
 
-
-window.cerrarHistorialServicio = function () {
-    document.getElementById("modalHistorialServicio").style.display = "none";
-};
-
 window.verHistorialServicio = async function (id) {
 
-    const modal = document.getElementById("modalHistorialServicio");
-    const tbody = document.querySelector("#tablaHistorialServicio tbody");
+    abrirModal("modalHistorialServicio");
+
+    const tbody = document.getElementById("tablaHistorialServicio");
 
     tbody.innerHTML = "<tr><td colspan='4'>Cargando...</td></tr>";
-    modal.style.display = "block";
 
     const res = await fetch(`/servicios/${id}/historial`);
     const data = await res.json();

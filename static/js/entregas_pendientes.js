@@ -1,7 +1,6 @@
 let ventaEntregaActual = null;
 let saldoPendienteActual = 0;
 
-
 document.addEventListener("DOMContentLoaded", () => {
 
     function toggleDetalles(idVenta) {
@@ -20,7 +19,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-
     document.querySelectorAll(".btn-entregar").forEach(btn => {
         btn.addEventListener("click", () => {
 
@@ -32,7 +30,6 @@ document.addEventListener("DOMContentLoaded", () => {
             abrirModalEntrega(idVenta, deuda, pagado, total);
         });
     });
-
 
     const inputBuscador = document.getElementById("buscador-cliente");
     const selectNegocio = document.getElementById("filtro-negocio");
@@ -59,7 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const mostrar = coincideNombre && coincideNegocio;
                 fila.style.display = mostrar ? "" : "none";
 
-                const btnInfo = fila.querySelector(".btn-info");
+                const btnInfo = fila.querySelector(".btn--info");
                 if (btnInfo) {
                     const idVenta = btnInfo.dataset.id;
                     const filaDetalle = document.getElementById(`detalles-${idVenta}`);
@@ -75,13 +72,12 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-
 window.abrirModalEntrega = function (idVenta, deuda, pagado, total) {
 
     ventaEntregaActual = idVenta;
     saldoPendienteActual = deuda;
 
-    document.getElementById("modalEntrega").style.display = "block";
+    abrirModal("modalEntrega");
 
     const bloquePago     = document.getElementById("bloquePago");
     const textoSinDeuda  = document.getElementById("textoSinDeuda");
@@ -100,11 +96,6 @@ window.abrirModalEntrega = function (idVenta, deuda, pagado, total) {
 
         btnConfirmar.onclick = confirmarPagoYEntrega;
     }
-};
-
-window.cerrarModalEntrega = function () {
-    document.getElementById("modalEntrega").style.display = "none";
-    document.getElementById("metodoPagoFinal").value = "";
 };
 
 
@@ -155,7 +146,6 @@ window.confirmarPagoYEntrega = function () {
 };
 
 
-
 window.mostrarFeedback = function (texto, tipo = "success") {
 
     const div = document.createElement("div");
@@ -167,4 +157,18 @@ window.mostrarFeedback = function (texto, tipo = "success") {
     setTimeout(() => {
         div.remove();
     }, 3000);
+};
+
+
+window.cerrarModalEntrega = function () {
+    cerrarModal("modalEntrega");
+
+    const metodo = document.getElementById("metodoPagoFinal");
+    if (metodo) metodo.value = "";
+
+    const texto = document.getElementById("textoSinDeuda");
+    const bloque = document.getElementById("bloquePago");
+
+    if (texto) texto.style.display = "none";
+    if (bloque) bloque.style.display = "none";
 };

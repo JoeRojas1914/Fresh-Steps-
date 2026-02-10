@@ -2,6 +2,7 @@
 {% block content %}
 {% from "macros/badges.html" import badge_negocio %}
 {% from "components/table.html" import table %}
+{% from "components/modal.html" import modal %}
 
 
     <h1>🧾 Entregas pendientes</h1>
@@ -212,43 +213,54 @@
     </div>
     {% endif %}
 
-    <div id="modalEntrega" class="modal" style="display:none;">
-        <div class="modal-content">
+{% call(section) modal("modalEntrega", "Entrega", "sm") %}
 
-            <h2 id="modalTitulo">Entrega</h2>
+  {% if section == 'body' %}
+  
+      <p id="textoSinDeuda" style="display:none;">
+        ✅ Esta venta ya está totalmente pagada.<br>
+        ¿Deseas marcarla como entregada?
+      </p>
 
-            <p id="textoSinDeuda" style="display:none;">
-            ✅ Esta venta ya está totalmente pagada.<br>
-            ¿Deseas marcarla como entregada?
-            </p>
+      <div id="bloquePago" style="display:none;">
+        <p>
+          <b>Saldo pendiente:</b>
+          <span id="montoPendiente"></span>
+        </p>
 
-            <div id="bloquePago" style="display:none;">
-                <p>
-                    <b>Saldo pendiente:</b>
-                    <span id="montoPendiente"></span>
-                </p>
+        <label class="form-label">Método de pago</label>
+        <select id="metodoPagoFinal">
+          <option value="">-- Selecciona --</option>
+          <option value="efectivo">Efectivo</option>
+          <option value="tarjeta">Tarjeta</option>
+          <option value="transferencia">Transferencia</option>
+        </select>
+      </div>
 
-                <label class="form-label">Método de pago</label>
-                <select id="metodoPagoFinal">
-                    <option value="">-- Selecciona --</option>
-                    <option value="efectivo">Efectivo</option>
-                    <option value="tarjeta">Tarjeta</option>
-                    <option value="transferencia">Transferencia</option>
-                </select>
-            </div>
+  {% endif %}
 
-            <div style="margin-top:16px; display:flex; justify-content:flex-end; gap:10px;">
-                <button class="btn btn--danger btn--sm" onclick="cerrarModalEntrega()">Cancelar</button>
-                <button id="btnConfirmarEntrega" class="btn btn--primary btn--lg">Confirmar</button>
 
-            </div>
+  {% if section == 'footer' %}
+  
+      <button class="btn btn--danger btn--sm"
+              onclick="cerrarModal('modalEntrega')">
+        Cancelar
+      </button>
 
-        </div>
-    </div>
+      <button id="btnConfirmarEntrega"
+              class="btn btn--primary btn--lg">
+        Confirmar
+      </button>
+
+  {% endif %}
+
+{% endcall %}
+
 
 {% endblock %}
 
 {% block scripts %}
+    <script src="{{ url_for('static', filename='js/modal.js') }}"></script>
     <script src="{{ url_for('static', filename='js/entregas_pendientes.js') }}"></script>
 {% endblock %}
 

@@ -16,12 +16,22 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("buscarCliente").value = "";
         document.getElementById("listaClientes").innerHTML = "";
 
+        
         validarFormulario();
     });
 
-    document.getElementById("btnNuevoCliente").addEventListener("click", () => {
-        document.getElementById("modalCliente").style.display = "block";
+    document.addEventListener("click", function(e){
+
+        if(e.target.closest("#btnAgregarArticulo")) return;
+
+        const abierto = document.querySelector(".articulo-item.abierto");
+        if(!abierto) return;
+
+        if(abierto.contains(e.target)) return;
+
+        cerrarArticulo(abierto);
     });
+
 
     document.getElementById("formNuevoCliente").addEventListener("submit", crearCliente);
 
@@ -62,13 +72,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("clienteBox").style.display = "none";
     document.getElementById("busquedaCliente").style.display = "block";
-
-    window.addEventListener("click", function(event) {
-        const modal = document.getElementById("modalCliente");
-        if (event.target === modal) {
-            cerrarModalCliente();
-        }
-    });
 
     bloquearFechaMinima();
     togglePrepago();
@@ -122,9 +125,7 @@ function seleccionarCliente(cliente) {
 }
 
 function cerrarModalCliente() {
-    const modal = document.getElementById("modalCliente");
-    modal.style.display = "none";
-
+    cerrarModal("modalCliente");
     document.getElementById("formNuevoCliente").reset();
 }
 
@@ -221,24 +222,47 @@ function agregarArticulo() {
     const div = document.createElement("div");
     div.className = "articulo-item";
     div.innerHTML = `
-        <div class="zapato-header">
-            <div class="zapato-titulo">🧾 Artículo ${index + 1}</div>
+    <div class="zapato-header">
+        <div class="zapato-titulo">🧾 Artículo ${index + 1}</div>
+
+        <div style="display:flex; gap:8px;">
             <button type="button"
                     class="btn btn--danger btn--sm"
                     onclick="eliminarArticulo(this)">
                 ✕
             </button>
         </div>
+    </div>
 
+    <div class="articulo-resumen" style="display:none;"></div>
+
+    <div class="articulo-detalle">
         <input type="hidden" name="articulos[${index}][tipo_articulo]" value="${tipoArticulo}">
-
         ${crearCamposArticulo(index, tipoArticulo)}
-    `;
+    </div>
+`;
+
 
     document.getElementById("articulosContainer").appendChild(div);
+    const resumenDiv = div.querySelector(".articulo-resumen");
+    resumenDiv.addEventListener("click", () => abrirArticuloDesdeResumen(resumenDiv));
+
     contadorArticulos++;
 
+    document.querySelectorAll(".articulo-item.abierto").forEach(a=>{
+        cerrarArticulo(a);
+    });
+
+    div.classList.add("abierto");
+
+    const detalle = div.querySelector(".articulo-detalle");
+    const resumen = div.querySelector(".articulo-resumen");
+
+    if(detalle) detalle.style.display = "block";
+    if(resumen) resumen.style.display = "none";
+
     actualizarOpcionesServiciosDelArticulo(index);
+    validarArticuloVisual(div);
     validarFormulario();
     actualizarTotal();
 }
@@ -278,7 +302,7 @@ function inputConLabel(label, name, placeholder = "", required = false, type = "
                 placeholder="${placeholder}" 
                 ${required ? "required" : ""} 
                 ${extra}
-                oninput="validarFormulario(); actualizarTotal()"
+                oninput="validarFormulario(); actualizarTotal(); validarArticuloVisual(this.closest('.articulo-item'))"
             >
         </div>
     `;
@@ -370,7 +394,7 @@ function crearFilaServicio(indexArticulo, indexServicio, opcionesHTML) {
              style="display:flex; gap:10px; align-items:center; margin-bottom:8px;">
 
             <select name="articulos[${indexArticulo}][servicios][${indexServicio}][id_servicio]"
-                    onchange="onChangeServicio(this, ${indexArticulo}); validarFormulario(); actualizarTotal()">
+                    onchange="onChangeServicio(this, ${indexArticulo}); validarFormulario(); actualizarTotal(); validarArticuloVisual(this.closest('.articulo-item'))">
                 ${opcionesHTML}
             </select>
 
@@ -810,4 +834,170 @@ function obtenerMotivosBloqueo() {
     }
 
     return motivos;
+}
+
+function toggleArticulo(btn){
+    const item = btn.closest(".articulo-item");
+    const detalle = item.querySelector(".articulo-detalle");
+    const resumen = item.querySelector(".articulo-resumen");
+
+    const abierto = detalle.style.display !== "none";
+
+    if(abierto){
+        generarResumenArticulo(item);
+        detalle.style.display = "none";
+        resumen.style.display = "block";
+        btn.innerText = "Editar";
+        item.classList.remove("abierto");
+    }else{
+        document.querySelectorAll(".articulo-item.abierto").forEach(a=>{
+            if(a !== item) cerrarArticulo(a);
+        });
+        detalle.style.display = "block";
+        resumen.style.display = "none";
+        btn.innerText = "Minimizar";
+        item.classList.add("abierto");
+    }
+}
+
+
+
+function generarResumenArticulo(item){
+    const resumen = item.querySelector(".articulo-resumen");
+
+    const tipo = item.querySelector("input[name$='[tipo]']")?.value || "";
+    const marca = item.querySelector("input[name$='[marca]']")?.value || "";
+    const color = item.querySelector("input[name$='[color_base]']")?.value || "";
+
+    const precio = calcularTotalArticulo(item);
+
+    resumen.innerHTML = `
+        <div class="resumen-linea">
+            <strong>${tipo} ${marca}</strong>
+            <span>${color}</span>
+            <strong>$${precio.toFixed(2)}</strong>
+        </div>
+    `;
+}
+
+
+function calcularTotalArticulo(item){
+    const negocio = document.getElementById("id_negocio").value;
+    let total = 0;
+
+    if(negocio === "1"){
+        item.querySelectorAll(".servicio-item").forEach(fila=>{
+            const sel = fila.querySelector("select");
+            const precio = fila.querySelector(".precio-aplicado");
+
+            if(sel && sel.value){
+                total += parseFloat(precio?.value || 0);
+            }
+        });
+    }
+
+    if(negocio === "2"){
+        const cantidad = parseFloat(
+            item.querySelector("input[name$='[cantidad]']")?.value || 1
+        );
+
+        item.querySelectorAll(".servicio-item").forEach(fila=>{
+            const sel = fila.querySelector("select");
+            const precio = fila.querySelector(".precio-aplicado");
+
+            if(sel && sel.value){
+                total += cantidad * parseFloat(precio?.value || 0);
+            }
+        });
+    }
+
+    if(negocio === "3"){
+        const cantidad = parseFloat(
+            item.querySelector("input[name$='[cantidad]']")?.value || 0
+        );
+        const precio = parseFloat(
+            item.querySelector("input[name$='[precio_unitario]']")?.value || 0
+        );
+
+        total = cantidad * precio;
+    }
+
+    return total;
+}
+
+
+
+function cerrarArticulo(item){
+    const detalle = item.querySelector(".articulo-detalle");
+    const resumen = item.querySelector(".articulo-resumen");
+
+    generarResumenArticulo(item);
+    detalle.style.display = "none";
+    resumen.style.display = "block";
+
+    item.classList.remove("abierto");
+    validarArticuloVisual(item);
+}
+
+
+function articuloCompleto(item){
+    const negocio = document.getElementById("id_negocio").value;
+
+    const campos = item.querySelectorAll("input[required], select[required]");
+
+    for(const c of campos){
+        if(!c.value || c.value.trim() === ""){
+            return false;
+        }
+    }
+
+    if(negocio === "1" || negocio === "2"){
+        const selects = item.querySelectorAll(".servicio-item select");
+
+        let cantidadSeleccionados = 0;
+        let hayVacio = false;
+
+        selects.forEach(sel=>{
+            if(sel.value && sel.value.trim() !== ""){
+                cantidadSeleccionados++;
+            }else{
+                hayVacio = true;
+            }
+        });
+
+        if(cantidadSeleccionados === 0 || hayVacio){
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+function abrirArticuloDesdeResumen(resumenDiv){
+    const item = resumenDiv.closest(".articulo-item");
+
+    document.querySelectorAll(".articulo-item.abierto").forEach(a=>{
+        if(a !== item) cerrarArticulo(a);
+    });
+
+    const detalle = item.querySelector(".articulo-detalle");
+    const resumen = item.querySelector(".articulo-resumen");
+
+    detalle.style.display = "block";
+    resumen.style.display = "none";
+
+    item.classList.add("abierto");
+}
+
+function validarArticuloVisual(item){
+    const completo = articuloCompleto(item);
+
+    item.classList.remove("completo", "incompleto");
+
+    if(completo){
+        item.classList.add("completo");
+    }else{
+        item.classList.add("incompleto");
+    }
 }

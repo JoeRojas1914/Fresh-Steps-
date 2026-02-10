@@ -5,241 +5,262 @@
 {% endblock %}
 
 {% block content %}
+
+{% from "components/modal.html" import modal %}
+
+
 <h1 id="tituloNuevaVenta">🧾 Nueva venta</h1>
 
 
-<div id="modalCliente" class="modal" style="display:none;">
-    <div class="modal-content">
-        <span class="close" onclick="cerrarModalCliente()">&times;</span>
-        <h2>Nuevo cliente</h2>
+{% call(section) modal("modalCliente", "Nuevo cliente", "md") %}
 
-        <div id="errorClienteNuevo" 
-            style="display:none; color:#b00020; background:#ffe5e5; 
-                    padding:8px 12px; border-radius:6px; margin-bottom:10px; font-size:0.9em;">
-        </div>
+{% if section == 'body' %}
+<form id="formNuevoCliente" class="modal-form">
 
+    <div id="errorClienteNuevo" class="error-msg" style="display:none;"></div>
 
-        <form id="formNuevoCliente" class="modal-form">
-
-            <div class="modal-field">
-                <label for="cliente_nombre">Nombre</label>
-                <input id="cliente_nombre" type="text" name="nombre" required>
-            </div>
-
-            <div class="modal-field">
-                <label for="cliente_apellido">Apellido</label>
-                <input id="cliente_apellido" type="text" name="apellido" required>
-            </div>
-
-            <div class="modal-field">
-                <label for="cliente_telefono">Teléfono</label>
-                <input id="cliente_telefono" type="text" name="telefono" required pattern="[0-9]{10}" title="Debe contener 10 dígitos">
-            </div>
-
-            <div class="modal-field">
-                <label for="cliente_correo">Correo (opcional)</label>
-                <input id="cliente_correo" type="email" name="correo">
-            </div>
-
-            <div class="modal-field">
-                <label for="cliente_cp">Código postal (opcional)</label>
-                <input id="cliente_cp" type="text" name="codigo_postal">
-            </div>
-
-            <button type="submit" class="btn btn--primary btn--lg">
-                Guardar cliente
-            </button>
-
-        </form>
-
-    </div>
-</div>
-
-<form method="POST" action="/ventas/guardar" id="formVenta">
-    <input type="hidden" name="id_cliente" id="id_cliente">
-
-    <div class="venta-section">
-        <div class="section-header">
-            <h2>Cliente</h2>
-        </div>
-        <div id="busquedaCliente">
-            <div class="search-form">
-                <input
-                    type="text"
-                    id="buscarCliente"
-                    placeholder="Nombre del cliente"
-                    autocomplete="off"
-                >
-                <button type="button" class="btn btn--primary btn--sm" id="btnNuevoCliente">
-                    ➕ Nuevo cliente
-                </button>
-
-            </div>
-            <div class="results-list" id="listaClientes"></div>
-        </div>
-        <div id="clienteBox" style="display:none;">
-            <strong id="clienteSeleccionado"></strong>
-            <button type="button" class="btn btn--primary btn--sm" id="btnCambiarCliente">
-                Cambiar cliente
-            </button>
-        </div>
+    <div class="modal-field">
+        <label for="cliente_nombre">Nombre</label>
+        <input id="cliente_nombre" type="text" name="nombre" required>
     </div>
 
-    <hr>
-
-    <div class="venta-section">
-        <div class="section-header">
-            <h2>Negocio y fecha</h2>
-        </div>
-        <div class="form-group form-row">
-            <div class="form-item">
-                <label class="form-label">Negocio</label>
-                <select name="id_negocio" id="id_negocio" onchange="seleccionarNegocio()">
-                    <option value="">-- Selecciona --</option>
-                    <option value="1">Fresh Steps</option>
-                    <option value="2">Confección</option>
-                    <option value="3">Maquila</option>
-                </select>
-
-                <div id="errorNegocio" style="color:red; font-size:0.9em; display:none;">
-                    No puedes cambiar el negocio si ya agregaste artículos. Borra todos primero.
-                </div>
-            </div>
-
-            <div class="form-item">
-                <label class="form-label">Fecha y hora estimada</label>
-
-                <div style="display:flex; gap:10px;">
-                    <input
-                        type="date"
-                        id="fecha_estimada_fecha"
-                        onchange="validarFormulario(); actualizarFechaEstimadaCompleta(); "
-                        style="flex:1;"
-                    >
-
-                    <input
-                        type="time"
-                        id="fecha_estimada_hora"
-                        onchange="validarFormulario(); actualizarFechaEstimadaCompleta(); "
-                        style="width:120px;"
-                    >
-                </div>
-
-                <input type="hidden" name="fecha_estimada" id="fecha_estimada">
-
-
-                <div id="errorFecha" style="color:red; font-size:0.9em; display:none;">
-                    La fecha estimada no puede ser menor a hoy.
-                </div>
-            </div>
-        </div>
+    <div class="modal-field">
+        <label for="cliente_apellido">Apellido</label>
+        <input id="cliente_apellido" type="text" name="apellido" required>
     </div>
 
-
-    <hr>
-
-    <div class="venta-section">    
-        <div class="section-header">
-            <h2>Artículos</h2>
-        </div>
-        <div id="articulosContainer"></div>
-        <button type="button"
-        class="btn btn--primary btn--sm"
-        onclick="agregarArticulo()">
-            ➕ Agregar artículo
-        </button>
-
+    <div class="modal-field">
+        <label for="cliente_telefono">Teléfono</label>
+        <input id="cliente_telefono"
+               type="text"
+               name="telefono"
+               required
+               pattern="[0-9]{10}">
     </div>
 
-    <hr>
-
-    <div class="venta-section">
-        <div class="section-header">
-            <h2>Pago y descuentos</h2>
-        </div>
-        <div class="pago-grid">
-
-    <!-- FILA PREPAGO -->
-    <div class="pago-row">
-        <div class="form-item">
-            <label class="form-label">¿Prepago?</label>
-            <select name="prepago" id="prepago"
-                    onchange="togglePrepago(); validarFormulario(); actualizarTotal()">
-                    <option value="no" selected>No</option>
-                <option value="si">Sí</option>
-            </select>
-        </div>
-
-        <div class="form-item" id="tipoPagoPrepagoContainer" style="display:none;">
-            <label class="form-label">Tipo de pago</label>
-            <select name="tipo_pago" id="tipo_pago"
-                    onchange="validarFormulario(); actualizarTotal()">
-                <option value="">-- Selecciona --</option>
-                <option value="efectivo">Efectivo</option>
-                <option value="tarjeta">Tarjeta</option>
-                <option value="transferencia">Transferencia</option>
-            </select>
-        </div>
-
-        <div class="form-item" id="montoPrepagoContainer" style="display:none;">
-            <label class="form-label">Monto prepago</label>
-            <input type="number" min="0" step="0.01"
-                   name="monto_prepago" id="monto_prepago"
-                   placeholder="0"
-                   oninput="validarFormulario(); actualizarTotal()">
-            <div id="errorPrepago" class="error-msg" style="display:none;">
-                El prepago no puede ser mayor al total ni menor a 0.
-            </div>
-        </div>
+    <div class="modal-field">
+        <label for="cliente_correo">Correo (opcional)</label>
+        <input id="cliente_correo" type="email" name="correo">
     </div>
 
-    <div class="pago-row">
-        <div class="form-item">
-            <label class="form-label">¿Aplicar descuento?</label>
-                <select name="aplica_descuento" id="aplica_descuento"
-                        onchange="toggleDescuento(); actualizarTotal()">
-                    <option value="no" selected>No</option>
-                    <option value="si">Sí</option>
-                </select>
-        </div>
-
-        <div class="form-item" id="cantidadDescuentoContainer" style="display:none;">
-            <label class="form-label">Descuento ($)</label>
-            <input type="number" min="0" step="0.01"
-                   name="cantidad_descuento" id="cantidad_descuento"
-                   placeholder="0"
-                   oninput="validarFormulario(); actualizarTotal()">
-            <div id="errorDescuento" class="error-msg" style="display:none;">
-                El descuento no puede ser mayor al total.
-            </div>
-
-        </div>
-    </div>
-
-</div>
-
-    </div>
-
-    <hr>
-
-    <div class="form-group form-row total-row">
-        <div id="totalVenta" class="total-amount">
-            Total: $0.00
-        </div>
-
-        <div style="margin-left:auto; text-align:right;">
-            <button type="submit" class="btn btn--primary btn--lg" id="btnCrear" disabled>
-                Crear recibo
-            </button>
-
-            <div id="mensajeBloqueo" class="mensaje-bloqueo"></div>
-
-        </div>
+    <div class="modal-field">
+        <label for="cliente_cp">Código postal (opcional)</label>
+        <input id="cliente_cp" type="text" name="codigo_postal">
     </div>
 
 </form>
+{% endif %}
+
+
+{% if section == 'footer' %}
+<button type="button"
+        class="btn btn--danger btn--sm"
+        onclick="cerrarModal('modalCliente')">
+    Cancelar
+</button>
+
+<button type="submit"
+        form="formNuevoCliente"
+        class="btn btn--primary btn--lg">
+    Guardar cliente
+</button>
+{% endif %}
+
+{% endcall %}
+
+
+    <form method="POST" action="/ventas/guardar" id="formVenta" class="venta-layout">
+        <input type="hidden" name="id_cliente" id="id_cliente">
+
+        <div class="venta-main">
+            <div class="venta-section">
+                <div class="section-header">
+                    <h2>Cliente</h2>
+                </div>
+                <div id="busquedaCliente">
+                    <div class="search-form">
+                        <input
+                            type="text"
+                            id="buscarCliente"
+                            placeholder="Nombre del cliente"
+                            autocomplete="off"
+                        >
+                        <button type="button"
+                                class="btn btn--primary btn--sm"
+                                onclick="abrirModal('modalCliente')">
+                            ➕ Nuevo cliente
+                        </button>
+
+
+                    </div>
+                    <div class="results-list" id="listaClientes"></div>
+                </div>
+                <div id="clienteBox" style="display:none;">
+                    <strong id="clienteSeleccionado"></strong>
+                    <button type="button" class="btn btn--primary btn--sm" id="btnCambiarCliente">
+                        Cambiar cliente
+                    </button>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="venta-section">    
+                <div class="section-header">
+                    <h2>Artículos</h2>
+                </div>
+                <div id="articulosContainer"></div>
+                <button type="button"
+                id="btnAgregarArticulo"
+                class="btn btn--primary btn--sm"
+                onclick="agregarArticulo()">
+                    ➕ Agregar artículo
+                </button>
+
+            </div>
+        
+            <hr>
+        </div>
+
+        <div class="venta-side">
+            <div class="venta-side-content">
+                <div class="venta-section">
+                    <div class="section-header">
+                        <h2>Negocio y fecha</h2>
+                    </div>
+                    <div class="form-group form-row">
+                        <div class="form-item">
+                            <label class="form-label">Negocio</label>
+                            <select name="id_negocio" id="id_negocio" onchange="seleccionarNegocio()">
+                                <option value="">-- Selecciona --</option>
+                                <option value="1">Fresh Steps</option>
+                                <option value="2">Confección</option>
+                                <option value="3">Maquila</option>
+                            </select>
+
+                            <div id="errorNegocio" style="color:red; font-size:0.9em; display:none;">
+                                No puedes cambiar el negocio si ya agregaste artículos. Borra todos primero.
+                            </div>
+                        </div>
+
+                        <div class="form-item">
+                            <label class="form-label">Fecha y hora estimada</label>
+
+                            <div style="display:flex; gap:10px;">
+                                <input
+                                    type="date"
+                                    id="fecha_estimada_fecha"
+                                    onchange="validarFormulario(); actualizarFechaEstimadaCompleta(); "
+                                    style="flex:1;"
+                                >
+
+                                <input
+                                    type="time"
+                                    id="fecha_estimada_hora"
+                                    onchange="validarFormulario(); actualizarFechaEstimadaCompleta(); "
+                                    style="width:120px;"
+                                >
+                            </div>
+
+                            <input type="hidden" name="fecha_estimada" id="fecha_estimada">
+
+
+                            <div id="errorFecha" style="color:red; font-size:0.9em; display:none;">
+                                La fecha estimada no puede ser menor a hoy.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="venta-section">
+                <div class="section-header">
+                    <h2>Pago y descuentos</h2>
+                </div>
+                <div class="pago-grid">
+
+            <!-- FILA PREPAGO -->
+            <div class="pago-row">
+                <div class="form-item">
+                    <label class="form-label">¿Prepago?</label>
+                    <select name="prepago" id="prepago"
+                            onchange="togglePrepago(); validarFormulario(); actualizarTotal()">
+                            <option value="no" selected>No</option>
+                        <option value="si">Sí</option>
+                    </select>
+                </div>
+
+                <div class="form-item" id="tipoPagoPrepagoContainer" style="display:none;">
+                    <label class="form-label">Tipo de pago</label>
+                    <select name="tipo_pago" id="tipo_pago"
+                            onchange="validarFormulario(); actualizarTotal()">
+                        <option value="">-- Selecciona --</option>
+                        <option value="efectivo">Efectivo</option>
+                        <option value="tarjeta">Tarjeta</option>
+                        <option value="transferencia">Transferencia</option>
+                    </select>
+                </div>
+
+                <div class="form-item" id="montoPrepagoContainer" style="display:none;">
+                    <label class="form-label">Monto prepago</label>
+                    <input type="number" min="0" step="0.01"
+                        name="monto_prepago" id="monto_prepago"
+                        placeholder="0"
+                        oninput="validarFormulario(); actualizarTotal()">
+                    <div id="errorPrepago" class="error-msg" style="display:none;">
+                        El prepago no puede ser mayor al total ni menor a 0.
+                    </div>
+                </div>
+            </div>
+
+            <div class="pago-row">
+                <div class="form-item">
+                    <label class="form-label">¿Aplicar descuento?</label>
+                        <select name="aplica_descuento" id="aplica_descuento"
+                                onchange="toggleDescuento(); actualizarTotal()">
+                            <option value="no" selected>No</option>
+                            <option value="si">Sí</option>
+                        </select>
+                </div>
+
+                <div class="form-item" id="cantidadDescuentoContainer" style="display:none;">
+                    <label class="form-label">Descuento ($)</label>
+                    <input type="number" min="0" step="0.01"
+                        name="cantidad_descuento" id="cantidad_descuento"
+                        placeholder="0"
+                        oninput="validarFormulario(); actualizarTotal()">
+                    <div id="errorDescuento" class="error-msg" style="display:none;">
+                        El descuento no puede ser mayor al total.
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+                </div>
+            </div>
+
+            <div class="venta-side-footer">
+                <div id="totalVenta" class="total-amount">
+                    Total: $0.00
+                </div>
+
+                <div>
+                    <button type="submit" class="btn btn--primary btn--lg" id="btnCrear" disabled>
+                        Crear recibo
+                    </button>
+
+                    <div id="mensajeBloqueo" class="mensaje-bloqueo"></div>
+
+                </div>
+            </div>
+        </div>
+
+    </form>
+
 
 {% block scripts %}
+    <script src="{{ url_for('static', filename='js/modal.js') }}"></script>
     <script src="{{ url_for('static', filename='js/ventas_crear.js') }}"></script>
 {% endblock %}
 

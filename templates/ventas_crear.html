@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/ventas_crear.css') }}">
+{% endblock %}
+
 {% block content %}
 <h1 id="tituloNuevaVenta">🧾 Nueva venta</h1>
 

@@ -13,6 +13,8 @@ RUTAS_CAJA = {
     "ventas.ventas",
     "ventas.ventas_listas",
     "ventas.entregar_venta",
+    "ventas.ventas_pendientes",
+    "ventas.marcar_lista",
     "ventas.venta_ticket",
     "ventas.registrar_pago_final",
 

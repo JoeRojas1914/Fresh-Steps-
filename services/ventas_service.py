@@ -3,7 +3,8 @@ from datetime import date
 from ventas import (
     marcar_entregada,
     obtener_ventas_listas,
-    obtener_detalles_venta
+    obtener_detalles_venta,
+    obtener_entregas_pendientes
 )
 
 from pagos import (
@@ -36,6 +37,23 @@ def listar_ventas_listas_service(id_negocio=None):
         v["tiene_pagos"] = total_pagado > 0
         v["esta_pagada"] = v["saldo_pendiente"] == 0
 
+        ventas_con_detalles.append(v)
+
+    return {
+        "ventas": ventas_con_detalles,
+        "negocios": negocios,
+        "hoy": date.today()
+    }
+
+
+def listar_entregas_pendientes_service(id_negocio=None):
+    ventas = obtener_entregas_pendientes(id_negocio)
+    negocios = obtener_negocios()
+
+    ventas_con_detalles = []
+
+    for v in ventas:
+        v["detalles"] = obtener_detalles_venta(v["id_venta"])
         ventas_con_detalles.append(v)
 
     return {

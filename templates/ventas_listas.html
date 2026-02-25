@@ -5,7 +5,7 @@
 {% from "components/modal.html" import modal %}
 
 
-    <h1>🧾 Entregas listas</h1>
+    <h1>🧾 Entregas procesadas</h1>
 
     {% if ventas %}
     <div style="margin-bottom: 20px; display:flex; gap:10px; align-items:center;">
@@ -263,4 +263,3 @@
     <script src="{{ url_for('static', filename='js/modal.js') }}"></script>
     <script src="{{ url_for('static', filename='js/entregas_listas.js') }}"></script>
 {% endblock %}
-

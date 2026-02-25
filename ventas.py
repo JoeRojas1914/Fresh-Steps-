@@ -242,13 +242,14 @@ def contar_entregas_listas(id_negocio=None):
     params = []
 
     if id_negocio is not None:
-        filtros = "AND id_negocio = %s"
+        filtros = " AND id_negocio = %s"
         params.append(id_negocio)
 
     cursor.execute(f"""
         SELECT COUNT(*)
         FROM venta
-        WHERE fecha_entrega IS NULL
+        WHERE fecha_lista IS NOT NULL
+          AND fecha_entrega IS NULL
         {filtros}
     """, params)
 
@@ -408,6 +409,7 @@ def obtener_ventas_listas(id_negocio=None):
             v.id_venta,
             v.fecha_recibo,
             v.fecha_estimada,
+            v.fecha_lista,
             v.total,
             c.nombre,
             c.apellido,
@@ -416,7 +418,8 @@ def obtener_ventas_listas(id_negocio=None):
         FROM venta v
         JOIN cliente c ON c.id_cliente = v.id_cliente
         JOIN negocio n ON n.id_negocio = v.id_negocio
-        WHERE v.fecha_entrega IS NULL
+        WHERE v.fecha_lista IS NOT NULL
+          AND v.fecha_entrega IS NULL
     """
 
     params = []
@@ -425,7 +428,7 @@ def obtener_ventas_listas(id_negocio=None):
         query += " AND v.id_negocio = %s"
         params.append(id_negocio)
 
-    query += " ORDER BY v.fecha_estimada ASC"
+    query += " ORDER BY v.fecha_lista ASC"
 
     cursor.execute(query, params)
     ventas = cursor.fetchall()
@@ -534,3 +537,91 @@ def obtener_ventas_cliente(id_cliente, id_negocio, fecha_inicio, fecha_fin, limi
     cursor.close()
     conn.close()
     return data
+
+
+def obtener_entregas_pendientes(id_negocio=None):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    query = """
+        SELECT
+            v.id_venta,
+            v.fecha_recibo,
+            v.fecha_estimada,
+            v.total,
+            c.nombre,
+            c.apellido,
+            c.telefono,
+            n.nombre AS negocio
+        FROM venta v
+        JOIN cliente c ON c.id_cliente = v.id_cliente
+        JOIN negocio n ON n.id_negocio = v.id_negocio
+        WHERE v.fecha_lista IS NULL
+          AND v.fecha_entrega IS NULL
+    """
+
+    params = []
+
+    if id_negocio:
+        query += " AND v.id_negocio = %s"
+        params.append(id_negocio)
+
+    query += " ORDER BY v.fecha_estimada ASC"
+
+    cursor.execute(query, params)
+    ventas = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+    return ventas
+
+
+def contar_entregas_pendientes(id_negocio=None):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    filtros = ""
+    params = []
+
+    if id_negocio is not None:
+        filtros = " AND id_negocio = %s"
+        params.append(id_negocio)
+
+    cursor.execute(f"""
+        SELECT COUNT(*)
+        FROM venta
+        WHERE fecha_lista IS NULL
+          AND fecha_entrega IS NULL
+        {filtros}
+    """, params)
+
+    total = cursor.fetchone()[0]
+    cursor.close()
+    conn.close()
+    return total
+
+
+def marcar_como_lista(id_venta):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            UPDATE venta
+            SET fecha_lista = NOW()
+            WHERE id_venta = %s
+              AND fecha_lista IS NULL
+              AND fecha_entrega IS NULL
+        """, (id_venta,))
+
+        conn.commit()
+
+        return cursor.rowcount > 0
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        cursor.close()
+        conn.close()

@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, jsonify, session, request
 from datetime import date
 
-from services.ventas_service import listar_ventas_listas_service, registrar_pago_final_service
+from services.ventas_service import listar_ventas_listas_service, registrar_pago_final_service, listar_entregas_pendientes_service
 from ventas import (
     marcar_entregada,
     obtener_venta,
@@ -62,6 +62,47 @@ def ventas_listas():
         **data
     )
 
+
+@ventas_bp.route("/ventas/pendientes")
+def ventas_pendientes():
+    try:
+        id_negocio = request.args.get("id_negocio", type=int)
+
+        data = listar_entregas_pendientes_service(id_negocio)
+
+        print("DATA:", data)
+
+        return render_template(
+            "ventas_pendientes.html",
+            **data
+        )
+
+    except Exception as e:
+        print("ERROR EN ventas_pendientes:", e)
+        return str(e), 500
+
+
+@ventas_bp.route("/ventas/marcar-lista/<int:id_venta>", methods=["POST"])
+def marcar_lista(id_venta):
+    from ventas import marcar_como_lista
+
+    try:
+        if marcar_como_lista(id_venta):
+            return jsonify({
+                "ok": True,
+                "message": "Venta marcada como lista correctamente"
+            })
+        else:
+            return jsonify({
+                "ok": False,
+                "error": "La venta ya está lista o fue entregada"
+            })
+    except Exception as e:
+        return jsonify({
+            "ok": False,
+            "error": str(e)
+        }), 500
+    
 
 @ventas_bp.route("/ventas/pago-final", methods=["POST"])
 def registrar_pago_final():

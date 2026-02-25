@@ -3,6 +3,12 @@ let saldoPendienteActual = 0;
 
 document.addEventListener("DOMContentLoaded", () => {
 
+    //     activarFiltroTabla({
+    //     tablaSelector: "table",
+    //     columnaCliente: 2,
+    //     columnaNegocio: 1
+    // });
+
     function toggleDetalles(idVenta) {
         const fila = document.getElementById(`detalles-${idVenta}`);
         if (!fila) return;
@@ -30,44 +36,6 @@ document.addEventListener("DOMContentLoaded", () => {
             abrirModalEntrega(idVenta, deuda, pagado, total);
         });
     });
-
-    const inputBuscador = document.getElementById("buscador-cliente");
-    const selectNegocio = document.getElementById("filtro-negocio");
-
-    if (inputBuscador && selectNegocio) {
-
-        function aplicarFiltros() {
-            const filtroNombre  = inputBuscador.value.toLowerCase();
-            const filtroNegocio = selectNegocio.value.toLowerCase();
-
-            const filas = document.querySelectorAll("#tabla-ventas tbody tr");
-
-            filas.forEach(fila => {
-
-                if (fila.classList.contains("detalles-venta")) return;
-
-                const nombreCliente = fila.cells[2].textContent.toLowerCase();
-                const negocio       = fila.cells[1].textContent.toLowerCase();
-
-                const coincideNombre  = nombreCliente.includes(filtroNombre);
-                const coincideNegocio =
-                    filtroNegocio === "" || negocio.includes(filtroNegocio);
-
-                const mostrar = coincideNombre && coincideNegocio;
-                fila.style.display = mostrar ? "" : "none";
-
-                const btnInfo = fila.querySelector(".btn--info");
-                if (btnInfo) {
-                    const idVenta = btnInfo.dataset.id;
-                    const filaDetalle = document.getElementById(`detalles-${idVenta}`);
-                    if (filaDetalle) filaDetalle.style.display = "none";
-                }
-            });
-        }
-
-        inputBuscador.addEventListener("keyup", aplicarFiltros);
-        selectNegocio.addEventListener("change", aplicarFiltros);
-    }
 
 });
 

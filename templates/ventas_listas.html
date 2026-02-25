@@ -29,6 +29,7 @@
 
     <div id="toast-container"></div>
 
+    <div id="tabla-ventas">
     {% call table([
     "Recibo",
     "Negocio",
@@ -54,7 +55,7 @@
         {% set pagado = v.total_pagado | float(0) %}
         {% set deuda = v.saldo_pendiente | float(0) %}
 
-    <tr class="{% if v.fecha_estimada.date() < hoy %}entrega-atrasada{% elif v.fecha_estimada.date() == hoy %}entrega-hoy{% endif %}">
+    <tr>
         <td>#{{ v.id_venta }}</td>
         <td>{{ badge_negocio(v.negocio) }}</td>
         <td>{{ v.nombre }} {{ v.apellido }}</td>
@@ -75,12 +76,6 @@
         <td>
             {{ v.fecha_estimada.day }} {{ meses[v.fecha_estimada.month] }}
             {{ "%02d:%02d"|format(v.fecha_estimada.hour, v.fecha_estimada.minute) }}
-
-            {% if v.fecha_estimada.date() < hoy %}
-                <span class="badge-atrasado">ATRASADO</span>
-            {% elif v.fecha_estimada.date() == hoy %}
-                <span class="badge-hoy">HOY</span>
-            {% endif %}
         </td>
 
         <td>${{ total | round(2) }}</td>
@@ -196,6 +191,7 @@
 {% endfor %}
 
 {% endcall %}
+</div>
 
 
     {% else %}
@@ -261,5 +257,6 @@
 
 {% block scripts %}
     <script src="{{ url_for('static', filename='js/modal.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/filtro_ventas.js') }}"></script>
     <script src="{{ url_for('static', filename='js/entregas_listas.js') }}"></script>
 {% endblock %}

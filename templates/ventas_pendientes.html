@@ -29,160 +29,159 @@
 
     <div id="toast-container"></div>
 
-    {% call table([
-    "Recibo",
-    "Negocio",
-    "Cliente",
-    "Teléfono",
-    "Fecha Recibo",
-    "Fecha estimada",
-    "Total",
-    "Detalles",
-    "Acción"
-    ]) %}
+    <div id="tabla-ventas"></div>
+        {% call table([
+        "Recibo",
+        "Negocio",
+        "Cliente",
+        "Teléfono",
+        "Fecha Recibo",
+        "Fecha estimada",
+        "Total",
+        "Detalles",
+        "Acción"
+        ]) %}
 
-    {% set meses = {
-        1:'enero', 2:'febrero', 3:'marzo', 4:'abril',
-        5:'mayo', 6:'junio', 7:'julio', 8:'agosto',
-        9:'septiembre', 10:'octubre', 11:'noviembre', 12:'diciembre'
-    } %}
+        {% set meses = {
+            1:'enero', 2:'febrero', 3:'marzo', 4:'abril',
+            5:'mayo', 6:'junio', 7:'julio', 8:'agosto',
+            9:'septiembre', 10:'octubre', 11:'noviembre', 12:'diciembre'
+        } %}
 
-    {% for v in ventas %}
-        {% set total = v.total | float(0) %}
+        {% for v in ventas %}
+            {% set total = v.total | float(0) %}
 
-    <tr class="{% if v.fecha_estimada.date() < hoy %}entrega-atrasada{% elif v.fecha_estimada.date() == hoy %}entrega-hoy{% endif %}">
-        <td>#{{ v.id_venta }}</td>
-        <td>{{ badge_negocio(v.negocio) }}</td>
-        <td>{{ v.nombre }} {{ v.apellido }}</td>
+        <tr class="{% if v.fecha_estimada.date() < hoy %}entrega-atrasada{% elif v.fecha_estimada.date() == hoy %}entrega-hoy{% endif %}">
+            <td>#{{ v.id_venta }}</td>
+            <td>{{ badge_negocio(v.negocio) }}</td>
+            <td>{{ v.nombre }} {{ v.apellido }}</td>
 
-        <td>
-            {% if v.telefono %}
-                {{ v.telefono }}
-            {% else %}
-                <span style="opacity:0.5;">Sin teléfono</span>
-            {% endif %}
-        </td>
+            <td>
+                {% if v.telefono %}
+                    {{ v.telefono }}
+                {% else %}
+                    <span style="opacity:0.5;">Sin teléfono</span>
+                {% endif %}
+            </td>
 
-        <td>
-            {{ v.fecha_recibo.day }} {{ meses[v.fecha_recibo.month] }}
-            {{ "%02d:%02d"|format(v.fecha_recibo.hour, v.fecha_recibo.minute) }}
-        </td>
+            <td>
+                {{ v.fecha_recibo.day }} {{ meses[v.fecha_recibo.month] }}
+                {{ "%02d:%02d"|format(v.fecha_recibo.hour, v.fecha_recibo.minute) }}
+            </td>
 
-        <td>
-            {{ v.fecha_estimada.day }} {{ meses[v.fecha_estimada.month] }}
-            {{ "%02d:%02d"|format(v.fecha_estimada.hour, v.fecha_estimada.minute) }}
+            <td>
+                {{ v.fecha_estimada.day }} {{ meses[v.fecha_estimada.month] }}
+                {{ "%02d:%02d"|format(v.fecha_estimada.hour, v.fecha_estimada.minute) }}
 
-            {% if v.fecha_estimada.date() < hoy %}
-                <span class="badge-atrasado">ATRASADO</span>
-            {% elif v.fecha_estimada.date() == hoy %}
-                <span class="badge-hoy">HOY</span>
-            {% endif %}
-        </td>
+                {% if v.fecha_estimada.date() < hoy %}
+                    <span class="badge-atrasado">ATRASADO</span>
+                {% elif v.fecha_estimada.date() == hoy %}
+                    <span class="badge-hoy">HOY</span>
+                {% endif %}
+            </td>
 
-        <td>${{ total | round(2) }}</td>
+            <td>${{ total | round(2) }}</td>
 
 
-        <td>
-            <button class="btn btn--info btn--sm" data-id="{{ v.id_venta }}">
-                ℹ️ Info
-            </button>
-        </td>
+            <td>
+                <button class="btn btn--info btn--sm" data-id="{{ v.id_venta }}">
+                    ℹ️ Info
+                </button>
+            </td>
 
-        <td>
-            <button
-                class="btn btn--success btn--sm btn-marcar-lista"
-                data-id="{{ v.id_venta }}"
-                data-deuda="{{ deuda }}"
-                data-pagado="{{ pagado }}"
-                data-total="{{ total }}">
-                ✅ Lista
-            </button>
-        </td>
-    </tr>
+            <td>
+                <button
+                    class="btn btn--success btn--sm btn-marcar-lista"
+                    data-id="{{ v.id_venta }}">
+                    ✅ Lista
+                </button>
+            </td>
+        </tr>
 
-    <tr id="detalles-{{ v.id_venta }}" class="table--details" style="display:none;">
-        <td colspan="11">
-            <div class="detalles-box">
-                <div class="detalles-title">🧾 Detalles de la venta</div>
+        <tr id="detalles-{{ v.id_venta }}" class="table--details" style="display:none;">
+            <td colspan="11">
+                <div class="detalles-box">
+                    <div class="detalles-title">🧾 Detalles de la venta</div>
 
-                <ul class="detalles-list">
-                    {% for item in v.detalles %}
-                        <li class="detalle-item">
+                    <ul class="detalles-list">
+                        {% for item in v.detalles %}
+                            <li class="detalle-item">
 
-                            {% if item.tipo_articulo == "calzado" %}
-                                <div class="detalle-zapato">
-                                    👟 {{ item.datos.tipo }} {{ item.datos.marca }}
-                                    <span class="detalle-color">
-                                        {{ item.datos.color_base }}
-                                        {% if item.datos.color_secundario %}/{{ item.datos.color_secundario }}{% endif %}
-                                    </span>
-                                </div>
-
-                                {% for s in item.servicios %}
-                                    <div class="detalle-servicio">
-                                        {{ s.nombre }}
-                                        <span class="detalle-precio">
-                                            ${{ "{:.2f}".format(s.precio_aplicado) }}
+                                {% if item.tipo_articulo == "calzado" %}
+                                    <div class="detalle-zapato">
+                                        👟 {{ item.datos.tipo }} {{ item.datos.marca }}
+                                        <span class="detalle-color">
+                                            {{ item.datos.color_base }}
+                                            {% if item.datos.color_secundario %}/{{ item.datos.color_secundario }}{% endif %}
                                         </span>
                                     </div>
-                                {% endfor %}
 
-                            {% elif item.tipo_articulo == "confeccion" %}
-                                <div class="detalle-zapato">
-                                    🧵 {{ item.datos.tipo }} {{ item.datos.marca }}
-                                    <span class="detalle-color">
-                                        {{ item.datos.color_base }}
-                                        {% if item.datos.color_secundario %}/{{ item.datos.color_secundario }}{% endif %}
-                                    </span>
-                                </div>
+                                    {% for s in item.servicios %}
+                                        <div class="detalle-servicio">
+                                            {{ s.nombre }}
+                                            <span class="detalle-precio">
+                                                ${{ "{:.2f}".format(s.precio_aplicado) }}
+                                            </span>
+                                        </div>
+                                    {% endfor %}
 
-                                <div style="margin-top:4px;">
-                                    Cantidad: <b>{{ item.datos.cantidad }}</b>
-                                </div>
-
-                                {% for s in item.servicios %}
-                                    <div class="detalle-servicio">
-                                        {{ s.nombre }}
-                                        <span class="detalle-precio">
-                                            ${{ "{:.2f}".format(s.precio_aplicado) }}
+                                {% elif item.tipo_articulo == "confeccion" %}
+                                    <div class="detalle-zapato">
+                                        🧵 {{ item.datos.tipo }} {{ item.datos.marca }}
+                                        <span class="detalle-color">
+                                            {{ item.datos.color_base }}
+                                            {% if item.datos.color_secundario %}/{{ item.datos.color_secundario }}{% endif %}
                                         </span>
                                     </div>
-                                {% endfor %}
 
-                            {% elif item.tipo_articulo == "maquila" %}
-                                <div class="detalle-zapato">
-                                    🏭 {{ item.datos.tipo }}
-                                </div>
-                                <div style="margin-top:4px;">
-                                    Cantidad: <b>{{ item.datos.cantidad }}</b> |
-                                    Precio unitario: <b>${{ "{:.2f}".format(item.datos.precio_unitario) }}</b>
-                                </div>
-                            {% endif %}
+                                    <div style="margin-top:4px;">
+                                        Cantidad: <b>{{ item.datos.cantidad }}</b>
+                                    </div>
 
-                            {% if item.comentario %}
-                                <div style="margin-top:6px; font-style:italic; opacity:0.8;">
-                                    💬 {{ item.comentario }}
-                                </div>
-                            {% endif %}
+                                    {% for s in item.servicios %}
+                                        <div class="detalle-servicio">
+                                            {{ s.nombre }}
+                                            <span class="detalle-precio">
+                                                ${{ "{:.2f}".format(s.precio_aplicado) }}
+                                            </span>
+                                        </div>
+                                    {% endfor %}
 
-                        </li>
-                    {% endfor %}
-                </ul>
+                                {% elif item.tipo_articulo == "maquila" %}
+                                    <div class="detalle-zapato">
+                                        🏭 {{ item.datos.tipo }}
+                                    </div>
+                                    <div style="margin-top:4px;">
+                                        Cantidad: <b>{{ item.datos.cantidad }}</b> |
+                                        Precio unitario: <b>${{ "{:.2f}".format(item.datos.precio_unitario) }}</b>
+                                    </div>
+                                {% endif %}
 
-                <div class="btn-row">
-                    <button type="button"
-                            class="btn btn--info btn--sm"
-                            onclick="window.open('{{ url_for('ventas.venta_ticket', id_venta=v.id_venta) }}', '_blank')">
-                        🧾 Ver ticket
-                    </button>
+                                {% if item.comentario %}
+                                    <div style="margin-top:6px; font-style:italic; opacity:0.8;">
+                                        💬 {{ item.comentario }}
+                                    </div>
+                                {% endif %}
+
+                            </li>
+                        {% endfor %}
+                    </ul>
+
+                    <div class="btn-row">
+                        <button type="button"
+                                class="btn btn--info btn--sm"
+                                onclick="window.open('{{ url_for('ventas.venta_ticket', id_venta=v.id_venta) }}', '_blank')">
+                            🧾 Ver ticket
+                        </button>
+                    </div>
                 </div>
-            </div>
-        </td>
-    </tr>
+            </td>
+        </tr>
 
-{% endfor %}
+    {% endfor %}
 
-{% endcall %}
+    {% endcall %}
+    </div>
 
 
     {% else %}
@@ -201,7 +200,7 @@
     {% endif %}
 
 
-  {% call(section) modal("modalprocesado", "Procesado", "sm") %}
+{% call(section) modal("modalProcesado", "Marcar como lista", "sm") %}
 
   {% if section == 'body' %}
       <p>
@@ -211,7 +210,7 @@
 
   {% if section == 'footer' %}
       <button class="btn btn--danger btn--sm"
-              onclick="cerrarModal('modalprocesado')">
+              onclick="cerrarModal('modalProcesado')">
         Cancelar
       </button>
 
@@ -227,7 +226,8 @@
 {% endblock %}
 
 {% block scripts %}
-    <script src="{{ url_for('static', filename='js/modal.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/entregas_pendientes.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/modal.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/filtro_ventas.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/entregas_pendientes.js') }}"></script>
 {% endblock %}
 

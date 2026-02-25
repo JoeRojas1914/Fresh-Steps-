@@ -1,5 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
 
+    let ventaSeleccionada = null;
+
     function toggleDetalles(idVenta) {
         const fila = document.getElementById(`detalles-${idVenta}`);
         if (!fila) return;
@@ -10,35 +12,45 @@ document.addEventListener("DOMContentLoaded", () => {
                 : "none";
     }
 
-    // Mostrar detalles
     document.querySelectorAll(".btn--info").forEach(btn => {
         btn.addEventListener("click", () => {
             toggleDetalles(btn.dataset.id);
         });
     });
 
-    // Marcar como lista
     document.querySelectorAll(".btn-marcar-lista").forEach(btn => {
         btn.addEventListener("click", () => {
+            ventaSeleccionada = btn.dataset.id;
+            abrirModal("modalProcesado"); 
+        });
+    });
 
-            const idVenta = btn.dataset.id;
+    const btnConfirmar = document.getElementById("btnConfirmarLista");
 
-            if (!confirm("¿Marcar esta venta como lista para entrega?")) return;
+    if (btnConfirmar) {
+        btnConfirmar.addEventListener("click", () => {
 
-            csrfFetch(`/ventas/marcar-lista/${idVenta}`, {
+            if (!ventaSeleccionada) return;
+
+            csrfFetch(`/ventas/marcar-lista/${ventaSeleccionada}`, {
                 method: "POST"
             })
             .then(r => r.json())
             .then(res => {
+
                 if (res.ok) {
+                    cerrarModal("modalProcesado");
                     mostrarFeedback(res.message, "success");
+
                     setTimeout(() => location.reload(), 1000);
+
                 } else {
                     mostrarFeedback(res.error || "Error al marcar como lista", "error");
                 }
+
             });
         });
-    });
+    }
 
 });
 

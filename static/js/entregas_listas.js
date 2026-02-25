@@ -3,12 +3,6 @@ let saldoPendienteActual = 0;
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    //     activarFiltroTabla({
-    //     tablaSelector: "table",
-    //     columnaCliente: 2,
-    //     columnaNegocio: 1
-    // });
-
     function toggleDetalles(idVenta) {
         const fila = document.getElementById(`detalles-${idVenta}`);
         if (!fila) return;

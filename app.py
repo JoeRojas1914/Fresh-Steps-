@@ -24,7 +24,7 @@ from pagos import (
 
 from ventas import (
     crear_venta,
-    contar_entregas_pendientes,
+    contar_entregas_listas,
 )
 
 
@@ -60,7 +60,7 @@ def index():
 
     return render_template(
         "index.html",
-        total_entregas = contar_entregas_pendientes(),
+        total_entregas = contar_entregas_listas(),
         nombre_usuario=session.get("usuario")
     )
 

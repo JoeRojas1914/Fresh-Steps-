@@ -234,7 +234,7 @@ def crear_venta(
 
 
 
-def contar_entregas_pendientes(id_negocio=None):
+def contar_entregas_listas(id_negocio=None):
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -399,7 +399,7 @@ def obtener_detalles_venta(id_venta):
 
 
 
-def obtener_ventas_pendientes(id_negocio=None):
+def obtener_ventas_listas(id_negocio=None):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 

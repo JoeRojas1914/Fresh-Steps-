@@ -2,7 +2,7 @@ from datetime import date
 
 from ventas import (
     marcar_entregada,
-    obtener_ventas_pendientes,
+    obtener_ventas_listas,
     obtener_detalles_venta
 )
 
@@ -14,8 +14,8 @@ from pagos import (
 from negocio import obtener_negocios
 
 
-def listar_ventas_pendientes_service(id_negocio=None):
-    ventas = obtener_ventas_pendientes(id_negocio)
+def listar_ventas_listas_service(id_negocio=None):
+    ventas = obtener_ventas_listas(id_negocio)
     negocios = obtener_negocios()
 
     ventas_con_detalles = []

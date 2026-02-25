@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, jsonify, session, request
 from datetime import date
 
-from services.ventas_service import listar_ventas_pendientes_service, registrar_pago_final_service
+from services.ventas_service import listar_ventas_listas_service, registrar_pago_final_service
 from ventas import (
     marcar_entregada,
     obtener_venta,
@@ -51,14 +51,14 @@ def venta_ticket(id_venta):
     )
 
 
-@ventas_bp.route("/ventas/pendientes")
-def ventas_pendientes():
+@ventas_bp.route("/ventas/listas")
+def ventas_listas():
     id_negocio = request.args.get("id_negocio") or None
 
-    data = listar_ventas_pendientes_service(id_negocio)
+    data = listar_ventas_listas_service(id_negocio)
 
     return render_template(
-        "ventas_pendientes.html",
+        "ventas_listas.html",
         **data
     )
 

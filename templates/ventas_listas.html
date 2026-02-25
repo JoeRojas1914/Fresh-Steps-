@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+{% block content %}
+{% from "macros/badges.html" import badge_negocio %}
+{% from "components/table.html" import table %}
+{% from "components/modal.html" import modal %}
+
+
+    <h1>🧾 Entregas listas</h1>
+
+    {% if ventas %}
+    <div style="margin-bottom: 20px; display:flex; gap:10px; align-items:center;">
+
+        <input type="text" id="buscador-cliente" 
+            placeholder="🔍 Buscar cliente..."
+            style="padding:6px 10px; width:250px; border-radius:5px; border:1px solid #ccc;">
+
+        <select id="filtro-negocio"
+                style="padding:6px 10px; border-radius:5px; border:1px solid #ccc;">
+            <option value="">Todos los negocios</option>
+            {% for n in negocios %}
+                <option value="{{ n.nombre | lower }}">
+                    {{ n.nombre }}
+                </option>
+            {% endfor %}
+        </select>
+
+    </div>
+
+
+    <div id="toast-container"></div>
+
+    {% call table([
+    "Recibo",
+    "Negocio",
+    "Cliente",
+    "Teléfono",
+    "Fecha Recibo",
+    "Fecha estimada",
+    "Total",
+    "Monto prepago",
+    "Pago a deber",
+    "Detalles",
+    "Acción"
+    ]) %}
+
+    {% set meses = {
+        1:'enero', 2:'febrero', 3:'marzo', 4:'abril',
+        5:'mayo', 6:'junio', 7:'julio', 8:'agosto',
+        9:'septiembre', 10:'octubre', 11:'noviembre', 12:'diciembre'
+    } %}
+
+    {% for v in ventas %}
+        {% set total = v.total | float(0) %}
+        {% set pagado = v.total_pagado | float(0) %}
+        {% set deuda = v.saldo_pendiente | float(0) %}
+
+    <tr class="{% if v.fecha_estimada.date() < hoy %}entrega-atrasada{% elif v.fecha_estimada.date() == hoy %}entrega-hoy{% endif %}">
+        <td>#{{ v.id_venta }}</td>
+        <td>{{ badge_negocio(v.negocio) }}</td>
+        <td>{{ v.nombre }} {{ v.apellido }}</td>
+
+        <td>
+            {% if v.telefono %}
+                {{ v.telefono }}
+            {% else %}
+                <span style="opacity:0.5;">Sin teléfono</span>
+            {% endif %}
+        </td>
+
+        <td>
+            {{ v.fecha_recibo.day }} {{ meses[v.fecha_recibo.month] }}
+            {{ "%02d:%02d"|format(v.fecha_recibo.hour, v.fecha_recibo.minute) }}
+        </td>
+
+        <td>
+            {{ v.fecha_estimada.day }} {{ meses[v.fecha_estimada.month] }}
+            {{ "%02d:%02d"|format(v.fecha_estimada.hour, v.fecha_estimada.minute) }}
+
+            {% if v.fecha_estimada.date() < hoy %}
+                <span class="badge-atrasado">ATRASADO</span>
+            {% elif v.fecha_estimada.date() == hoy %}
+                <span class="badge-hoy">HOY</span>
+            {% endif %}
+        </td>
+
+        <td>${{ total | round(2) }}</td>
+
+        <td>
+            {% if v.total_pagado > 0 %}
+                ${{ pagado | round(2) }}
+            {% else %}
+                <span style="opacity:0.6;">Sin prepago</span>
+            {% endif %}
+        </td>
+
+        <td>${{ deuda | round(2) }}</td>
+
+        <td>
+            <button class="btn btn--info btn--sm" data-id="{{ v.id_venta }}">
+                ℹ️ Info
+            </button>
+        </td>
+
+        <td>
+            <button
+                class="btn btn--success btn--sm btn-entregar"
+                data-id="{{ v.id_venta }}"
+                data-deuda="{{ deuda }}"
+                data-pagado="{{ pagado }}"
+                data-total="{{ total }}">
+                ✅ Entregar
+            </button>
+        </td>
+    </tr>
+
+    <tr id="detalles-{{ v.id_venta }}" class="table--details" style="display:none;">
+        <td colspan="11">
+            <div class="detalles-box">
+                <div class="detalles-title">🧾 Detalles de la venta</div>
+
+                <ul class="detalles-list">
+                    {% for item in v.detalles %}
+                        <li class="detalle-item">
+
+                            {% if item.tipo_articulo == "calzado" %}
+                                <div class="detalle-zapato">
+                                    👟 {{ item.datos.tipo }} {{ item.datos.marca }}
+                                    <span class="detalle-color">
+                                        {{ item.datos.color_base }}
+                                        {% if item.datos.color_secundario %}/{{ item.datos.color_secundario }}{% endif %}
+                                    </span>
+                                </div>
+
+                                {% for s in item.servicios %}
+                                    <div class="detalle-servicio">
+                                        {{ s.nombre }}
+                                        <span class="detalle-precio">
+                                            ${{ "{:.2f}".format(s.precio_aplicado) }}
+                                        </span>
+                                    </div>
+                                {% endfor %}
+
+                            {% elif item.tipo_articulo == "confeccion" %}
+                                <div class="detalle-zapato">
+                                    🧵 {{ item.datos.tipo }} {{ item.datos.marca }}
+                                    <span class="detalle-color">
+                                        {{ item.datos.color_base }}
+                                        {% if item.datos.color_secundario %}/{{ item.datos.color_secundario }}{% endif %}
+                                    </span>
+                                </div>
+
+                                <div style="margin-top:4px;">
+                                    Cantidad: <b>{{ item.datos.cantidad }}</b>
+                                </div>
+
+                                {% for s in item.servicios %}
+                                    <div class="detalle-servicio">
+                                        {{ s.nombre }}
+                                        <span class="detalle-precio">
+                                            ${{ "{:.2f}".format(s.precio_aplicado) }}
+                                        </span>
+                                    </div>
+                                {% endfor %}
+
+                            {% elif item.tipo_articulo == "maquila" %}
+                                <div class="detalle-zapato">
+                                    🏭 {{ item.datos.tipo }}
+                                </div>
+                                <div style="margin-top:4px;">
+                                    Cantidad: <b>{{ item.datos.cantidad }}</b> |
+                                    Precio unitario: <b>${{ "{:.2f}".format(item.datos.precio_unitario) }}</b>
+                                </div>
+                            {% endif %}
+
+                            {% if item.comentario %}
+                                <div style="margin-top:6px; font-style:italic; opacity:0.8;">
+                                    💬 {{ item.comentario }}
+                                </div>
+                            {% endif %}
+
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                <div class="btn-row">
+                    <button type="button"
+                            class="btn btn--info btn--sm"
+                            onclick="window.open('{{ url_for('ventas.venta_ticket', id_venta=v.id_venta) }}', '_blank')">
+                        🧾 Ver ticket
+                    </button>
+                </div>
+            </div>
+        </td>
+    </tr>
+
+{% endfor %}
+
+{% endcall %}
+
+
+    {% else %}
+    <div style=" margin-top:30px;
+            padding:20px;
+            text-align:center;
+            font-size:1.2rem;
+            font-weight:bold;
+            background-color:#2fa4ff;
+            color:#ffffff;
+            border:1px solid #ffffff;
+            border-radius:10px;
+        ">
+            🎉 No hay entregas pendientes
+    </div>
+    {% endif %}
+
+{% call(section) modal("modalEntrega", "Entrega", "sm") %}
+
+  {% if section == 'body' %}
+  
+      <p id="textoSinDeuda" style="display:none;">
+        ✅ Esta venta ya está totalmente pagada.<br>
+        ¿Deseas marcarla como entregada?
+      </p>
+
+      <div id="bloquePago" style="display:none;">
+        <p>
+          <b>Saldo pendiente:</b>
+          <span id="montoPendiente"></span>
+        </p>
+
+        <label class="form-label">Método de pago</label>
+        <select id="metodoPagoFinal">
+          <option value="">-- Selecciona --</option>
+          <option value="efectivo">Efectivo</option>
+          <option value="tarjeta">Tarjeta</option>
+          <option value="transferencia">Transferencia</option>
+        </select>
+      </div>
+
+  {% endif %}
+
+
+  {% if section == 'footer' %}
+  
+      <button class="btn btn--danger btn--sm"
+              onclick="cerrarModal('modalEntrega')">
+        Cancelar
+      </button>
+
+      <button id="btnConfirmarEntrega"
+              class="btn btn--primary btn--lg">
+        Confirmar
+      </button>
+
+  {% endif %}
+
+{% endcall %}
+
+
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ url_for('static', filename='js/modal.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/entregas_listas.js') }}"></script>
+{% endblock %}
+

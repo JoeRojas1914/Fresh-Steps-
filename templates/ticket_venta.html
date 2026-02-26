@@ -21,15 +21,18 @@
     <div class="center">
       <div class="ticket-numero">Ticket #{{ venta.id_venta }}</div>
 
-      <div class="entrega-estimada">
-        Entrega estimada:
-        {% if venta.fecha_estimada %}
-          {{ venta.fecha_estimada.day }}
-          {{ ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"][venta.fecha_estimada.month - 1] }}
-          {{ venta.fecha_estimada.year }}
-          {{ venta.fecha_estimada.strftime("%H:%M") }}
-        {% endif %}
-      </div>
+    <div class="entrega-estimada">
+      Entrega estimada:
+      {% if venta.fecha_estimada %}
+        {% set dias = ["lunes","martes","miércoles","jueves","viernes","sábado","domingo"] %}
+        {% set meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"] %}
+
+        {{ dias[venta.fecha_estimada.weekday()] }}
+        {{ venta.fecha_estimada.day }}
+        {{ meses[venta.fecha_estimada.month - 1] }}
+        {{ venta.fecha_estimada.strftime("%H:%M") }}
+      {% endif %}
+    </div>
 
     </div>
 

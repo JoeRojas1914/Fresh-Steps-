@@ -625,3 +625,67 @@ def marcar_como_lista(id_venta):
     finally:
         cursor.close()
         conn.close()
+
+
+def eliminar_venta(id_venta):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            SELECT id_articulo
+            FROM articulo
+            WHERE id_venta = %s
+        """, (id_venta,))
+        
+        articulos = cursor.fetchall()
+        ids_articulos = [row[0] for row in articulos]
+
+        if ids_articulos:
+            format_strings = ','.join(['%s'] * len(ids_articulos))
+
+            cursor.execute(f"""
+                DELETE FROM articulo_servicio
+                WHERE id_articulo IN ({format_strings})
+            """, ids_articulos)
+
+            cursor.execute(f"""
+                DELETE FROM articulo_calzado
+                WHERE id_articulo IN ({format_strings})
+            """, ids_articulos)
+
+            cursor.execute(f"""
+                DELETE FROM articulo_confeccion
+                WHERE id_articulo IN ({format_strings})
+            """, ids_articulos)
+
+            cursor.execute(f"""
+                DELETE FROM articulo_maquila
+                WHERE id_articulo IN ({format_strings})
+            """, ids_articulos)
+
+            cursor.execute(f"""
+                DELETE FROM articulo
+                WHERE id_articulo IN ({format_strings})
+            """, ids_articulos)
+
+        cursor.execute("""
+            DELETE FROM pago_venta
+            WHERE id_venta = %s
+        """, (id_venta,))
+
+        cursor.execute("""
+            DELETE FROM venta
+            WHERE id_venta = %s
+        """, (id_venta,))
+
+        conn.commit()
+        return True
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        cursor.close()
+        conn.close()

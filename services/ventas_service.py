@@ -1,7 +1,9 @@
 from datetime import date
 
 from ventas import (
+    eliminar_venta,
     marcar_entregada,
+    obtener_venta,
     obtener_ventas_listas,
     obtener_detalles_venta,
     obtener_entregas_pendientes
@@ -81,3 +83,13 @@ def registrar_pago_final_service(data, id_usuario):
     marcar_entregada(id_venta, id_usuario)
 
     return True, "Pago final registrado y venta marcada como entregada"
+
+
+def eliminar_venta_service(id_venta):
+
+    venta = obtener_venta(id_venta)
+    if not venta:
+        return False, "La venta no existe"
+    eliminar_venta(id_venta)
+
+    return True, "Venta eliminada correctamente"

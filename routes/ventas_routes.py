@@ -128,3 +128,43 @@ def registrar_pago_final():
             "ok": False,
             "error": str(e)
         }), 500
+    
+
+@ventas_bp.route("/ventas/eliminar/<int:id_venta>", methods=["POST"])
+def eliminar_venta_route(id_venta):
+    from services.ventas_service import eliminar_venta_service
+
+    id_usuario = session.get("id_usuario")
+    rol = session.get("rol")
+
+    if not id_usuario:
+        return jsonify({
+            "ok": False,
+            "error": "No autenticado"
+        }), 401
+
+    if rol != "admin":
+        return jsonify({
+            "ok": False,
+            "error": "No autorizado"
+        }), 403
+
+    try:
+        ok, mensaje = eliminar_venta_service(id_venta)
+
+        if not ok:
+            return jsonify({
+                "ok": False,
+                "error": mensaje
+            }), 400
+
+        return jsonify({
+            "ok": True,
+            "message": mensaje
+        })
+
+    except Exception as e:
+        return jsonify({
+            "ok": False,
+            "error": str(e)
+        }), 500

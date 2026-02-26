@@ -74,12 +74,9 @@ document.addEventListener("DOMContentLoaded", () => {
             if (res.ok) {
                 mostrarFeedback(res.message || "Venta eliminada", "success");
 
-                const filaPrincipal = btn.closest("tr");
-                const filaDetalles = document.getElementById(`detalles-${idVenta}`);
-
-                if (filaPrincipal) filaPrincipal.remove();
-                if (filaDetalles) filaDetalles.remove();
-
+                setTimeout(() => {
+                    location.reload();
+                }, 800);
             } else {
                 mostrarFeedback(res.error || "Error al eliminar", "error");
             }

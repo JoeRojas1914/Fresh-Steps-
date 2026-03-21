@@ -21,17 +21,22 @@ def listar_ventas_listas_service(id_negocio=None):
     ventas = obtener_ventas_listas(id_negocio)
     negocios = obtener_negocios()
 
+    ids_venta = [v["id_venta"] for v in ventas]
+
+    detalles_map = obtener_detalles_venta(ids_venta)
+    pagos_map = obtener_pagos_venta(ids_venta)
+
     ventas_con_detalles = []
 
     for v in ventas:
-        v["detalles"] = obtener_detalles_venta(v["id_venta"])
-
-        pagos = obtener_pagos_venta(v["id_venta"])
-        v["pagos"] = pagos
+        detalles = detalles_map.get(v["id_venta"], [])
+        pagos = pagos_map.get(v["id_venta"], [])
 
         total_pagado = sum(float(p["monto"]) for p in pagos)
         total = float(v.get("total") or 0)
 
+        v["detalles"] = detalles
+        v["pagos"] = pagos
         v["total"] = total
         v["total_pagado"] = total_pagado
         v["saldo_pendiente"] = max(total - total_pagado, 0)
@@ -52,10 +57,14 @@ def listar_entregas_pendientes_service(id_negocio=None):
     ventas = obtener_entregas_pendientes(id_negocio)
     negocios = obtener_negocios()
 
+    ids_venta = [v["id_venta"] for v in ventas]
+
+    detalles_map = obtener_detalles_venta(ids_venta)
+
     ventas_con_detalles = []
 
     for v in ventas:
-        v["detalles"] = obtener_detalles_venta(v["id_venta"])
+        v["detalles"] = detalles_map.get(v["id_venta"], [])
         ventas_con_detalles.append(v)
 
     return {

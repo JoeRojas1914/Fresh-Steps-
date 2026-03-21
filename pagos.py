@@ -28,33 +28,31 @@ def registrar_pago(id_venta, monto, tipo_pago, id_usuario_cobro):
         conn.close()
 
 
-def obtener_pagos_venta(id_venta):
+def obtener_pagos_venta(ids_venta):
+    if not ids_venta:
+        return {}
+
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-    try:
-        cursor.execute("""
-            SELECT
-                p.id_pago,
-                p.fecha_pago,
-                p.monto,
-                p.tipo_pago,
-                p.tipo_pago_venta,
-                p.id_usuario_cobro,
-                u.usuario AS usuario_cobro
-            FROM pago_venta p
-            JOIN usuario u
-                ON p.id_usuario_cobro = u.id_usuario
-            WHERE p.id_venta = %s
-            ORDER BY p.fecha_pago ASC
-        """, (id_venta,))
+    format_strings = ','.join(['%s'] * len(ids_venta))
 
-        pagos = cursor.fetchall()
-        return pagos
+    cursor.execute(f"""
+        SELECT id_venta, monto
+        FROM pago_venta
+        WHERE id_venta IN ({format_strings})
+    """, ids_venta)
 
-    finally:
-        cursor.close()
-        conn.close()
+    pagos = cursor.fetchall()
+
+    pagos_por_venta = {}
+    for p in pagos:
+        pagos_por_venta.setdefault(p["id_venta"], []).append(p)
+
+    cursor.close()
+    conn.close()
+
+    return pagos_por_venta
 
 
 def obtener_pagos_por_venta(id_venta):

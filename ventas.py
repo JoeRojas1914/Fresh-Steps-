@@ -290,112 +290,91 @@ def marcar_entregada(id_venta, id_usuario):
 
 
 
-def obtener_detalles_venta(id_venta):
+def obtener_detalles_venta(ids_venta):
+    if not ids_venta:
+        return {}
+
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("""
-        SELECT id_articulo, tipo_articulo, comentario
+    format_strings = ','.join(['%s'] * len(ids_venta))
+
+    cursor.execute(f"""
+        SELECT *
         FROM articulo
-        WHERE id_venta = %s
-    """, (id_venta,))
+        WHERE id_venta IN ({format_strings})
+    """, ids_venta)
 
     articulos = cursor.fetchall()
-    detalles = []
+
+    ids_articulo = [a["id_articulo"] for a in articulos]
+
+    if not ids_articulo:
+        return {}
+
+    format_art = ','.join(['%s'] * len(ids_articulo))
+
+    cursor.execute(f"""
+        SELECT * FROM articulo_calzado
+        WHERE id_articulo IN ({format_art})
+    """, ids_articulo)
+    calzados = {c["id_articulo"]: c for c in cursor.fetchall()}
+
+    cursor.execute(f"""
+        SELECT * FROM articulo_confeccion
+        WHERE id_articulo IN ({format_art})
+    """, ids_articulo)
+    confecciones = {c["id_articulo"]: c for c in cursor.fetchall()}
+
+    cursor.execute(f"""
+        SELECT * FROM articulo_maquila
+        WHERE id_articulo IN ({format_art})
+    """, ids_articulo)
+    maquilas = {m["id_articulo"]: m for m in cursor.fetchall()}
+
+    cursor.execute(f"""
+        SELECT
+            asv.id_articulo,
+            s.nombre,
+            asv.precio_aplicado
+        FROM articulo_servicio asv
+        JOIN servicio s ON s.id_servicio = asv.id_servicio
+        WHERE asv.id_articulo IN ({format_art})
+    """, ids_articulo)
+
+    servicios_raw = cursor.fetchall()
+
+    servicios_por_articulo = {}
+    for s in servicios_raw:
+        servicios_por_articulo.setdefault(s["id_articulo"], []).append(s)
+
+    detalles_por_venta = {}
 
     for art in articulos:
+        id_venta = art["id_venta"]
         id_articulo = art["id_articulo"]
-        tipo_articulo = art["tipo_articulo"]
-        if tipo_articulo == "calzado":
-            cursor.execute("""
-                SELECT
-                    tipo,
-                    marca,
-                    material,
-                    color_base,
-                    color_secundario,
-                    color_agujetas
-                FROM articulo_calzado
-                WHERE id_articulo = %s
-            """, (id_articulo,))
+        tipo = art["tipo_articulo"]
 
-            datos = cursor.fetchone()
+        if tipo == "calzado":
+            datos = calzados.get(id_articulo)
+        elif tipo == "confeccion":
+            datos = confecciones.get(id_articulo)
+        else:
+            datos = maquilas.get(id_articulo)
 
-            cursor.execute("""
-                SELECT
-                    s.nombre,
-                    asv.precio_aplicado
-                FROM articulo_servicio asv
-                JOIN servicio s ON s.id_servicio = asv.id_servicio
-                WHERE asv.id_articulo = %s
-            """, (id_articulo,))
+        detalle = {
+            "tipo_articulo": tipo,
+            "datos": datos,
+            "servicios": servicios_por_articulo.get(id_articulo, []),
+            "comentario": art["comentario"]
+        }
 
-            servicios = cursor.fetchall()
-
-            detalles.append({
-                "tipo_articulo": "calzado",
-                "datos": datos,
-                "servicios": servicios,
-                "comentario": art["comentario"]
-            })
-
-        elif tipo_articulo == "confeccion":
-            cursor.execute("""
-                SELECT
-                    tipo,
-                    marca,
-                    material,
-                    color_base,
-                    color_secundario,
-                    cantidad,
-                    agujetas
-                FROM articulo_confeccion
-                WHERE id_articulo = %s
-            """, (id_articulo,))
-
-            datos = cursor.fetchone()
-
-            cursor.execute("""
-                SELECT
-                    s.nombre,
-                    asv.precio_aplicado
-                FROM articulo_servicio asv
-                JOIN servicio s ON s.id_servicio = asv.id_servicio
-                WHERE asv.id_articulo = %s
-            """, (id_articulo,))
-
-            servicios = cursor.fetchall()
-
-            detalles.append({
-                "tipo_articulo": "confeccion",
-                "datos": datos,
-                "servicios": servicios,
-                "comentario": art["comentario"]
-            })
-
-        elif tipo_articulo == "maquila":
-            cursor.execute("""
-                SELECT
-                    tipo,
-                    cantidad,
-                    precio_unitario,
-                    subtotal
-                FROM articulo_maquila
-                WHERE id_articulo = %s
-            """, (id_articulo,))
-
-            datos = cursor.fetchone()
-
-            detalles.append({
-                "tipo_articulo": "maquila",
-                "datos": datos,
-                "servicios": [],
-                "comentario": art["comentario"]
-            })
+        detalles_por_venta.setdefault(id_venta, []).append(detalle)
 
     cursor.close()
     conn.close()
-    return detalles
+
+    return detalles_por_venta
 
 
 

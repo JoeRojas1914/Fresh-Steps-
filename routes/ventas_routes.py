@@ -104,6 +104,13 @@ def marcar_lista(id_venta):
         }), 500
     
 
+@ventas_bp.route("/ventas/detalles/<int:id_venta>")
+def detalles_venta(id_venta):
+    from ventas import obtener_detalles_venta
+
+    detalles = obtener_detalles_venta([id_venta])  
+    return jsonify(detalles.get(id_venta, []))
+
 @ventas_bp.route("/ventas/pago-final", methods=["POST"])
 def registrar_pago_final():
     data = request.json

@@ -103,68 +103,8 @@
                 <div class="detalles-box">
                     <div class="detalles-title">🧾 Detalles de la venta</div>
 
-                    <ul class="detalles-list">
-                        {% for item in v.detalles %}
-                            <li class="detalle-item">
-
-                                {% if item.tipo_articulo == "calzado" %}
-                                    <div class="detalle-zapato">
-                                        👟 {{ item.datos.tipo }} {{ item.datos.marca }}
-                                        <span class="detalle-color">
-                                            {{ item.datos.color_base }}
-                                            {% if item.datos.color_secundario %}/{{ item.datos.color_secundario }}{% endif %}
-                                        </span>
-                                    </div>
-
-                                    {% for s in item.servicios %}
-                                        <div class="detalle-servicio">
-                                            {{ s.nombre }}
-                                            <span class="detalle-precio">
-                                                ${{ "{:.2f}".format(s.precio_aplicado) }}
-                                            </span>
-                                        </div>
-                                    {% endfor %}
-
-                                {% elif item.tipo_articulo == "confeccion" %}
-                                    <div class="detalle-zapato">
-                                        🧵 {{ item.datos.tipo }} {{ item.datos.marca }}
-                                        <span class="detalle-color">
-                                            {{ item.datos.color_base }}
-                                            {% if item.datos.color_secundario %}/{{ item.datos.color_secundario }}{% endif %}
-                                        </span>
-                                    </div>
-
-                                    <div style="margin-top:4px;">
-                                        Cantidad: <b>{{ item.datos.cantidad }}</b>
-                                    </div>
-
-                                    {% for s in item.servicios %}
-                                        <div class="detalle-servicio">
-                                            {{ s.nombre }}
-                                            <span class="detalle-precio">
-                                                ${{ "{:.2f}".format(s.precio_aplicado) }}
-                                            </span>
-                                        </div>
-                                    {% endfor %}
-
-                                {% elif item.tipo_articulo == "maquila" %}
-                                    <div class="detalle-zapato">
-                                        🏭 {{ item.datos.tipo }}
-                                    </div>
-                                    <div style="margin-top:4px;">
-                                        Cantidad: <b>{{ item.datos.cantidad }}</b> |
-                                        Precio unitario: <b>${{ "{:.2f}".format(item.datos.precio_unitario) }}</b>
-                                    </div>
-                                {% endif %}
-
-                                {% if item.comentario %}
-                                    <div style="margin-top:6px; font-style:italic; opacity:0.8;">
-                                        💬 {{ item.comentario }}
-                                    </div>
-                                {% endif %}
-
-                            </li>
-                        {% endfor %}
+                    <ul class="detalles-list" id="lista-detalles-{{ v.id_venta }}">
+                        <li style="opacity:0.6;">Cargando detalles...</li>
                     </ul>
 
                     <div class="btn-row">
@@ -236,6 +176,7 @@
 {% block scripts %}
     <script defer src="{{ url_for('static', filename='js/modal.js') }}"></script>
     <script src="{{ url_for('static', filename='js/filtro_ventas.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/detalles_ventas.js') }}"></script>
     <script defer src="{{ url_for('static', filename='js/entregas_pendientes.js') }}"></script>
 {% endblock %}
 

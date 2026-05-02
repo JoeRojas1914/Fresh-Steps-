@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/historial_ventas.css') }}">
+{% endblock %}
+
+{% block content %}
+{% from "macros/badges.html" import badge_negocio %}
+{% from "components/table.html" import table %}
+{% from "components/pagination.html" import pagination %}
+
+<h1>📋 Historial de ventas</h1>
+
+<form method="GET" action="/ventas/historial">
+    <div class="filtro-box">
+        <div class="filtro-row">
+
+            <div class="filtro-item">
+                <label>Negocio</label>
+                <select name="id_negocio">
+                    <option value="">Todos los negocios</option>
+                    {% for n in negocios %}
+                        <option value="{{ n.id_negocio }}"
+                            {% if id_negocio == n.id_negocio %}selected{% endif %}>
+                            {{ n.nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filtro-item">
+                <label>Desde</label>
+                <input type="date" name="fecha_inicio" value="{{ fecha_inicio or '' }}">
+            </div>
+
+            <div class="filtro-item">
+                <label>Hasta</label>
+                <input type="date" name="fecha_fin" value="{{ fecha_fin or '' }}">
+            </div>
+
+            <div class="filtro-actions">
+                <button type="submit" class="btn btn--primary btn--sm">🔍 Filtrar</button>
+                {% if id_negocio or fecha_inicio or fecha_fin %}
+                <a href="/ventas/historial" class="btn btn--danger btn--sm" style="text-decoration:none;">✕ Limpiar</a>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+</form>
+
+{% if ventas %}
+
+<div id="toast-container"></div>
+<div id="tabla-ventas">
+
+{% set meses = {
+    1:'enero', 2:'febrero', 3:'marzo', 4:'abril',
+    5:'mayo', 6:'junio', 7:'julio', 8:'agosto',
+    9:'septiembre', 10:'octubre', 11:'noviembre', 12:'diciembre'
+} %}
+
+{% call table([
+    "Recibo", "Negocio", "Cliente", "Teléfono",
+    "Fecha recibo", "Fecha estimada", "Fecha entrega",
+    "Total", "Estado", "Detalles"
+]) %}
+
+{% for v in ventas %}
+<tr>
+    <td>#{{ v.id_venta }}</td>
+    <td>{{ badge_negocio(v.negocio) }}</td>
+    <td>{{ v.nombre }} {{ v.apellido }}</td>
+    <td>
+        {% if v.telefono %}{{ v.telefono }}
+        {% else %}<span style="opacity:.5;">Sin teléfono</span>{% endif %}
+    </td>
+    <td>
+        {{ v.fecha_recibo.day }} {{ meses[v.fecha_recibo.month] }}
+        {{ "%02d:%02d" | format(v.fecha_recibo.hour, v.fecha_recibo.minute) }}
+    </td>
+    <td>
+        {{ v.fecha_estimada.day }} {{ meses[v.fecha_estimada.month] }}
+        {{ "%02d:%02d" | format(v.fecha_estimada.hour, v.fecha_estimada.minute) }}
+    </td>
+    <td>
+        {% if v.fecha_entrega %}
+            {{ v.fecha_entrega.day }} {{ meses[v.fecha_entrega.month] }}
+            {{ "%02d:%02d" | format(v.fecha_entrega.hour, v.fecha_entrega.minute) }}
+        {% else %}<span style="opacity:.4;">—</span>{% endif %}
+    </td>
+    <td>${{ "%.2f" | format(v.total) }}</td>
+    <td>
+        <span class="badge-estado {{ v.estado }}">
+            {% if v.estado == 'pendiente' %}⏳ Pendiente
+            {% elif v.estado == 'lista' %}📦 Lista
+            {% else %}✅ Entregada{% endif %}
+        </span>
+    </td>
+    <td>
+        <button class="btn btn--info btn--sm" data-id="{{ v.id_venta }}">ℹ️ Info</button>
+    </td>
+</tr>
+
+<tr id="detalles-{{ v.id_venta }}" class="table--details" style="display:none;">
+    <td colspan="10">
+        <div class="detalles-box">
+            <div class="detalles-title">🧾 Detalles de la venta</div>
+
+            <ul class="detalles-list" id="lista-detalles-{{ v.id_venta }}">
+                <li style="opacity:0.6;">Cargando detalles...</li>
+            </ul>
+
+            <div class="pagos-title">💳 Pagos registrados</div>
+            {% if v.pagos %}
+                {% for p in v.pagos %}
+                <div class="pago-fila">
+                    <span class="pago-tipo">
+                        {{ p.tipo_pago or '—' }}
+                        {% if p.tipo_pago_venta %}
+                            <span class="pago-tag">{{ p.tipo_pago_venta }}</span>
+                        {% endif %}
+                    </span>
+                    <span class="pago-monto">${{ "%.2f" | format(p.monto | float) }}</span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="opacity:.55; font-size:13px; font-style:italic; margin-bottom:10px;">Sin pagos registrados</div>
+            {% endif %}
+
+            <div class="detalles-info-extra">
+                {% if v.usuario_creo %}
+                <div class="detalles-info-row">
+                    <strong>Registrada por:</strong> {{ v.usuario_creo }}
+                </div>
+                {% endif %}
+                {% if v.usuario_entrego %}
+                <div class="detalles-info-row">
+                    <strong>Entregada por:</strong> {{ v.usuario_entrego }}
+                    {% if v.fecha_entrega %}
+                        — {{ v.fecha_entrega.day }} {{ meses[v.fecha_entrega.month] }}
+                        {{ "%02d:%02d" | format(v.fecha_entrega.hour, v.fecha_entrega.minute) }}
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="btn-row">
+                <button type="button"
+                        class="btn btn--info btn--sm"
+                        onclick="window.open('{{ url_for('ventas.venta_ticket', id_venta=v.id_venta) }}', '_blank')">
+                    🧾 Ver ticket
+                </button>
+            </div>
+        </div>
+    </td>
+</tr>
+{% endfor %}
+
+{% endcall %}
+</div>
+
+{{ pagination(
+    pagina,
+    total_paginas,
+    'ventas.historial_ventas',
+    {
+        "id_negocio":   id_negocio,
+        "fecha_inicio": fecha_inicio,
+        "fecha_fin":    fecha_fin
+    }
+) }}
+
+{% else %}
+<div style="
+    margin-top: 30px; padding: 20px; text-align: center;
+    font-size: 1.2rem; font-weight: bold;
+    background-color: #2fa4ff; color: #ffffff;
+    border: 1px solid #ffffff; border-radius: 10px;">
+    📭 No se encontraron ventas con los filtros seleccionados
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/detalles_venta.js') }}"></script>
+<script src="{{ url_for('static', filename='js/historial_ventas.js') }}"></script>
+{% endblock %}

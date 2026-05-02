@@ -38,7 +38,7 @@ def obtener_pagos_venta(ids_venta):
     format_strings = ','.join(['%s'] * len(ids_venta))
 
     cursor.execute(f"""
-        SELECT id_venta, monto
+        SELECT id_venta, monto, tipo_pago, tipo_pago_venta
         FROM pago_venta
         WHERE id_venta IN ({format_strings})
     """, ids_venta)

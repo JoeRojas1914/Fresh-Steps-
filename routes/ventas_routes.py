@@ -195,3 +195,21 @@ def eliminar_venta_route(id_venta):
             "ok": False,
             "error": str(e)
         }), 500
+
+@ventas_bp.route("/ventas/historial")
+def historial_ventas():
+    from services.ventas_service import historial_ventas_service
+
+    rol = session.get("rol")
+    if rol != "admin":
+        from flask import render_template as rt
+        return rt("403.html"), 403
+
+    id_negocio   = request.args.get("id_negocio",  type=int)
+    fecha_inicio = request.args.get("fecha_inicio") or None
+    fecha_fin    = request.args.get("fecha_fin")    or None
+    pagina       = request.args.get("pagina", 1,    type=int)
+
+    data = historial_ventas_service(id_negocio, fecha_inicio, fecha_fin, pagina)
+
+    return render_template("historial_ventas.html", **data)

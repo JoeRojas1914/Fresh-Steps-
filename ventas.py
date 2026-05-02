@@ -642,3 +642,78 @@ def eliminar_venta(id_venta):
     finally:
         cursor.close()
         conn.close()
+
+def contar_historial_ventas(id_negocio=None, fecha_inicio=None, fecha_fin=None):
+    conn = get_connection()
+    cursor = conn.cursor()
+    query = "SELECT COUNT(DISTINCT v.id_venta) FROM venta v WHERE v.eliminado = 0"
+    params = []
+    if id_negocio:
+        query += " AND v.id_negocio = %s"
+        params.append(id_negocio)
+    if fecha_inicio:
+        query += " AND DATE(v.fecha_recibo) >= %s"
+        params.append(fecha_inicio)
+    if fecha_fin:
+        query += " AND DATE(v.fecha_recibo) <= %s"
+        params.append(fecha_fin)
+    cursor.execute(query, params)
+    total = cursor.fetchone()[0]
+    cursor.close()
+    conn.close()
+    return total
+
+
+def obtener_historial_ventas(id_negocio=None, fecha_inicio=None, fecha_fin=None,
+                             limit=20, offset=0):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    query = """
+        SELECT
+            v.id_venta,
+            v.fecha_recibo,
+            v.fecha_estimada,
+            v.fecha_lista,
+            v.fecha_entrega,
+            v.total,
+            v.aplica_descuento,
+            v.cantidad_descuento,
+            c.nombre,
+            c.apellido,
+            c.telefono,
+            n.nombre   AS negocio,
+            n.id_negocio,
+            u.usuario  AS usuario_creo,
+            ue.usuario AS usuario_entrego,
+            COALESCE(SUM(p.monto), 0) AS total_pagado
+        FROM venta v
+        JOIN cliente  c ON c.id_cliente  = v.id_cliente
+        JOIN negocio  n ON n.id_negocio  = v.id_negocio
+        LEFT JOIN usuario u  ON u.id_usuario  = v.id_usuario_creo
+        LEFT JOIN usuario ue ON ue.id_usuario = v.id_usuario_entrego
+        LEFT JOIN pago_venta p ON p.id_venta = v.id_venta
+        WHERE v.eliminado = 0
+    """
+
+    params = []
+
+    if id_negocio:
+        query += " AND v.id_negocio = %s"
+        params.append(id_negocio)
+    if fecha_inicio:
+        query += " AND DATE(v.fecha_recibo) >= %s"
+        params.append(fecha_inicio)
+    if fecha_fin:
+        query += " AND DATE(v.fecha_recibo) <= %s"
+        params.append(fecha_fin)
+
+    query += " GROUP BY v.id_venta ORDER BY v.id_venta DESC LIMIT %s OFFSET %s"
+    params.extend([limit, offset])
+
+    cursor.execute(query, params)
+    ventas = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+    return ventas

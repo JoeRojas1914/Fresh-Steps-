@@ -14,20 +14,17 @@
 
 <form method="GET"
       action="{{ url_for('gastos.gastos') }}"
+      id="form-filtro-gastos"
       class="filtro-box">
 
   <div class="filtro-row">
-
     <div class="filtro-item">
       <label>Negocio</label>
       <select name="id_negocio">
         <option value="">Todos</option>
         {% for n in negocios %}
           <option value="{{ n.id_negocio }}"
-            {% if request.args.get('id_negocio') == n.id_negocio|string %}
-              selected
-            {% endif %}
-          >
+            {% if request.args.get('id_negocio') == n.id_negocio|string %}selected{% endif %}>
             {{ n.nombre }}
           </option>
         {% endfor %}
@@ -36,25 +33,34 @@
 
     <div class="filtro-item">
       <label>Desde</label>
-      <input
-        type="date"
-        name="fecha_inicio"
-        value="{{ request.args.get('fecha_inicio', '') }}"
-      >
+      <input type="date" name="fecha_inicio"
+             value="{{ request.args.get('fecha_inicio', '') }}">
     </div>
 
     <div class="filtro-item">
       <label>Hasta</label>
-      <input
-        type="date"
-        name="fecha_fin"
-        value="{{ request.args.get('fecha_fin', '') }}"
-      >
+      <input type="date" name="fecha_fin"
+             value="{{ request.args.get('fecha_fin', '') }}">
+    </div>
+
+    <div class="filtro-item" style="flex:0 0 auto; min-width:auto;">
+      <label>&nbsp;</label>
+      <div class="filtro-toggle" style="margin:0; gap:10px;">
+        <label class="switch">
+          <input type="checkbox"
+                 name="eliminados"
+                 value="1"
+                 id="toggle-eliminados-gastos"
+                 onchange="this.form.submit()"
+                 {% if incluir_eliminados %}checked{% endif %}>
+          <span class="slider"></span>
+        </label>
+        <span class="toggle-text">Mostrar eliminados</span>
+      </div>
     </div>
 
     <div class="filtro-actions">
-      <button type="submit" class="btn btn--primary btn--sm">Aplicar</button>
-
+      <button type="submit" class="btn btn--primary btn--sm">🔍 Filtrar</button>
       {% if request.args.get('id_negocio') or request.args.get('fecha_inicio') or request.args.get('fecha_fin') %}
         <a href="{{ url_for('gastos.gastos') }}"
            class="btn btn--danger btn--sm" style="text-decoration:none;">✕ Limpiar</a>
@@ -65,33 +71,15 @@
                   fecha_fin=request.args.get('fecha_fin') or '',
                   eliminados='1' if incluir_eliminados else '') }}"
          class="btn btn--success btn--sm" style="text-decoration:none;">
-          ⬇ Exportar Excel
+        ⬇ Exportar Excel
       </a>
+      <button type="button" onclick="abrirModal('modalGasto')" class="btn btn--primary btn--sm">
+        ➕ Agregar gasto
+      </button>
     </div>
-
   </div>
+
 </form>
-
-<form method="GET" action="{{ url_for('gastos.gastos') }}" class="filtro-toggle">
-
-    <input type="hidden" name="id_negocio" value="{{ request.args.get('id_negocio','') }}">
-    <input type="hidden" name="fecha_inicio" value="{{ request.args.get('fecha_inicio','') }}">
-    <input type="hidden" name="fecha_fin" value="{{ request.args.get('fecha_fin','') }}">
-
-    <label class="switch">
-        <input type="checkbox"
-               name="eliminados"
-               value="1"
-               onchange="this.form.submit()"
-               {% if incluir_eliminados %}checked{% endif %}>
-        <span class="slider"></span>
-    </label>
-
-    <span class="toggle-text">Mostrar eliminados</span>
-</form>
-
-
-<button onclick="abrirModal('modalGasto')" class="btn btn--primary">➕ Agregar gasto</button>
 
 
 {% call(section) modal("modalGasto", "Agregar gasto", "md") %}

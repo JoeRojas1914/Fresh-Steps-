@@ -1,11 +1,17 @@
 {% extends "base.html" %}
 {% from "macros/badges.html" import badge_negocio %}
-{% block content %}
+{% from "components/table.html" import table %}
+{% from "components/pagination.html" import pagination %}
 
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/cliente_perfil.css') }}">
+{% endblock %}
+
+{% block content %}
 <div class="page-content">
 
+  {# ── Cabecera del cliente ───────────────────────────────── #}
   <div class="cliente-header" style="display:flex; gap:30px; align-items:center; flex-wrap:wrap; margin-bottom:30px;">
-
     <div class="cliente-avatar">
       {% if cliente.avatar_url %}
         <img src="{{ cliente.avatar_url }}" alt="Avatar" class="avatar-img">
@@ -16,7 +22,7 @@
       {% endif %}
     </div>
 
-    <div class="cliente-info" style="flex:1; display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px;">
+    <div class="cliente-info" style="flex:1; display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:12px;">
       <div><strong>Nombre:</strong> {{ cliente.nombre }} {{ cliente.apellido }}</div>
       <div><strong>Teléfono:</strong> {{ cliente.telefono or 'N/A' }}</div>
       <div><strong>Correo:</strong> {{ cliente.correo or 'N/A' }}</div>
@@ -28,256 +34,197 @@
 
   <h2 style="margin-bottom:20px;">📦 Historial de pedidos</h2>
 
-<form method="GET"
-      action="{{ url_for('clientes.ver_cliente', id_cliente=cliente.id_cliente) }}"
-      class="filtro-box">
-
-  <div class="filtro-row">
-
-    <div class="filtro-item">
-      <label>Negocio</label>
-      <select name="id_negocio">
-        <option value="">Todos</option>
-        {% for n in negocios %}
-          <option value="{{ n.id_negocio }}"
-            {% if request.args.get('id_negocio') == n.id_negocio|string %}
-              selected
-            {% endif %}
-          >
-            {{ n.nombre }}
-          </option>
-        {% endfor %}
-      </select>
-    </div>
-
-    <div class="filtro-item">
-      <label>Desde</label>
-      <input
-        type="date"
-        name="fecha_inicio"
-        value="{{ request.args.get('fecha_inicio', '') }}"
-      >
-    </div>
-
-    <div class="filtro-item">
-      <label>Hasta</label>
-      <input
-        type="date"
-        name="fecha_fin"
-        value="{{ request.args.get('fecha_fin', '') }}"
-      >
-    </div>
-
-    <div class="filtro-actions">
-      <button type="submit">Aplicar</button>
-
-      {% if request.args.get('id_negocio') or request.args.get('fecha_inicio') or request.args.get('fecha_fin') %}
-        <a href="{{ url_for('clientes.ver_cliente', id_cliente=cliente.id_cliente) }}">
-          Limpiar
+  {# ── Filtros ────────────────────────────────────────────── #}
+  <form method="GET"
+        action="{{ url_for('clientes.ver_cliente', id_cliente=cliente.id_cliente) }}"
+        class="filtro-box">
+    <div class="filtro-row">
+      <div class="filtro-item">
+        <label>Negocio</label>
+        <select name="id_negocio">
+          <option value="">Todos</option>
+          {% for n in negocios %}
+            <option value="{{ n.id_negocio }}"
+              {% if request.args.get('id_negocio') == n.id_negocio|string %}selected{% endif %}>
+              {{ n.nombre }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="filtro-item">
+        <label>Desde</label>
+        <input type="date" name="fecha_inicio"
+               value="{{ request.args.get('fecha_inicio', '') }}">
+      </div>
+      <div class="filtro-item">
+        <label>Hasta</label>
+        <input type="date" name="fecha_fin"
+               value="{{ request.args.get('fecha_fin', '') }}">
+      </div>
+      <div class="filtro-actions">
+        <button type="submit" class="btn btn--primary btn--sm">🔍 Filtrar</button>
+        {% if request.args.get('id_negocio') or request.args.get('fecha_inicio') or request.args.get('fecha_fin') %}
+          <a href="{{ url_for('clientes.ver_cliente', id_cliente=cliente.id_cliente) }}"
+             class="btn btn--danger btn--sm" style="text-decoration:none;">✕ Limpiar</a>
+        {% endif %}
+        <a href="{{ url_for('clientes.exportar_cliente_excel', id_cliente=cliente.id_cliente,
+                    id_negocio=request.args.get('id_negocio') or '',
+                    fecha_inicio=request.args.get('fecha_inicio') or '',
+                    fecha_fin=request.args.get('fecha_fin') or '') }}"
+           class="btn btn--success btn--sm"
+           style="text-decoration:none;">
+            ⬇ Exportar Excel
         </a>
-      {% endif %}
+      </div>
     </div>
+  </form>
 
-  </div>
-</form>
+  {# ── Tabla ──────────────────────────────────────────────── #}
+  {% if pedidos %}
 
-  <div class="pedidos-container" style="display:flex; flex-direction:column; gap:20px;">
+  {% set meses = {
+      1:'enero', 2:'febrero', 3:'marzo', 4:'abril',
+      5:'mayo', 6:'junio', 7:'julio', 8:'agosto',
+      9:'septiembre', 10:'octubre', 11:'noviembre', 12:'diciembre'
+  } %}
 
-    {% for p in pedidos %}
-      <div class="pedido-card" style="border-radius:16px; padding:20px; background:white; box-shadow:0 6px 16px rgba(0,0,0,0.08);">
-        <p style="margin-top:4px; display:flex; align-items:center; gap:8px;">
-          {{ badge_negocio(p.negocio) }}
-        </p>
-        
-        <p style="font-weight:600; color:#1e3a8a;">
-          Fecha: {{ p.fecha_recibo.strftime('%d/%m/%Y') }}
-        </p>
+  <div id="toast-container"></div>
 
-        <p style="margin-top:4px;">
-          <strong style="color:#1e3a8a;">Status:</strong>
-          {% if p.fecha_entrega %}
-            <span class="status status-completado">✔ Completado</span>
-          {% else %}
-            <span class="status status-pendiente">⏳ Pendiente</span>
-          {% endif %}
-        </p>
+  {% call table([
+      "Recibo", "Negocio",
+      "Fecha recibo", "Fecha estimada", "Fecha lista",
+      "Fecha entrega", "Total", "Estado", "Detalles"
+  ]) %}
 
-        <table style="width:100%; margin-top:12px; border-collapse:collapse;">
-          <thead>
-            <tr style="background:#e6f3ff; color:#1e3a8a;">
-              <th style="padding:8px; text-align:left;">Artículo</th>
-              <th style="padding:8px; text-align:left;">Servicios</th>
-              <th style="padding:8px; text-align:left;">Subtotal</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {% for item in p.detalles %}
-              <tr style="border-top:1px solid #eee; vertical-align:top;">
-
-                <td style="padding:8px; width:45%;">
-                  {% if item.tipo_articulo == "calzado" %}
-                    👟 {{ item.datos.tipo }} {{ item.datos.marca }}
-                    <div style="opacity:0.8; margin-top:2px;">
-                      {{ item.datos.color_base }}
-                      {% if item.datos.color_secundario %}/{{ item.datos.color_secundario }}{% endif %}
-                    </div>
-
-                  {% elif item.tipo_articulo == "confeccion" %}
-                    🧵 {{ item.datos.tipo }}
-                    {% if item.datos.marca %} {{ item.datos.marca }}{% endif %}
-                    <div style="opacity:0.8; margin-top:2px;">
-                      Cantidad: <b>{{ item.datos.cantidad }}</b>
-                    </div>
-
-                  {% elif item.tipo_articulo == "maquila" %}
-                    🏭 {{ item.datos.tipo }}
-                    <div style="opacity:0.8; margin-top:2px;">
-                      Cantidad: <b>{{ item.datos.cantidad }}</b><br>
-                      Precio unitario: <b>${{ "{:.2f}".format(item.datos.precio_unitario) }}</b>
-                    </div>
-                  {% endif %}
-
-                  {% if item.comentario %}
-                    <div style="
-                      margin-top:6px;
-                      font-style:italic;
-                      opacity:0.85;
-                      white-space:normal;
-                      word-break:break-word;
-                      overflow-wrap:anywhere;
-                    ">
-                      💬 {{ item.comentario }}
-                    </div>
-                  {% endif %}
-                </td>
-
-                <td style="padding:8px; width:35%;">
-                  {% if item.servicios and item.servicios|length > 0 %}
-                    <div style="display:flex; flex-direction:column; gap:6px;">
-                      {% for s in item.servicios %}
-                        <div>{{ s.nombre }}</div>
-                      {% endfor %}
-                    </div>
-                  {% else %}
-                    <span style="opacity:0.7;">Sin servicios</span>
-                  {% endif %}
-                </td>
-
-                <td style="padding:8px; width:20%;">
-                  {% set ns = namespace(subtotal=0) %}
-
-                  {% if item.tipo_articulo == "maquila" %}
-                    {% set ns.subtotal = (item.datos.cantidad | float(0)) * (item.datos.precio_unitario | float(0)) %}
-                  {% else %}
-                    {% for s in item.servicios %}
-                      {% set ns.subtotal = ns.subtotal + (s.precio_aplicado | float(0)) %}
-                    {% endfor %}
-                  {% endif %}
-
-                  <b>${{ "{:.2f}".format(ns.subtotal) }}</b>
-                </td>
-
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-
-        {% set descuento = (p.cantidad_descuento | float(0)) %}
-
-        <p style="margin-top:12px;">
-          <strong style="color:#1e3a8a;">Total:</strong>
-          ${{ "{:.2f}".format(p.total) }}
-
-          {% if descuento > 0 %}
-            <span style="margin-left:6px; font-weight:600; color:#1e3a8a;">
-              (-${{ "{:.2f}".format(descuento) }}) Descuento
-            </span>
-          {% endif %}
-        </p>
-
-
-        <p style="margin-top:8px;">
-          <strong style="color:#1e3a8a;">Pagado:</strong>
-          ${{ "{:.2f}".format(p.total_pagado) }}
-        </p>
-
-        {% if p.saldo_pendiente > 0 %}
-          <p>
-            <strong style="color:#b91c1c;">Saldo pendiente:</strong>
-            ${{ "{:.2f}".format(p.saldo_pendiente) }}
-          </p>
-        {% else %}
-          <p style="color:#15803d; font-weight:600;">
-            ✔ Pedido liquidado
-          </p>
-        {% endif %}
-
-        {% if p.pagos and p.pagos|length > 0 %}
-          <div style="margin-top:12px;">
-            <strong style="color:#1e3a8a;">Pagos realizados</strong>
-
-            <ul style="margin-top:6px; padding-left:18px;">
-              {% for pago in p.pagos %}
-                <li style="margin-bottom:4px;">
-                  <b>{{ pago.tipo_pago_venta | capitalize }}</b>
-                  — {{ pago.tipo_pago | capitalize }}
-                  — <b>${{ "{:.2f}".format(pago.monto) }}</b>
-                </li>
-              {% endfor %}
-            </ul>
-          </div>
-        {% else %}
-          <p style="opacity:0.7; margin-top:8px;">
-            Sin pagos registrados
-          </p>
-        {% endif %}
-
-      </div>
-
+  {% for p in pedidos %}
+    {% if p.fecha_entrega %}
+      {% set estado = "entregada" %}
+    {% elif p.fecha_lista %}
+      {% set estado = "lista" %}
     {% else %}
-      <div class="empty-state">
-        <div class="empty-icon">📦</div>
-
-        <h3>Sin pedidos registrados</h3>
-
-        <p>
-          Este cliente aún no tiene pedidos.<br>
-          Cuando se registre alguno, se mostrará aquí.
-        </p>
-      </div>
-    {% endfor %}
-
-
-  </div>
-
-  <div class="paginacion">
-    {% if total_paginas > 1 %}
-        {% set bloque = ((pagina - 1) // 10) %}
-        {% set inicio = bloque * 10 + 1 %}
-        {% set fin = inicio + 9 %}
-        {% if fin > total_paginas %}
-            {% set fin = total_paginas %}
-        {% endif %}
-
-        {% if inicio > 1 %}
-            <a href="{{ url_for('clientes.ver_cliente', id_cliente=cliente.id_cliente, pagina=p, id_negocio=request.args.get('id_negocio'), fecha_inicio=request.args.get('fecha_inicio'), fecha_fin=request.args.get('fecha_fin')) }}">«</a>
-        {% endif %}
-
-        {% for p in range(inicio, fin + 1) %}
-            {% if p == pagina %}
-                <strong>{{ p }}</strong>
-            {% else %}
-              <a href="{{ url_for('clientes.ver_cliente', id_cliente=cliente.id_cliente, pagina=p, id_negocio=request.args.get('id_negocio'), fecha_inicio=request.args.get('fecha_inicio'), fecha_fin=request.args.get('fecha_fin')) }}">«</a>
-            {% endif %}
-        {% endfor %}
-
-        {% if fin < total_paginas %}
-          <a href="{{ url_for('clientes.ver_cliente', id_cliente=cliente.id_cliente, pagina=p, id_negocio=request.args.get('id_negocio'), fecha_inicio=request.args.get('fecha_inicio'), fecha_fin=request.args.get('fecha_fin')) }}">«</a>
-        {% endif %}
+      {% set estado = "pendiente" %}
     {% endif %}
+
+    <tr>
+      <td>#{{ p.id_venta }}</td>
+      <td>{{ badge_negocio(p.negocio) }}</td>
+
+      <td>
+        {{ p.fecha_recibo.day }} {{ meses[p.fecha_recibo.month] }}
+        {{ "%02d:%02d" | format(p.fecha_recibo.hour, p.fecha_recibo.minute) }}
+      </td>
+      <td>
+        {{ p.fecha_estimada.day }} {{ meses[p.fecha_estimada.month] }}
+        {{ "%02d:%02d" | format(p.fecha_estimada.hour, p.fecha_estimada.minute) }}
+      </td>
+      <td>
+        {% if p.fecha_lista %}
+          {{ p.fecha_lista.day }} {{ meses[p.fecha_lista.month] }}
+          {{ "%02d:%02d" | format(p.fecha_lista.hour, p.fecha_lista.minute) }}
+        {% else %}<span style="opacity:.4;">—</span>{% endif %}
+      </td>
+      <td>
+        {% if p.fecha_entrega %}
+          {{ p.fecha_entrega.day }} {{ meses[p.fecha_entrega.month] }}
+          {{ "%02d:%02d" | format(p.fecha_entrega.hour, p.fecha_entrega.minute) }}
+        {% else %}<span style="opacity:.4;">—</span>{% endif %}
+      </td>
+
+      <td>${{ "%.2f" | format(p.total) }}</td>
+
+      <td>
+        <span class="badge-estado {{ estado }}">
+          {% if estado == 'pendiente' %}Pendiente
+          {% elif estado == 'lista' %}Lista
+          {% else %}Entregada{% endif %}
+        </span>
+      </td>
+
+      <td>
+        <button class="btn btn--info btn--sm" data-id="{{ p.id_venta }}">
+          ℹ️ Info
+        </button>
+      </td>
+    </tr>
+
+    {# ── Fila expandible ── #}
+    <tr id="detalles-{{ p.id_venta }}" class="table--details" style="display:none;">
+      <td colspan="9">
+        <div class="detalles-box">
+          <div class="detalles-title">🧾 Detalles del pedido</div>
+
+          <ul class="detalles-list" id="lista-detalles-{{ p.id_venta }}">
+            <li style="opacity:0.6;">Cargando detalles...</li>
+          </ul>
+
+          <div class="pagos-title">💳 Pagos registrados</div>
+          {% if p.pagos %}
+            {% for pg in p.pagos %}
+            <div class="pago-fila">
+              <span class="pago-tipo">
+                {{ pg.tipo_pago or '—' }}
+                {% if pg.tipo_pago_venta %}
+                  <span class="pago-tag">{{ pg.tipo_pago_venta }}</span>
+                {% endif %}
+              </span>
+              <span class="pago-monto">${{ "%.2f" | format(pg.monto | float) }}</span>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div style="opacity:.55; font-size:13px; font-style:italic; margin-bottom:10px;">
+              Sin pagos registrados
+            </div>
+          {% endif %}
+
+          {% if p.saldo_pendiente > 0 %}
+          <div style="margin-top:10px; font-size:13px; font-weight:700; color:#b91c1c;">
+            Saldo pendiente: ${{ "%.2f" | format(p.saldo_pendiente) }}
+          </div>
+          {% else %}
+          <div style="margin-top:10px; font-size:13px; font-weight:700; color:#15803d;">
+            ✔ Pedido liquidado
+          </div>
+          {% endif %}
+
+          <div class="btn-row">
+            <button type="button"
+                    class="btn btn--info btn--sm"
+                    onclick="window.open('{{ url_for('ventas.venta_ticket', id_venta=p.id_venta) }}', '_blank')">
+              🧾 Ver ticket
+            </button>
+          </div>
+        </div>
+      </td>
+    </tr>
+  {% endfor %}
+
+  {% endcall %}
+
+  {{ pagination(
+      pagina,
+      total_paginas,
+      'clientes.ver_cliente',
+      {
+        "id_cliente":   cliente.id_cliente,
+        "id_negocio":   request.args.get('id_negocio'),
+        "fecha_inicio": request.args.get('fecha_inicio'),
+        "fecha_fin":    request.args.get('fecha_fin')
+      }
+  ) }}
+
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">📦</div>
+    <h3>Sin pedidos registrados</h3>
+    <p>Este cliente aún no tiene pedidos.<br>
+       Cuando se registre alguno, se mostrará aquí.</p>
   </div>
+  {% endif %}
 
 </div>
+{% endblock %}
 
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/detalles_venta.js') }}"></script>
+<script src="{{ url_for('static', filename='js/cliente_perfil.js') }}"></script>
 {% endblock %}

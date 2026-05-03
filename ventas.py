@@ -488,7 +488,8 @@ def obtener_ventas_cliente(id_cliente, id_negocio, fecha_inicio, fecha_fin, limi
     cursor = conn.cursor(dictionary=True)
 
     sql = """
-        SELECT v.id_venta, v.fecha_recibo, v.fecha_entrega,
+        SELECT v.id_venta, v.fecha_recibo, v.fecha_estimada,
+               v.fecha_lista, v.fecha_entrega,
                v.total, v.cantidad_descuento,
                n.nombre AS negocio
         FROM venta v
@@ -644,6 +645,7 @@ def eliminar_venta(id_venta):
         conn.close()
 
 def contar_historial_ventas(id_negocio=None, fecha_inicio=None, fecha_fin=None):
+    """Cuenta el total de ventas para la paginacion del historial."""
     conn = get_connection()
     cursor = conn.cursor()
     query = "SELECT COUNT(DISTINCT v.id_venta) FROM venta v WHERE v.eliminado = 0"
@@ -666,6 +668,7 @@ def contar_historial_ventas(id_negocio=None, fecha_inicio=None, fecha_fin=None):
 
 def obtener_historial_ventas(id_negocio=None, fecha_inicio=None, fecha_fin=None,
                              limit=20, offset=0):
+    """Historial paginado de ventas para admin."""
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 

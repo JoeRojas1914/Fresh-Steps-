@@ -536,10 +536,13 @@ def obtener_entregas_pendientes(id_negocio=None):
             c.nombre,
             c.apellido,
             c.telefono,
-            n.nombre AS negocio
+            n.nombre AS negocio,
+            COALESCE(SUM(p.monto), 0) AS total_pagado,
+            (v.total - COALESCE(SUM(p.monto), 0)) AS saldo_pendiente
         FROM venta v
         JOIN cliente c ON c.id_cliente = v.id_cliente
         JOIN negocio n ON n.id_negocio = v.id_negocio
+        LEFT JOIN pago_venta p ON p.id_venta = v.id_venta
         WHERE v.fecha_lista IS NULL
           AND v.fecha_entrega IS NULL
           AND v.eliminado = 0
@@ -551,7 +554,7 @@ def obtener_entregas_pendientes(id_negocio=None):
         query += " AND v.id_negocio = %s"
         params.append(id_negocio)
 
-    query += " ORDER BY v.fecha_estimada ASC"
+    query += " GROUP BY v.id_venta ORDER BY v.fecha_estimada ASC"
 
     cursor.execute(query, params)
     ventas = cursor.fetchall()

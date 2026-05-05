@@ -18,8 +18,8 @@ def generar_semanas_rango(inicio: date, fin: date):
 
     while actual <= fin:
         semana_fin  = actual + timedelta(days=6)
-        num_semana  = actual.isocalendar()[1]   # semana ISO del año (1–53)
-        anio        = actual.isocalendar()[0]   # año ISO (puede diferir en sem 52/53)
+        num_semana  = actual.isocalendar()[1]   
+        anio        = actual.isocalendar()[0]
 
         label = [
             f"Sem {num_semana} ({anio})",
@@ -156,49 +156,59 @@ def obtener_unidades_por_semana(inicio: date, fin: date, id_negocio: str):
     try:
         for s in semanas:
             semana_inicio = max(s["inicio"], inicio)
-            semana_fin = min(s["fin"], fin)
-            total_unidades = 0
+            semana_fin    = min(s["fin"],    fin)
+
+            partes  = []
+            params  = []
 
             if id_negocio in ("1", "all"):
-                cursor.execute("""
-                    SELECT COUNT(a.id_articulo) AS total
+                partes.append("""
+                    SELECT COUNT(a.id_articulo) AS u
                     FROM venta v
-                    JOIN articulo a ON a.id_venta = v.id_venta
-                    JOIN articulo_calzado aca ON aca.id_articulo = a.id_articulo
+                    JOIN articulo a          ON a.id_venta    = v.id_venta
+                    JOIN articulo_calzado ac ON ac.id_articulo = a.id_articulo
                     WHERE v.fecha_recibo >= %s
-                      AND v.fecha_recibo < DATE_ADD(%s, INTERVAL 1 DAY)
+                      AND v.fecha_recibo <  DATE_ADD(%s, INTERVAL 1 DAY)
                       AND v.id_negocio = 1
-                      AND v.eliminado = 0
-                """, [semana_inicio, semana_fin])
-                total_unidades += cursor.fetchone()["total"]
+                      AND v.eliminado  = 0
+                """)
+                params += [semana_inicio, semana_fin]
 
             if id_negocio in ("2", "all"):
-                cursor.execute("""
-                    SELECT COALESCE(SUM(ac.cantidad), 0) AS total
+                partes.append("""
+                    SELECT COALESCE(SUM(ac2.cantidad), 0) AS u
                     FROM venta v
-                    JOIN articulo a ON a.id_venta = v.id_venta
-                    JOIN articulo_confeccion ac ON ac.id_articulo = a.id_articulo
+                    JOIN articulo a            ON a.id_venta      = v.id_venta
+                    JOIN articulo_confeccion ac2 ON ac2.id_articulo = a.id_articulo
                     WHERE v.fecha_recibo >= %s
-                      AND v.fecha_recibo < DATE_ADD(%s, INTERVAL 1 DAY)
+                      AND v.fecha_recibo <  DATE_ADD(%s, INTERVAL 1 DAY)
                       AND v.id_negocio = 2
-                      AND v.eliminado = 0
-                """, [semana_inicio, semana_fin])
-                total_unidades += cursor.fetchone()["total"]
+                      AND v.eliminado  = 0
+                """)
+                params += [semana_inicio, semana_fin]
 
             if id_negocio in ("3", "all"):
-                cursor.execute("""
-                    SELECT COALESCE(SUM(am.cantidad), 0) AS total
+                partes.append("""
+                    SELECT COALESCE(SUM(am.cantidad), 0) AS u
                     FROM venta v
-                    JOIN articulo a ON a.id_venta = v.id_venta
+                    JOIN articulo a          ON a.id_venta    = v.id_venta
                     JOIN articulo_maquila am ON am.id_articulo = a.id_articulo
                     WHERE v.fecha_recibo >= %s
-                      AND v.fecha_recibo < DATE_ADD(%s, INTERVAL 1 DAY)
+                      AND v.fecha_recibo <  DATE_ADD(%s, INTERVAL 1 DAY)
                       AND v.id_negocio = 3
-                      AND v.eliminado = 0
-                """, [semana_inicio, semana_fin])
-                total_unidades += cursor.fetchone()["total"]
+                      AND v.eliminado  = 0
+                """)
+                params += [semana_inicio, semana_fin]
 
-            resultados.append({"label": s["label"], "total": int(total_unidades)})
+            if partes:
+                sql = "SELECT SUM(u) AS total FROM (" + " UNION ALL ".join(partes) + ") t"
+                cursor.execute(sql, params)
+                row = cursor.fetchone()
+                total = int(row["total"] or 0)
+            else:
+                total = 0
+
+            resultados.append({"label": s["label"], "total": total})
 
     finally:
         cursor.close()
@@ -278,7 +288,6 @@ def obtener_ingresos_por_semana(inicio, fin, id_negocio):
 
 
 def ejecutar_query(sql, params=None):
-    """Abre su propia conexión. Usar solo para queries simples de una sola llamada."""
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
     try:

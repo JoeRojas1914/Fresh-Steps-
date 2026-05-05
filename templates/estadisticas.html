@@ -26,10 +26,10 @@
 <div class="date-selector" style="margin: 20px 0;">
     <form onsubmit="return false;" style="display:flex; gap:15px; align-items:center;">
         <label>Desde:</label>
-        <input type="date" id="fecha_inicio" value="{{ hoy }}">
+        <input type="date" id="fecha_inicio" value="{{ fecha_inicio }}">
 
         <label>Hasta:</label>
-        <input type="date" id="fecha_fin" value="{{ hoy }}">
+        <input type="date" id="fecha_fin" value="{{ fecha_fin }}">
 
         <label>Negocio:</label>
         <select id="negocio_select">
@@ -156,6 +156,7 @@ function aplicarColoresRojos(datasets) {
 
 document.addEventListener("DOMContentLoaded", () => {
     initCharts();
+    cargarDashboard();
 });
 
 function initCharts() {
@@ -353,7 +354,6 @@ async function cargarDashboard() {
         }
 
         const url = `/api/estadisticas/dashboard?inicio=${inicio}&fin=${fin}&id_negocio=${negocio}`;
-        console.log("📡 URL:", url);
 
         const res = await fetch(url);
 
@@ -364,7 +364,6 @@ async function cargarDashboard() {
         }
 
         const data = await res.json();
-        console.log("✅ Dashboard data:", data);
 
         document.getElementById("ventasMes").textContent =
             `$${Number(data.kpis?.ingresos || 0).toLocaleString()}`;
@@ -375,7 +374,6 @@ async function cargarDashboard() {
         document.getElementById("gananciaMes").textContent =
             `$${Number(data.kpis?.ganancia || 0).toLocaleString()}`;
 
-        // ---- Ventas semana ----
         if (data.ventas_semanales) {
             ventasSemanaChart.data.labels = data.ventas_semanales.map(x => x.label);
             ventasSemanaChart.data.datasets[0].data =
@@ -383,7 +381,6 @@ async function cargarDashboard() {
             ventasSemanaChart.update();
         }
 
-        // ---- Gastos ----
         if (data.gastos_semanales) {
             gastosChart.data.labels = data.gastos_semanales.labels || [];
             gastosChart.data.datasets =
@@ -391,7 +388,6 @@ async function cargarDashboard() {
             gastosChart.update();
         }
 
-        // ---- Unidades ----
         if (data.unidades_semanales) {
             unidadesSemanaChart.data.labels =
                 data.unidades_semanales.map(x => x.label);
@@ -400,7 +396,6 @@ async function cargarDashboard() {
             unidadesSemanaChart.update();
         }
 
-        // ---- Ingresos ----
         if (data.ingresos_semanales) {
             ingresosChart.data.labels =
                 data.ingresos_semanales.map(x => x.label);
@@ -409,7 +404,6 @@ async function cargarDashboard() {
             ingresosChart.update();
         }
 
-        // ---- Prepago vs Sin prepago ----
         if (data.ventas_prepago) {
             tipoPagoChart.data.labels =
                 data.ventas_prepago.map(x => x.tipo);
@@ -419,7 +413,6 @@ async function cargarDashboard() {
         }
 
 
-        // ---- Servicios ----
         if (data.uso_servicios) {
             serviciosChart.data.labels =
                 data.uso_servicios.map(x => x.nombre);
@@ -428,7 +421,6 @@ async function cargarDashboard() {
             serviciosChart.update();
         }
 
-        // ---- Ventas por día ----
         if (data.ventas_por_dia) {
             ventasPorDiaChart.data.datasets[0].data =
                 data.ventas_por_dia;

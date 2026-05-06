@@ -1,16 +1,16 @@
 document.addEventListener("DOMContentLoaded", () => {
 
     const navToggle = document.getElementById("navToggle");
-    const navLinks = document.getElementById("navLinks");
+    const navbar    = document.getElementById("navbar");
 
-    if (navToggle && navLinks) {
+    if (navToggle && navbar) {
         navToggle.addEventListener("click", () => {
-            navLinks.classList.toggle("active");
+            navbar.classList.toggle("open");
         });
     }
 
-    const userBtn = document.getElementById("userBtn");
-    const userMenu = document.getElementById("userMenu");
+    const userBtn      = document.getElementById("userBtn");
+    const userMenu     = document.getElementById("userMenu");
     const userDropdown = document.getElementById("userDropdown");
 
     if (userBtn && userMenu && userDropdown) {

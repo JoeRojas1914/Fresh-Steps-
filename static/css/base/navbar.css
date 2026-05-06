@@ -1,11 +1,10 @@
-nav {
+.navbar {
     display: flex;
     align-items: center;
-    gap: 25px;
-    padding: 12px 24px;
+    padding: 10px 20px;
     margin-bottom: 30px;
 
-    background: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.92);
     border-radius: 16px;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
     backdrop-filter: blur(6px);
@@ -14,44 +13,72 @@ nav {
 .nav-logo {
     display: flex;
     align-items: center;
+    margin-right: 18px;
+    flex-shrink: 0;
 }
 
 .nav-logo img {
-    height: 48px;
+    height: 44px;
     width: auto;
     object-fit: contain;
 }
 
-.nav-links {
+/* Grupo de links */
+.nav-group {
     display: flex;
     align-items: center;
-    flex: 1; 
+    gap: 2px;
 }
 
-.nav-links a {
-    margin-right: 20px;
-    text-decoration: none;
+/* Separador vertical entre grupos */
+.nav-sep {
+    width: 1px;
+    height: 22px;
+    background: #e2e8f0;
+    margin: 0 12px;
+    flex-shrink: 0;
+}
+
+/* Etiqueta sutil antes del grupo admin */
+.nav-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    padding: 0 6px;
+    margin-right: 2px;
+    white-space: nowrap;
+}
+
+/* Links individuales */
+.nav-links a,
+.nav-group a {
+    padding: 7px 11px;
+    border-radius: 8px;
+    font-size: 13px;
     font-weight: 600;
     color: #0b3c5d;
-    transition: color 0.3s ease;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.15s ease, color 0.15s ease;
 }
 
-.nav-links a:hover {
-    color: #2fa4ff;
+.nav-links a:hover,
+.nav-group a:hover {
+    background: #f0f7ff;
+    color: #1e7fd6;
 }
 
-.nav-links .logout {
+/* Usuario y cerrar sesión al extremo derecho */
+.nav-right {
     margin-left: auto;
-    margin-right: 0;
-    color: #c0392b;
-    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
-.nav-links .logout:hover {
-    color: #e74c3c;
-}
-
-
+/* Botón hamburguesa mobile */
 .nav-toggle {
     display: none;
     background: none;
@@ -59,26 +86,26 @@ nav {
     font-size: 22px;
     cursor: pointer;
     color: #0b3c5d;
+    margin-left: auto;
 }
 
-
+/* Dropdown de usuario */
 .nav-user-dropdown {
     position: relative;
-    margin-left: auto;
 }
 
 .nav-user-btn {
     background: #e6f3ff;
     border: none;
-    padding: 8px 14px;
-    border-radius: 14px;
+    padding: 7px 13px;
+    border-radius: 12px;
     font-weight: 600;
     color: #0b3c5d;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 14px;
+    gap: 7px;
+    font-size: 13px;
     transition: background 0.2s ease, transform 0.15s ease;
 }
 
@@ -102,7 +129,6 @@ nav {
     opacity: 0;
     transform: translateY(-6px);
     pointer-events: none;
-
     transition: 0.18s ease;
 }
 
@@ -120,6 +146,7 @@ nav {
     text-decoration: none;
     color: #c0392b;
     font-weight: 600;
+    border-radius: 0;
 }
 
 .nav-user-menu a:hover {
@@ -127,39 +154,57 @@ nav {
 }
 
 
-
+/* ── Mobile ── */
 @media (max-width: 768px) {
-
-    nav {
+    .navbar {
         flex-wrap: wrap;
     }
 
     .nav-toggle {
         display: block;
-        margin-left: auto;
     }
 
-    .nav-links {
-        width: 100%;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-        margin-top: 15px;
+    .nav-group,
+    .nav-sep,
+    .nav-label,
+    .nav-right {
         display: none;
     }
 
-    .nav-links a {
-        margin-right: 0;
-        width: 100%;
-        padding: 8px 0;
-    }
-
-    .nav-links .logout {
-        margin-left: 0;
-        align-self: flex-start;
-    }
-
-    .nav-links.active {
+    .navbar.open .nav-group,
+    .navbar.open .nav-right {
         display: flex;
+    }
+
+    .navbar.open .nav-sep,
+    .navbar.open .nav-label {
+        display: block;
+    }
+
+    .navbar.open .nav-group {
+        width: 100%;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+        margin-top: 8px;
+    }
+
+    .navbar.open .nav-group a {
+        width: 100%;
+        padding: 10px 12px;
+    }
+
+    .navbar.open .nav-sep {
+        width: 100%;
+        height: 1px;
+        margin: 4px 0;
+    }
+
+    .navbar.open .nav-right {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid #e2e8f0;
     }
 }

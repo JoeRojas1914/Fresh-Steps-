@@ -46,7 +46,8 @@ def servicios():
         q=q,
         pagina=pagina,
         total_paginas=data["total_paginas"],
-        incluir_eliminados=incluir_eliminados 
+        total_servicios=data["total"],
+        incluir_eliminados=incluir_eliminados
     )
 
 

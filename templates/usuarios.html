@@ -10,6 +10,13 @@
 
 {{ alerts(get_flashed_messages(with_categories=true)) }}
 
+<div class="monthly-cards" style="margin-bottom:20px;">
+    <div class="monthly-card small" style="border-left-color:#1e7fd6;">
+        <h4>👤 Total usuarios</h4>
+        <p style="color:#1e7fd6;">{{ total_usuarios }}</p>
+    </div>
+</div>
+
 {# ── Filtros ── #}
 <div class="filtro-box">
     <div class="filtro-row">
@@ -174,7 +181,6 @@
                 <div class="select-wrapper">
                     <select name="rol" id="u_rol">
                         <option value="caja">Caja</option>
-                        <option value="admin">Admin</option>
                     </select>
                 </div>
             </div>

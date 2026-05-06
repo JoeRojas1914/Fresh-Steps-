@@ -97,8 +97,6 @@ def ventas_pendientes():
 
         data = listar_entregas_pendientes_service(id_negocio)
 
-        logger.debug("ventas_pendientes data: %s", data)
-
         return render_template(
             "ventas_pendientes.html",
             **data

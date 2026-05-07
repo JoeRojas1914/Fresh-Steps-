@@ -2,6 +2,9 @@
 
 {% block head %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/ventas_crear.css') }}">
+    {# ── Scripts moved here so functions exist before the page renders ── #}
+    <script src="{{ url_for('static', filename='js/modal.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/ventas_crear.js') }}?v=4" defer></script>
 {% endblock %}
 
 {% block content %}
@@ -27,11 +30,7 @@
 
     <div class="modal-field">
         <label for="cliente_telefono">Teléfono</label>
-        <input id="cliente_telefono"
-               type="text"
-               name="telefono"
-               required
-               pattern="[0-9]{10}">
+        <input id="cliente_telefono" type="text" name="telefono" required pattern="[0-9]{10}">
     </div>
 
     <div class="modal-field">
@@ -47,48 +46,37 @@
 </form>
 {% endif %}
 
-
 {% if section == 'footer' %}
-<button type="button"
-        class="btn btn--danger btn--sm"
-        onclick="cerrarModal('modalCliente')">
-    Cancelar
-</button>
-
-<button type="submit"
-        form="formNuevoCliente"
-        class="btn btn--primary btn--lg">
-    Guardar cliente
-</button>
+<button type="button" class="btn btn--danger btn--sm" onclick="cerrarModal('modalCliente')">Cancelar</button>
+<button type="submit" form="formNuevoCliente" class="btn btn--primary btn--lg">Guardar cliente</button>
 {% endif %}
 
 {% endcall %}
 
 
-    <form id="formVenta" class="venta-layout">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <input type="hidden" name="id_cliente" id="id_cliente">
+<form id="formVenta" class="venta-layout">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="id_cliente" id="id_cliente">
 
-        <div class="venta-main">
-            <div class="venta-section">
-                <div class="section-header">
-                    <h2>Cliente</h2>
-                </div>
+    {# ── Columna principal ── #}
+    <div class="venta-main">
+
+        {# Sección Cliente #}
+        <div class="venta-seccion">
+            <div class="venta-seccion-header">
+                <div class="venta-seccion-icon">👤</div>
+                <h2>Cliente</h2>
+            </div>
+            <div class="venta-seccion-body">
                 <div id="busquedaCliente">
                     <div class="search-form">
-                        <input
-                            type="text"
-                            id="buscarCliente"
-                            placeholder="Nombre del cliente"
-                            autocomplete="off"
-                        >
-                        <button type="button"
-                                class="btn btn--primary btn--sm"
+                        <input type="text" id="buscarCliente"
+                               placeholder="Buscar cliente por nombre..."
+                               autocomplete="off">
+                        <button type="button" class="btn btn--primary btn--sm"
                                 onclick="abrirModal('modalCliente')">
                             ➕ Nuevo cliente
                         </button>
-
-
                     </div>
                     <div class="results-list" id="listaClientes"></div>
                 </div>
@@ -99,166 +87,143 @@
                     </button>
                 </div>
             </div>
+        </div>
 
-            <hr>
-
-            <div class="venta-section">    
-                <div class="section-header">
-                    <h2>Artículos</h2>
-                </div>
+        {# Sección Artículos #}
+        <div class="venta-seccion">
+            <div class="venta-seccion-header">
+                <div class="venta-seccion-icon">📦</div>
+                <h2>Artículos</h2>
+            </div>
+            <div class="venta-seccion-body">
                 <div id="articulosContainer"></div>
-                <button type="button"
-                id="btnAgregarArticulo"
-                class="btn btn--primary btn--sm"
-                onclick="agregarArticulo()">
+                <button type="button" id="btnAgregarArticulo"
+                        class="btn btn--primary btn--sm"
+                        onclick="agregarArticulo()">
                     ➕ Agregar artículo
                 </button>
-
             </div>
-        
-            <hr>
         </div>
 
-        <div class="venta-side">
-            <div class="venta-side-content">
-                <div class="venta-section">
-                    <div class="section-header">
-                        <h2>Negocio y fecha</h2>
-                    </div>
-                    <div class="form-group form-row">
-                        <div class="form-item">
-                            <label class="form-label">Negocio</label>
-                            <select name="id_negocio" id="id_negocio" onchange="seleccionarNegocio()">
-                                <option value="">-- Selecciona --</option>
-                                <option value="1">Fresh Steps</option>
-                                <option value="2">Confección</option>
-                                <option value="3">Maquila</option>
-                            </select>
+    </div>
 
-                            <div id="errorNegocio" style="color:red; font-size:0.9em; display:none;">
-                                No puedes cambiar el negocio si ya agregaste artículos. Borra todos primero.
-                            </div>
-                        </div>
+    {# ── Sidebar ── #}
+    <div class="venta-side">
 
-                        <div class="form-item">
-                            <label class="form-label">Fecha y hora estimada</label>
+        <div class="venta-seccion" style="margin-bottom:0; border-radius:16px 16px 0 0;">
+            <div class="venta-seccion-header" style="border-radius:0;">
+                <div class="venta-seccion-icon">⚙️</div>
+                <h2>Configuración</h2>
+            </div>
+            <div class="venta-seccion-body">
 
-                            <div style="display:flex; gap:10px;">
-                                <input
-                                    type="date"
-                                    id="fecha_estimada_fecha"
-                                    onchange="validarFormulario(); actualizarFechaEstimadaCompleta(); "
-                                    style="flex:1;"
-                                >
-
-                                <input
-                                    type="time"
-                                    id="fecha_estimada_hora"
-                                    onchange="validarFormulario(); actualizarFechaEstimadaCompleta(); "
-                                    style="width:120px;"
-                                >
-                            </div>
-
-                            <input type="hidden" name="fecha_estimada" id="fecha_estimada">
-
-
-                            <div id="errorFecha" style="color:red; font-size:0.9em; display:none;">
-                                La fecha estimada no puede ser menor a hoy.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="venta-section">
-                <div class="section-header">
-                    <h2>Pago y descuentos</h2>
-                </div>
-                <div class="pago-grid">
-
-            <!-- FILA PREPAGO -->
-            <div class="pago-row">
-                <div class="form-item">
-                    <label class="form-label">¿Prepago?</label>
-                    <select name="prepago" id="prepago"
-                            onchange="togglePrepago(); validarFormulario(); actualizarTotal()">
-                            <option value="no" selected>No</option>
-                        <option value="si">Sí</option>
-                    </select>
-                </div>
-
-                <div class="form-item" id="tipoPagoPrepagoContainer" style="display:none;">
-                    <label class="form-label">Tipo de pago</label>
-                    <select name="tipo_pago" id="tipo_pago"
-                            onchange="validarFormulario(); actualizarTotal()">
+                <div class="form-group">
+                    <label class="form-label">Negocio</label>
+                    <select name="id_negocio" id="id_negocio" onchange="seleccionarNegocio()">
                         <option value="">-- Selecciona --</option>
-                        <option value="efectivo">Efectivo</option>
-                        <option value="tarjeta">Tarjeta</option>
-                        <option value="transferencia">Transferencia</option>
+                        <option value="1">Fresh Steps</option>
+                        <option value="2">Confección</option>
+                        <option value="3">Maquila</option>
                     </select>
-                </div>
-
-                <div class="form-item" id="montoPrepagoContainer" style="display:none;">
-                    <label class="form-label">Monto prepago</label>
-                    <input type="number" min="0" step="0.01"
-                        name="monto_prepago" id="monto_prepago"
-                        placeholder="0"
-                        oninput="validarFormulario(); actualizarTotal()">
-                    <div id="errorPrepago" class="error-msg" style="display:none;">
-                        El prepago no puede ser mayor al total ni menor a 0.
+                    <div id="errorNegocio" style="color:red;font-size:.9em;display:none;">
+                        No puedes cambiar el negocio si ya agregaste artículos. Borra todos primero.
                     </div>
                 </div>
-            </div>
 
-            <div class="pago-row">
-                <div class="form-item">
-                    <label class="form-label">¿Aplicar descuento?</label>
-                        <select name="aplica_descuento" id="aplica_descuento"
-                                onchange="toggleDescuento(); actualizarTotal()">
-                            <option value="no" selected>No</option>
-                            <option value="si">Sí</option>
+                <div class="form-group" style="margin-top:12px;">
+                    <label class="form-label">Fecha y hora estimada</label>
+                    <div style="display:flex;gap:8px;">
+                        <input type="date" id="fecha_estimada_fecha" style="flex:1;"
+                               onchange="validarFormulario(); actualizarFechaEstimadaCompleta();">
+                        <input type="time" id="fecha_estimada_hora" style="width:110px;"
+                               onchange="validarFormulario(); actualizarFechaEstimadaCompleta();">
+                    </div>
+                    <input type="hidden" name="fecha_estimada" id="fecha_estimada">
+                    <div id="errorFecha" style="color:red;font-size:.9em;display:none;">
+                        La fecha estimada no puede ser menor a hoy.
+                    </div>
+                </div>
+
+                <div style="height:1px;background:#e2e8f0;margin:16px 0;"></div>
+
+                {# Prepago — onchange removed, wired in JS #}
+                <div class="toggle-option-row">
+                    <div>
+                        <div class="toggle-option-label">Prepago</div>
+                        <div class="toggle-option-sub">El cliente paga una parte ahora</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="togglePrepago">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div id="prepago-fields" class="toggle-extra-fields">
+                    <input type="hidden" name="prepago" id="prepago" value="no">
+                    <div class="field-group">
+                        <label class="form-label">Método de pago</label>
+                        <select name="tipo_pago" id="tipo_pago"
+                                onchange="validarFormulario(); actualizarTotal()">
+                            <option value="">-- Selecciona --</option>
+                            <option value="efectivo">Efectivo</option>
+                            <option value="tarjeta">Tarjeta</option>
+                            <option value="transferencia">Transferencia</option>
                         </select>
-                </div>
-
-                <div class="form-item" id="cantidadDescuentoContainer" style="display:none;">
-                    <label class="form-label">Descuento ($)</label>
-                    <input type="number" min="0" step="0.01"
-                        name="cantidad_descuento" id="cantidad_descuento"
-                        placeholder="0"
-                        oninput="validarFormulario(); actualizarTotal()">
-                    <div id="errorDescuento" class="error-msg" style="display:none;">
-                        El descuento no puede ser mayor al total.
                     </div>
-
+                    <div class="field-group">
+                        <label class="form-label">Monto ($)</label>
+                        <input type="number" min="0" step="0.01"
+                               name="monto_prepago" id="monto_prepago"
+                               placeholder="0.00"
+                               oninput="validarFormulario(); actualizarTotal()">
+                        <div id="errorPrepago" class="error-msg" style="display:none;">
+                            El prepago no puede ser mayor al total.
+                        </div>
+                    </div>
                 </div>
-            </div>
 
+                <div class="toggle-divider"></div>
+
+                {# Descuento — onchange removed, wired in JS #}
+                <div class="toggle-option-row">
+                    <div>
+                        <div class="toggle-option-label">Descuento</div>
+                        <div class="toggle-option-sub">Aplicar descuento al total</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="toggleDescuento">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div id="descuento-fields" class="toggle-extra-fields">
+                    <input type="hidden" name="aplica_descuento" id="aplica_descuento" value="no">
+                    <div class="field-group">
+                        <label class="form-label">Descuento ($)</label>
+                        <input type="number" min="0" step="0.01"
+                               name="cantidad_descuento" id="cantidad_descuento"
+                               placeholder="0.00"
+                               oninput="validarFormulario(); actualizarTotal()">
+                        <div id="errorDescuento" class="error-msg" style="display:none;">
+                            El descuento no puede ser mayor al total.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
 
-                </div>
-            </div>
-
-            <div class="venta-side-footer">
-                <div id="totalVenta" class="total-amount">
-                    Total: $0.00
-                </div>
-
-                <div>
-                    <button type="submit" class="btn btn--primary btn--lg" id="btnCrear" disabled>
-                        Crear recibo
-                    </button>
-
-                    <div id="mensajeBloqueo" class="mensaje-bloqueo"></div>
-
-                </div>
-            </div>
+        {# Footer del sidebar — total y botón #}
+        <div class="venta-side-footer">
+            <div id="totalVenta" class="total-amount">Total: $0.00</div>
+            <button type="submit" class="btn btn--primary btn--lg" id="btnCrear" disabled>
+                Crear recibo
+            </button>
+            <div id="mensajeBloqueo" class="mensaje-bloqueo"></div>
         </div>
 
-    </form>
+    </div>
 
-
-{% block scripts %}
-    <script src="{{ url_for('static', filename='js/modal.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/ventas_crear.js') }}"></script>
-{% endblock %}
+</form>
 
 {% endblock %}

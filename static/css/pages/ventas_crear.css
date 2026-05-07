@@ -87,6 +87,51 @@
   color: var(--color-navy);
 }
 
+/* ── Nuevas secciones con header azul ── */
+.venta-seccion {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 16px;
+  /* CORREGIDO: overflow:hidden eliminado para que los toggle-fields sean visibles */
+  overflow: visible;
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+
+.venta-seccion-header {
+  /* CORREGIDO: overflow e border-radius movidos aquí para mantener el efecto visual */
+  background: linear-gradient(135deg, #1e7fd6, #2fa4ff);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+  border-radius: 16px 16px 0 0;
+}
+
+.venta-seccion-header h2 {
+  font-size: 15px;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+}
+
+.venta-seccion-icon {
+  width: 30px;
+  height: 30px;
+  background: rgba(255,255,255,.2);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.venta-seccion-body {
+  padding: 20px;
+}
+
 .articulo-item {
   padding: 18px;
   margin-bottom: 16px;
@@ -228,11 +273,12 @@
 .venta-side {
   position: sticky;
   top: 20px;
-  max-height: calc(100vh - 90px);
   display: flex;
   flex-direction: column;
-  background: white;
   border-radius: var(--radius-xl);
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  border: 1px solid #e2e8f0;
+  overflow: visible;
 }
 
 .venta-side-content {
@@ -244,9 +290,11 @@
 
 .venta-side-footer {
   flex-shrink: 0;
-  padding: 12px 14px;
+  padding: 16px;
   border-top: 1px solid #e5e7eb;
-  background: white;
+  background: #f8fafc;
+  /* CORREGIDO: border-radius en footer para compensar el overflow:visible del padre */
+  border-radius: 0 0 var(--radius-xl) var(--radius-xl);
 }
 
 .venta-side .venta-section { padding: 14px 16px; margin-bottom: 10px; }
@@ -256,7 +304,7 @@
 .venta-side select,
 .venta-side input { height: 36px; }
 
-#btnCrear { width: 100%; height: 48px; font-size: 16px; }
+#btnCrear { width: 100%; height: 46px; font-size: 15px; margin-top: 10px; }
 
 .articulo-resumen {
   background: white;
@@ -330,4 +378,71 @@
 @keyframes slideIn {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+
+/* ── Toggles de prepago y descuento ── */
+.toggle-option-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+}
+
+.toggle-option-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.toggle-option-sub {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 2px;
+}
+
+.toggle-extra-fields {
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+    margin: 8px 0 4px;
+    padding: 12px 14px;
+    background: #f0f7ff;
+    border-radius: 10px;
+    border: 1px solid #bfdbfe;
+}
+
+.toggle-extra-fields .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 130px;
+}
+
+.toggle-extra-fields .form-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: 0;
+}
+
+.toggle-extra-fields select,
+.toggle-extra-fields input {
+    height: 36px;
+    font-size: 13px;
+}
+
+.toggle-divider {
+    height: 1px;
+    background: #e0edff;
+    margin: 4px 0;
+}
+
+/* CORREGIDO: visible ahora muestra flex correctamente */
+.toggle-extra-fields.visible {
+    display: flex;
+    flex-direction: column;
 }

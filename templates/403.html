@@ -2,19 +2,20 @@
 
 {% block content %}
 <div class="error-page">
-
     <div class="error-card">
-        <div class="error-icon">🚫</div>
 
-        <h1>Acceso denegado</h1>
-        <p>
-            No tienes permisos para acceder a esta sección.
-        </p>
+        <div class="error-header">
+            <div class="error-icon">🚫</div>
+            <h1>Acceso denegado</h1>
+        </div>
 
-        <a href="/" class="error-btn">
-            ⬅ Volver al inicio
-        </a>
+        <div class="error-body">
+            <p>No tienes permisos para acceder a esta sección.</p>
+            <a href="/" class="btn btn--primary">
+                ⬅ Volver al inicio
+            </a>
+        </div>
+
     </div>
-
 </div>
 {% endblock %}

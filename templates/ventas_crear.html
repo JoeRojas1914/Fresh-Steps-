@@ -2,9 +2,8 @@
 
 {% block head %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/ventas_crear.css') }}">
-    {# ── Scripts moved here so functions exist before the page renders ── #}
     <script src="{{ url_for('static', filename='js/modal.js') }}" defer></script>
-    <script src="{{ url_for('static', filename='js/ventas_crear.js') }}?v=4" defer></script>
+    <script src="{{ url_for('static', filename='js/ventas_crear.js') }}" defer></script>
 {% endblock %}
 
 {% block content %}
@@ -12,45 +11,35 @@
 {% from "components/modal.html" import modal %}
 
 {% call(section) modal("modalCliente", "Nuevo cliente", "md") %}
-
 {% if section == 'body' %}
 <form id="formNuevoCliente" class="modal-form">
-
     <div id="errorClienteNuevo" class="error-msg" style="display:none;"></div>
-
     <div class="modal-field">
         <label for="cliente_nombre">Nombre</label>
         <input id="cliente_nombre" type="text" name="nombre" required>
     </div>
-
     <div class="modal-field">
         <label for="cliente_apellido">Apellido</label>
         <input id="cliente_apellido" type="text" name="apellido" required>
     </div>
-
     <div class="modal-field">
         <label for="cliente_telefono">Teléfono</label>
         <input id="cliente_telefono" type="text" name="telefono" required pattern="[0-9]{10}">
     </div>
-
     <div class="modal-field">
         <label for="cliente_correo">Correo (opcional)</label>
         <input id="cliente_correo" type="email" name="correo">
     </div>
-
     <div class="modal-field">
         <label for="cliente_cp">Código postal (opcional)</label>
         <input id="cliente_cp" type="text" name="codigo_postal">
     </div>
-
 </form>
 {% endif %}
-
 {% if section == 'footer' %}
 <button type="button" class="btn btn--danger btn--sm" onclick="cerrarModal('modalCliente')">Cancelar</button>
 <button type="submit" form="formNuevoCliente" class="btn btn--primary btn--lg">Guardar cliente</button>
 {% endif %}
-
 {% endcall %}
 
 
@@ -58,41 +47,61 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input type="hidden" name="id_cliente" id="id_cliente">
 
-    {# ── Columna principal ── #}
     <div class="venta-main">
 
-        {# Sección Cliente #}
+        {# Pasos 1 y 2 — Cliente y Negocio juntos #}
         <div class="venta-seccion">
             <div class="venta-seccion-header">
-                <div class="venta-seccion-icon">👤</div>
-                <h2>Cliente</h2>
+                <div class="venta-step-num">1</div>
+                <h2>Cliente y Negocio</h2>
             </div>
             <div class="venta-seccion-body">
-                <div id="busquedaCliente">
-                    <div class="search-form">
-                        <input type="text" id="buscarCliente"
-                               placeholder="Buscar cliente por nombre..."
-                               autocomplete="off">
-                        <button type="button" class="btn btn--primary btn--sm"
-                                onclick="abrirModal('modalCliente')">
-                            ➕ Nuevo cliente
-                        </button>
+
+                <div class="cliente-negocio-row">
+                    <div class="cliente-negocio-col">
+                        <label class="form-label">Cliente</label>
+                        <div id="busquedaCliente">
+                            <div class="search-form-inline">
+                                <input type="text" id="buscarCliente"
+                                       placeholder="Buscar por nombre..."
+                                       autocomplete="off">
+                                <button type="button" class="btn btn--primary btn--sm"
+                                        onclick="abrirModal('modalCliente')">
+                                    ➕ Nuevo
+                                </button>
+                            </div>
+                        </div>
+                        <div id="clienteBox" style="display:none;">
+                            <strong id="clienteSeleccionado"></strong>
+                            <button type="button" class="btn btn--primary btn--sm" id="btnCambiarCliente">
+                                Cambiar
+                            </button>
+                        </div>
                     </div>
-                    <div class="results-list" id="listaClientes"></div>
+                    <div class="cliente-negocio-col">
+                        <label class="form-label">Negocio</label>
+                        <select name="id_negocio" id="id_negocio" onchange="seleccionarNegocio()" style="width:100%;">
+                            <option value="">-- Selecciona --</option>
+                            <option value="1">Fresh Steps</option>
+                            <option value="2">Confección</option>
+                            <option value="3">Maquila</option>
+                        </select>
+                        <div id="errorNegocio" style="color:red;font-size:.85em;display:none;margin-top:4px;">
+                            Borra los artículos para cambiar el negocio.
+                        </div>
+                    </div>
                 </div>
-                <div id="clienteBox" style="display:none;">
-                    <strong id="clienteSeleccionado"></strong>
-                    <button type="button" class="btn btn--primary btn--sm" id="btnCambiarCliente">
-                        Cambiar cliente
-                    </button>
-                </div>
+
+                {# Resultados de búsqueda — aparecen debajo del buscador #}
+                <div class="results-list" id="listaClientes"></div>
+
             </div>
         </div>
 
-        {# Sección Artículos #}
+        {# Paso 3 — Artículos #}
         <div class="venta-seccion">
             <div class="venta-seccion-header">
-                <div class="venta-seccion-icon">📦</div>
+                <div class="venta-step-num">2</div>
                 <h2>Artículos</h2>
             </div>
             <div class="venta-seccion-body">
@@ -109,44 +118,41 @@
 
     {# ── Sidebar ── #}
     <div class="venta-side">
+      <div class="venta-side-scroll">
 
-        <div class="venta-seccion" style="margin-bottom:0; border-radius:16px 16px 0 0;">
-            <div class="venta-seccion-header" style="border-radius:0;">
-                <div class="venta-seccion-icon">⚙️</div>
-                <h2>Configuración</h2>
+        {# Paso 4 — Entrega estimada #}
+        <div class="venta-seccion">
+            <div class="venta-seccion-header">
+                <div class="venta-step-num">3</div>
+                <h2>Entrega estimada</h2>
+            </div>
+            <div class="venta-seccion-body">
+                <div class="form-group">
+                    <label class="form-label">Fecha</label>
+                    <input type="date" id="fecha_estimada_fecha"
+                           onchange="validarFormulario(); actualizarFechaEstimadaCompleta();">
+                </div>
+                <div class="form-group" style="margin-top:10px;">
+                    <label class="form-label">Hora</label>
+                    <input type="time" id="fecha_estimada_hora"
+                           onchange="validarFormulario(); actualizarFechaEstimadaCompleta();">
+                </div>
+                <input type="hidden" name="fecha_estimada" id="fecha_estimada">
+                <div id="errorFecha" style="color:red;font-size:.9em;display:none;margin-top:4px;">
+                    La fecha estimada no puede ser menor a hoy.
+                </div>
+            </div>
+        </div>
+
+        {# Paso 5 — Pago #}
+        <div class="venta-seccion">
+            <div class="venta-seccion-header">
+                <div class="venta-step-num">4</div>
+                <h2>Pago</h2>
             </div>
             <div class="venta-seccion-body">
 
-                <div class="form-group">
-                    <label class="form-label">Negocio</label>
-                    <select name="id_negocio" id="id_negocio" onchange="seleccionarNegocio()">
-                        <option value="">-- Selecciona --</option>
-                        <option value="1">Fresh Steps</option>
-                        <option value="2">Confección</option>
-                        <option value="3">Maquila</option>
-                    </select>
-                    <div id="errorNegocio" style="color:red;font-size:.9em;display:none;">
-                        No puedes cambiar el negocio si ya agregaste artículos. Borra todos primero.
-                    </div>
-                </div>
-
-                <div class="form-group" style="margin-top:12px;">
-                    <label class="form-label">Fecha y hora estimada</label>
-                    <div style="display:flex;gap:8px;">
-                        <input type="date" id="fecha_estimada_fecha" style="flex:1;"
-                               onchange="validarFormulario(); actualizarFechaEstimadaCompleta();">
-                        <input type="time" id="fecha_estimada_hora" style="width:110px;"
-                               onchange="validarFormulario(); actualizarFechaEstimadaCompleta();">
-                    </div>
-                    <input type="hidden" name="fecha_estimada" id="fecha_estimada">
-                    <div id="errorFecha" style="color:red;font-size:.9em;display:none;">
-                        La fecha estimada no puede ser menor a hoy.
-                    </div>
-                </div>
-
-                <div style="height:1px;background:#e2e8f0;margin:16px 0;"></div>
-
-                {# Prepago — onchange removed, wired in JS #}
+                {# Prepago #}
                 <div class="toggle-option-row">
                     <div>
                         <div class="toggle-option-label">Prepago</div>
@@ -184,7 +190,7 @@
 
                 <div class="toggle-divider"></div>
 
-                {# Descuento — onchange removed, wired in JS #}
+                {# Descuento #}
                 <div class="toggle-option-row">
                     <div>
                         <div class="toggle-option-label">Descuento</div>
@@ -213,9 +219,10 @@
             </div>
         </div>
 
-        {# Footer del sidebar — total y botón #}
+      </div>
+
         <div class="venta-side-footer">
-            <div id="totalVenta" class="total-amount">Total: $0.00</div>
+            <div id="totalVenta" class="total-amount">$0.00</div>
             <button type="submit" class="btn btn--primary btn--lg" id="btnCrear" disabled>
                 Crear recibo
             </button>

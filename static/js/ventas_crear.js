@@ -1,34 +1,3 @@
-function togglePrepago() {
-    const checked = document.getElementById("togglePrepago").checked;
-    document.getElementById("prepago").value = checked ? "si" : "no";
-    const fields = document.getElementById("prepago-fields");
-    fields.style.setProperty("display", checked ? "flex" : "none", "important");
-    fields.style.setProperty("flex-direction", "column", "important");
-    if (checked) {
-        setTimeout(() => fields.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
-    } else {
-        document.getElementById("monto_prepago").value = "";
-        document.getElementById("tipo_pago").value = "";
-        document.getElementById("errorPrepago").style.display = "none";
-    }
-}
-
-function toggleDescuento() {
-    const checked = document.getElementById("toggleDescuento").checked;
-    document.getElementById("aplica_descuento").value = checked ? "si" : "no";
-    const fields = document.getElementById("descuento-fields");
-    fields.style.setProperty("display", checked ? "flex" : "none", "important");
-    fields.style.setProperty("flex-direction", "column", "important");
-    if (checked) {
-        setTimeout(() => fields.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
-    } else {
-        document.getElementById("cantidad_descuento").value = "";
-    }
-    validarFormulario();
-    actualizarTotal();
-}
-
-
 if (typeof contadorArticulos === "undefined") {
     var contadorArticulos = 0;
     var serviciosGlobales = [];
@@ -36,100 +5,103 @@ if (typeof contadorArticulos === "undefined") {
     var ventaEnProceso = false;
 
     document.addEventListener("DOMContentLoaded", () => {
-        document.getElementById("buscarCliente").addEventListener("input", buscarClientes);
+    document.getElementById("buscarCliente").addEventListener("input", buscarClientes);
 
-        document.getElementById("btnCambiarCliente").addEventListener("click", () => {
-            document.getElementById("id_cliente").value = "";
-            document.getElementById("clienteSeleccionado").innerText = "";
-            document.getElementById("clienteBox").style.display = "none";
-            document.getElementById("busquedaCliente").style.display = "block";
-            document.getElementById("buscarCliente").value = "";
-            document.getElementById("listaClientes").innerHTML = "";
-            validarFormulario();
-        });
+    document.getElementById("togglePrepago").addEventListener("change", togglePrepago);
+    document.getElementById("toggleDescuento").addEventListener("change", toggleDescuento);
 
-        document.addEventListener("click", function(e) {
-            if (e.target.closest("#btnAgregarArticulo")) return;
-            const abierto = document.querySelector(".articulo-item.abierto");
-            if (!abierto) return;
-            if (abierto.contains(e.target)) return;
-            cerrarArticulo(abierto);
-        });
-
-        document.getElementById("formNuevoCliente").addEventListener("submit", crearCliente);
-
-        // ── FIX: wired here instead of inline onchange in HTML ──
-        document.getElementById("togglePrepago").addEventListener("change", () => {
-            togglePrepago();
-            validarFormulario();
-            actualizarTotal();
-        });
-
-        document.getElementById("toggleDescuento").addEventListener("change", () => {
-            toggleDescuento();
-            actualizarTotal();
-        });
-
-        document.getElementById("formVenta").addEventListener("submit", async function(e) {
-            e.preventDefault();
-
-            if (ventaEnProceso) return;
-            ventaEnProceso = true;
-
-            const btnCrear = document.getElementById("btnCrear");
-            if (btnCrear) btnCrear.disabled = true;
-
-            const form = e.target;
-            const formData = new FormData(form);
-
-            const nuevaPestana = window.open("", "_blank");
-
-            try {
-                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-
-                const res = await fetch("/ventas/guardar", {
-                    method: "POST",
-                    headers: csrfToken ? { "X-CSRFToken": csrfToken } : {},
-                    body: formData
-                });
-
-                const data = await res.json();
-
-                if (!data.ok) {
-                    if (nuevaPestana) nuevaPestana.close();
-                    ventaEnProceso = false;
-                    if (btnCrear) btnCrear.disabled = false;
-                    alert("❌ Error: " + (data.error || "No se pudo guardar la venta"));
-                    return;
-                }
-
-                if (nuevaPestana) {
-                    nuevaPestana.location.href = `/ventas/ticket/${data.id_venta}`;
-                } else {
-                    window.open(`/ventas/ticket/${data.id_venta}`, "_blank");
-                }
-
-                window.location.href = "/ventas/pendientes";
-
-            } catch (err) {
-                if (nuevaPestana) nuevaPestana.close();
-                ventaEnProceso = false;
-                if (btnCrear) btnCrear.disabled = false;
-                alert("❌ Error inesperado al guardar la venta.");
-                console.error(err);
-            }
-        });
+    document.getElementById("btnCambiarCliente").addEventListener("click", () => {
+        document.getElementById("id_cliente").value = "";
+        document.getElementById("clienteSeleccionado").innerText = "";
 
         document.getElementById("clienteBox").style.display = "none";
+
         document.getElementById("busquedaCliente").style.display = "block";
 
-        bloquearFechaMinima();
-        togglePrepago();
-        toggleDescuento();
+        document.getElementById("buscarCliente").value = "";
+        document.getElementById("listaClientes").innerHTML = "";
+
+        
         validarFormulario();
     });
 
-}
+    document.addEventListener("click", function(e){
+
+        if(e.target.closest("#btnAgregarArticulo")) return;
+
+        const abierto = document.querySelector(".articulo-item.abierto");
+        if(!abierto) return;
+
+        if(abierto.contains(e.target)) return;
+
+        cerrarArticulo(abierto);
+    });
+
+
+    document.getElementById("formNuevoCliente").addEventListener("submit", crearCliente);
+
+    document.getElementById("formVenta").addEventListener("submit", async function(e) {
+        e.preventDefault();
+
+        if (ventaEnProceso) return;
+        ventaEnProceso = true;
+
+        const btnCrear = document.getElementById("btnCrear");
+        if (btnCrear) btnCrear.disabled = true;
+
+        const form = e.target;
+        const formData = new FormData(form);
+
+
+        const nuevaPestana = window.open("", "_blank");
+
+        try {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+
+            const res = await fetch("/ventas/guardar", {
+                method: "POST",
+                headers: csrfToken ? { "X-CSRFToken": csrfToken } : {},
+                body: formData
+            });
+
+            const data = await res.json();
+
+            if (!data.ok) {
+                if (nuevaPestana) nuevaPestana.close();
+                ventaEnProceso = false;
+                if (btnCrear) btnCrear.disabled = false;
+                alert("❌ Error: " + (data.error || "No se pudo guardar la venta"));
+                return;
+            }
+
+            if (nuevaPestana) {
+                nuevaPestana.location.href = `/ventas/ticket/${data.id_venta}`;
+            } else {
+                window.open(`/ventas/ticket/${data.id_venta}`, "_blank");
+            }
+
+            window.location.href = "/ventas/pendientes";
+
+        } catch (err) {
+            if (nuevaPestana) nuevaPestana.close();
+            ventaEnProceso = false;
+            if (btnCrear) btnCrear.disabled = false;
+            alert("❌ Error inesperado al guardar la venta.");
+            console.error(err);
+        }
+    });
+
+
+    document.getElementById("clienteBox").style.display = "none";
+    document.getElementById("busquedaCliente").style.display = "block";
+
+    bloquearFechaMinima();
+    togglePrepago();
+    toggleDescuento();
+    validarFormulario();
+});
+
+} 
 
 
 function bloquearFechaMinima() {
@@ -154,8 +126,13 @@ async function buscarClientes() {
     clientes.forEach(c => {
         const item = document.createElement("div");
         item.className = "result-item";
+        const iniciales = ((c.nombre||'')[0]||"").toUpperCase() + ((c.apellido||'')[0]||"").toUpperCase();
         item.innerHTML = `
-            <div class="result-name">${c.nombre} ${c.apellido}</div>
+            <div class="result-avatar">${iniciales}</div>
+            <div class="result-info">
+                <div class="result-name">${c.nombre} ${c.apellido}</div>
+                <div class="result-tel">${c.telefono || ''}</div>
+            </div>
             <div class="result-action">Seleccionar →</div>
         `;
         item.onclick = () => seleccionarCliente(c);
@@ -168,8 +145,11 @@ function seleccionarCliente(cliente) {
     document.getElementById("clienteSeleccionado").innerText =
         `Cliente: ${cliente.nombre} ${cliente.apellido}`;
     document.getElementById("listaClientes").innerHTML = "";
+
     document.getElementById("clienteBox").style.display = "flex";
+
     document.getElementById("busquedaCliente").style.display = "none";
+
     validarFormulario();
 }
 
@@ -202,6 +182,7 @@ async function crearCliente(e) {
     errorBox.style.display = "none";
 
     const formData = new FormData(e.target);
+
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
 
     const res = await fetch("/api/clientes/crear", {
@@ -217,6 +198,7 @@ async function crearCliente(e) {
     }
 
     const cliente = await res.json();
+
     cerrarModalCliente();
     seleccionarCliente(cliente);
 }
@@ -271,9 +253,11 @@ function agregarArticulo() {
 
     const div = document.createElement("div");
     div.className = "articulo-item";
+    const negocioNombre = document.getElementById("id_negocio")?.selectedOptions[0]?.text || "";
     div.innerHTML = `
-    <div class="zapato-header">
-        <div class="zapato-titulo">🧾 Artículo ${index + 1}</div>
+    <div class="zapato-header articulo-header-visible">
+        <div class="zapato-titulo">🧾 Artículo ${index + 1}  </div>
+
         <div style="display:flex; gap:8px;">
             <button type="button"
                     class="btn btn--danger btn--sm"
@@ -384,6 +368,7 @@ function crearCamposArticulo(index, tipoArticulo) {
                 ${inputConLabel("Color base", `articulos[${index}][color_base]`, "Negro, Blanco...", true)}
                 ${inputConLabel("Color secundario (Opcional)", `articulos[${index}][color_secundario]`, "Negro, Blanco...", false)}
                 ${inputConLabel("Cantidad", `articulos[${index}][cantidad]`, "1,2...", true, "number", `min="1"`)}
+
             </div>
 
             ${crearServiciosSelect(index)}
@@ -396,7 +381,9 @@ function crearCamposArticulo(index, tipoArticulo) {
         <div class="form-group form-row articulo-row">
             ${inputConLabel("Tipo", `articulos[${index}][tipo]`, "Mandil, Bata...", true)}
             ${inputConLabel("Cantidad", `articulos[${index}][cantidad]`, "1,2...", true, "number", `min="1"`)}
+
             ${inputConLabel("Precio unitario", `articulos[${index}][precio_unitario]`, "$10.00", true, "number", `min="0"`)}
+
         </div>
 
         ${inputConLabel("Comentario", `articulos[${index}][comentario]`, "(opcional)", false)}
@@ -414,14 +401,16 @@ function crearServiciosSelect(indexArticulo) {
 
     return `
         <div class="form-group servicios-box" data-articulo="${indexArticulo}">
-
+            
             <div class="servicios-header">
                 <label class="form-label">Servicios</label>
+
                 <button type="button"
                         class="btn btn--info btn--sm"
                         onclick="agregarServicio(${indexArticulo})">
                     ➕ Agregar servicio
                 </button>
+
             </div>
 
             <div class="servicios-lista" id="serviciosLista_${indexArticulo}">
@@ -499,6 +488,7 @@ function eliminarServicioPro(btn, indexArticulo) {
                 ${s.nombre} ($${precio})
             </option>`;
         });
+
         contenedor.insertAdjacentHTML("beforeend", crearFilaServicio(indexArticulo, 0, opciones));
     }
 
@@ -517,7 +507,7 @@ function onChangeServicio(select, indexArticulo) {
         inputPrecio.disabled = true;
         inputPrecio.dataset.editado = "0";
         actualizarOpcionesServiciosDelArticulo(indexArticulo);
-        actualizarTotal();
+        actualizarTotal(); 
         return;
     }
 
@@ -536,7 +526,7 @@ function onChangeServicio(select, indexArticulo) {
     }
 
     actualizarOpcionesServiciosDelArticulo(indexArticulo);
-    actualizarTotal();
+    actualizarTotal(); 
 }
 
 function hayServicioRepetidoEnArticulo(indexArticulo) {
@@ -566,8 +556,10 @@ function actualizarOpcionesServiciosDelArticulo(indexArticulo) {
 
     selects.forEach(sel => {
         const valorActual = sel.value;
+
         Array.from(sel.options).forEach(opt => {
             if (!opt.value) return;
+
             if (usados.has(opt.value) && opt.value !== valorActual) {
                 opt.disabled = true;
             } else {
@@ -576,6 +568,37 @@ function actualizarOpcionesServiciosDelArticulo(indexArticulo) {
         });
     });
 }
+
+function togglePrepago() {
+    const checked = document.getElementById("togglePrepago").checked;
+    document.getElementById("prepago").value = checked ? "si" : "no";
+    const fields = document.getElementById("prepago-fields");
+    fields.style.display = checked ? "flex" : "none";
+    if (checked) {
+        setTimeout(() => fields.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
+    } else {
+        document.getElementById("monto_prepago").value = "";
+        document.getElementById("tipo_pago").value = "";
+        document.getElementById("errorPrepago").style.display = "none";
+    }
+}
+
+
+
+function toggleDescuento() {
+    const checked = document.getElementById("toggleDescuento").checked;
+    document.getElementById("aplica_descuento").value = checked ? "si" : "no";
+    const fields = document.getElementById("descuento-fields");
+    fields.style.display = checked ? "flex" : "none";
+    if (checked) {
+        setTimeout(() => fields.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
+    } else {
+        document.getElementById("cantidad_descuento").value = "";
+    }
+    validarFormulario();
+    actualizarTotal();
+}
+
 
 function articulosCompletos() {
     const articulos = document.querySelectorAll(".articulo-item");
@@ -621,6 +644,7 @@ function articulosCompletos() {
 function validarFormulario() {
     let valido = true;
 
+    const cliente = document.getElementById("id_cliente").value;
     const negocio = document.getElementById("id_negocio").value;
     const fechaEstimada = document.getElementById("fecha_estimada").value;
 
@@ -630,6 +654,7 @@ function validarFormulario() {
 
     const aplicaDesc = document.getElementById("aplica_descuento").value === "si";
     const descuento = parseFloat(document.getElementById("cantidad_descuento")?.value || 0);
+
 
     /* ---------- Negocio y fecha ---------- */
     if (!negocio || !fechaEstimada) {
@@ -646,6 +671,7 @@ function validarFormulario() {
     if (negocio === "1" || negocio === "2") {
         document.querySelectorAll(".servicios-box").forEach(box => {
             const selects = box.querySelectorAll("select");
+
             let cantidadSeleccionados = 0;
             let hayVacio = false;
 
@@ -709,6 +735,7 @@ function validarFormulario() {
 }
 
 
+
 function calcularTotal(bruto = false) {
     const negocio = document.getElementById("id_negocio").value;
     let total = 0;
@@ -717,6 +744,7 @@ function calcularTotal(bruto = false) {
         document.querySelectorAll(".servicio-item").forEach(fila => {
             const sel = fila.querySelector("select");
             const precio = fila.querySelector(".precio-aplicado");
+
             if (sel && sel.value) {
                 total += parseFloat(precio?.value || 0);
             }
@@ -728,9 +756,11 @@ function calcularTotal(bruto = false) {
             const cantidad = parseFloat(
                 articulo.querySelector("input[name$='[cantidad]']")?.value || 1
             );
+
             articulo.querySelectorAll(".servicio-item").forEach(fila => {
                 const sel = fila.querySelector("select");
                 const precio = fila.querySelector(".precio-aplicado");
+
                 if (sel && sel.value) {
                     total += cantidad * parseFloat(precio?.value || 0);
                 }
@@ -746,11 +776,12 @@ function calcularTotal(bruto = false) {
             const precio = parseFloat(
                 item.querySelector("input[name$='[precio_unitario]']")?.value || 0
             );
+
             total += cantidad * precio;
         });
     }
 
-    if (bruto) return total;
+    if (bruto) return total; 
 
     const aplicaDesc = document.getElementById("aplica_descuento").value === "si";
     const desc = parseFloat(document.getElementById("cantidad_descuento")?.value || 0);
@@ -762,6 +793,7 @@ function calcularTotal(bruto = false) {
 
     return total;
 }
+
 
 
 function actualizarTotal() {
@@ -808,9 +840,15 @@ function obtenerMotivosBloqueo() {
         const tipoPago = document.getElementById("tipo_pago").value;
         const monto = parseFloat(document.getElementById("monto_prepago").value || 0);
 
-        if (!tipoPago) motivos.push("Seleccionar el tipo de pago");
-        if (monto <= 0) motivos.push("Ingresar un monto de prepago válido");
-        if (monto > calcularTotal()) motivos.push("El prepago supera el total");
+        if (!tipoPago) {
+            motivos.push("Seleccionar el tipo de pago");
+        }
+        if (monto <= 0) {
+            motivos.push("Ingresar un monto de prepago válido");
+        }
+        if (monto > calcularTotal()) {
+            motivos.push("El prepago supera el total");
+        }
     }
 
     const aplicaDesc = document.getElementById("aplica_descuento").value === "si";
@@ -828,22 +866,22 @@ function obtenerMotivosBloqueo() {
     return motivos;
 }
 
-function toggleArticulo(btn) {
+function toggleArticulo(btn){
     const item = btn.closest(".articulo-item");
     const detalle = item.querySelector(".articulo-detalle");
     const resumen = item.querySelector(".articulo-resumen");
 
     const abierto = detalle.style.display !== "none";
 
-    if (abierto) {
+    if(abierto){
         generarResumenArticulo(item);
         detalle.style.display = "none";
         resumen.style.display = "block";
         btn.innerText = "Editar";
         item.classList.remove("abierto");
-    } else {
-        document.querySelectorAll(".articulo-item.abierto").forEach(a => {
-            if (a !== item) cerrarArticulo(a);
+    }else{
+        document.querySelectorAll(".articulo-item.abierto").forEach(a=>{
+            if(a !== item) cerrarArticulo(a);
         });
         detalle.style.display = "block";
         resumen.style.display = "none";
@@ -853,63 +891,100 @@ function toggleArticulo(btn) {
 }
 
 
-function generarResumenArticulo(item) {
+
+function generarResumenArticulo(item){
     const resumen = item.querySelector(".articulo-resumen");
 
-    const tipo = item.querySelector("input[name$='[tipo]']")?.value || "";
-    const marca = item.querySelector("input[name$='[marca]']")?.value || "";
-    const color = item.querySelector("input[name$='[color_base]']")?.value || "";
+    const tipo   = item.querySelector("input[name$='[tipo]']")?.value || "";
+    const marca  = item.querySelector("input[name$='[marca]']")?.value || "";
+    const color  = item.querySelector("input[name$='[color_base]']")?.value || "";
+    const mat    = item.querySelector("input[name$='[material]']")?.value || "";
+    const cant   = item.querySelector("input[name$='[cantidad]']")?.value || "";
     const precio = calcularTotalArticulo(item);
 
+    const svcs = [...item.querySelectorAll(".servicio-item select")]
+        .filter(s => s.value)
+        .map(s => s.selectedOptions[0]?.text.split(" ($")[0] || "")
+        .join(", ");
+
+    const partes = [color, mat, cant ? `x${cant}` : ""].filter(Boolean);
+    const detalle = partes.join(" · ");
+
+    // Obtener nombre del negocio para el badge
+    const negSel = document.getElementById("id_negocio");
+    const negNombre = negSel?.selectedOptions[0]?.text || "";
+
+    // Numero de articulo
+    const titulo = item.querySelector(".zapato-titulo")?.innerText || "Artículo";
+
     resumen.innerHTML = `
-        <div class="resumen-linea">
-            <strong>${tipo} ${marca}</strong>
-            <span>${color}</span>
-            <strong>$${precio.toFixed(2)}</strong>
+        <div class="resumen-header-bar">
+            <span class="resumen-header-label">${titulo}</span>
+            <span class="resumen-header-badge">${negNombre}</span>
+            <!-- ── NUEVO: botón eliminar dentro del resumen ── -->
+            <button type="button"
+                    class="btn btn--danger btn--sm resumen-btn-eliminar"
+                    onclick="event.stopPropagation(); eliminarArticulo(this)">
+                ✕
+            </button>
+        </div>
+        <div class="resumen-body">
+            <div class="resumen-linea">
+                <div>
+                    <div class="resumen-nombre">${tipo} ${marca}</div>
+                    ${detalle ? `<div class="resumen-detalle">${detalle}</div>` : ""}
+                    ${svcs ? `<div class="resumen-detalle resumen-svcs">${svcs}</div>` : ""}
+                </div>
+                <div class="resumen-precio">$${precio.toFixed(2)}</div>
+            </div>
+            <div class="resumen-hint">Toca para editar</div>
         </div>
     `;
 }
-
-
-function calcularTotalArticulo(item) {
+function calcularTotalArticulo(item){
     const negocio = document.getElementById("id_negocio").value;
     let total = 0;
 
-    if (negocio === "1") {
-        item.querySelectorAll(".servicio-item").forEach(fila => {
+    if(negocio === "1"){
+        item.querySelectorAll(".servicio-item").forEach(fila=>{
             const sel = fila.querySelector("select");
             const precio = fila.querySelector(".precio-aplicado");
-            if (sel && sel.value) {
+
+            if(sel && sel.value){
                 total += parseFloat(precio?.value || 0);
             }
         });
     }
 
-    if (negocio === "2") {
+    if(negocio === "2"){
         const cantidad = parseFloat(
             item.querySelector("input[name$='[cantidad]']")?.value || 1
         );
-        item.querySelectorAll(".servicio-item").forEach(fila => {
+
+        item.querySelectorAll(".servicio-item").forEach(fila=>{
             const sel = fila.querySelector("select");
             const precio = fila.querySelector(".precio-aplicado");
-            if (sel && sel.value) {
+
+            if(sel && sel.value){
                 total += cantidad * parseFloat(precio?.value || 0);
             }
         });
     }
 
-    if (negocio === "3") {
+    if(negocio === "3"){
         const cantidad = parseFloat(
             item.querySelector("input[name$='[cantidad]']")?.value || 0
         );
         const precio = parseFloat(
             item.querySelector("input[name$='[precio_unitario]']")?.value || 0
         );
+
         total = cantidad * precio;
     }
 
     return total;
 }
+
 
 
 function cerrarArticulo(item) {
@@ -921,34 +996,37 @@ function cerrarArticulo(item) {
     resumen.style.display = "block";
 
     item.classList.remove("abierto");
+    item.classList.add("compactado");
     validarArticuloVisual(item);
 }
 
 
-function articuloCompleto(item) {
+function articuloCompleto(item){
     const negocio = document.getElementById("id_negocio").value;
+
     const campos = item.querySelectorAll("input[required], select[required]");
 
-    for (const c of campos) {
-        if (!c.value || c.value.trim() === "") {
+    for(const c of campos){
+        if(!c.value || c.value.trim() === ""){
             return false;
         }
     }
 
-    if (negocio === "1" || negocio === "2") {
+    if(negocio === "1" || negocio === "2"){
         const selects = item.querySelectorAll(".servicio-item select");
+
         let cantidadSeleccionados = 0;
         let hayVacio = false;
 
-        selects.forEach(sel => {
-            if (sel.value && sel.value.trim() !== "") {
+        selects.forEach(sel=>{
+            if(sel.value && sel.value.trim() !== ""){
                 cantidadSeleccionados++;
-            } else {
+            }else{
                 hayVacio = true;
             }
         });
 
-        if (cantidadSeleccionados === 0 || hayVacio) {
+        if(cantidadSeleccionados === 0 || hayVacio){
             return false;
         }
     }
@@ -970,15 +1048,19 @@ function abrirArticuloDesdeResumen(resumenDiv) {
     detalle.style.display = "block";
     resumen.style.display = "none";
 
+    // ── NUEVO ──
+    item.classList.remove("compactado");
     item.classList.add("abierto");
 }
 
-function validarArticuloVisual(item) {
+function validarArticuloVisual(item){
     const completo = articuloCompleto(item);
+
     item.classList.remove("completo", "incompleto");
-    if (completo) {
+
+    if(completo){
         item.classList.add("completo");
-    } else {
+    }else{
         item.classList.add("incompleto");
     }
 }

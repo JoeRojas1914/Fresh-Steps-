@@ -284,7 +284,7 @@
   display: grid;
   grid-template-columns: 1fr 340px;
   gap: 26px;
-  align-items: stretch;
+  align-items: start;
   height: calc(100vh - 120px);
 }
 
@@ -310,10 +310,11 @@
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0,0,0,.04);
   border: 1px solid #e2e8f0;
+  overflow: hidden;
 }
 
 .venta-side-scroll {
-  flex: 1;
+  flex: 0 1 auto;
   overflow-y: auto;
   display: flex;
   flex-direction: column;

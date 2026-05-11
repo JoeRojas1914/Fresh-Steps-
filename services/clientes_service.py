@@ -77,7 +77,29 @@ def obtener_historial_cliente_service(id_cliente):
 def buscar_clientes_service(q):
     if not q:
         return []
-    return obtener_clientes(q, limit=50, offset=0)
+    from db import get_connection
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute("""
+            SELECT
+                c.id_cliente,
+                c.nombre,
+                c.apellido,
+                c.telefono,
+                COUNT(v.id_venta) AS total_ventas
+            FROM cliente c
+            LEFT JOIN venta v ON v.id_cliente = c.id_cliente AND v.eliminado = 0
+            WHERE c.activo = 1
+              AND (c.nombre LIKE %s OR c.apellido LIKE %s)
+            GROUP BY c.id_cliente
+            ORDER BY c.nombre ASC
+            LIMIT 50
+        """, (f"%{q}%", f"%{q}%"))
+        return cursor.fetchall()
+    finally:
+        cursor.close()
+        conn.close()
 
 
 

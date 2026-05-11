@@ -7,9 +7,6 @@ if (typeof contadorArticulos === "undefined") {
     document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("buscarCliente").addEventListener("input", buscarClientes);
 
-    document.getElementById("togglePrepago").addEventListener("change", togglePrepago);
-    document.getElementById("toggleDescuento").addEventListener("change", toggleDescuento);
-
     document.getElementById("btnCambiarCliente").addEventListener("click", () => {
         document.getElementById("id_cliente").value = "";
         document.getElementById("clienteSeleccionado").innerText = "";
@@ -127,13 +124,16 @@ async function buscarClientes() {
         const item = document.createElement("div");
         item.className = "result-item";
         const iniciales = ((c.nombre||'')[0]||"").toUpperCase() + ((c.apellido||'')[0]||"").toUpperCase();
+        const ventasLabel = c.total_ventas > 0
+            ? `${c.total_ventas} venta${c.total_ventas !== 1 ? 's' : ''}`
+            : 'Cliente nuevo';
         item.innerHTML = `
             <div class="result-avatar">${iniciales}</div>
             <div class="result-info">
                 <div class="result-name">${c.nombre} ${c.apellido}</div>
                 <div class="result-tel">${c.telefono || ''}</div>
             </div>
-            <div class="result-action">Seleccionar →</div>
+            <div class="result-ventas-badge ${c.total_ventas > 0 ? 'has-ventas' : 'no-ventas'}">${ventasLabel}</div>
         `;
         item.onclick = () => seleccionarCliente(c);
         lista.appendChild(item);
@@ -142,8 +142,16 @@ async function buscarClientes() {
 
 function seleccionarCliente(cliente) {
     document.getElementById("id_cliente").value = cliente.id_cliente;
-    document.getElementById("clienteSeleccionado").innerText =
-        `Cliente: ${cliente.nombre} ${cliente.apellido}`;
+
+    const ventas = cliente.total_ventas || 0;
+    const ventasText = ventas > 0
+        ? `${ventas} venta${ventas !== 1 ? 's' : ''} anteriores`
+        : 'Cliente nuevo';
+
+    document.getElementById("clienteSeleccionado").innerHTML =
+        `<span>${cliente.nombre} ${cliente.apellido}</span>`
+        + `<span class="cliente-ventas-badge ${ventas > 0 ? 'has-ventas' : 'no-ventas'}">${ventasText}</span>`;
+
     document.getElementById("listaClientes").innerHTML = "";
 
     document.getElementById("clienteBox").style.display = "flex";
@@ -255,25 +263,19 @@ function agregarArticulo() {
     div.className = "articulo-item";
     const negocioNombre = document.getElementById("id_negocio")?.selectedOptions[0]?.text || "";
     div.innerHTML = `
-    <div class="zapato-header articulo-header-visible">
-        <div class="zapato-titulo">🧾 Artículo ${index + 1}  </div>
-
-        <div style="display:flex; gap:8px;">
-            <button type="button"
-                    class="btn btn--danger btn--sm"
-                    onclick="eliminarArticulo(this)">
-                ✕
-            </button>
-        </div>
-    </div>
-
     <div class="articulo-resumen" style="display:none;"></div>
 
     <div class="articulo-detalle">
+    <div class="zapato-header">
+        <div class="zapato-titulo">🧾 Artículo ${index + 1}${negocioNombre ? `<span class="zapato-titulo-badge">${negocioNombre}</span>` : ""}</div>
+        <button type="button" class="btn btn--danger btn--sm" onclick="eliminarArticulo(this)">✕</button>
+    </div>
         <input type="hidden" name="articulos[${index}][tipo_articulo]" value="${tipoArticulo}">
         ${crearCamposArticulo(index, tipoArticulo)}
     </div>
+    </div>
 `;
+
 
     document.getElementById("articulosContainer").appendChild(div);
     const resumenDiv = div.querySelector(".articulo-resumen");
@@ -281,7 +283,7 @@ function agregarArticulo() {
 
     contadorArticulos++;
 
-    document.querySelectorAll(".articulo-item.abierto").forEach(a => {
+    document.querySelectorAll(".articulo-item.abierto").forEach(a=>{
         cerrarArticulo(a);
     });
 
@@ -290,8 +292,8 @@ function agregarArticulo() {
     const detalle = div.querySelector(".articulo-detalle");
     const resumen = div.querySelector(".articulo-resumen");
 
-    if (detalle) detalle.style.display = "block";
-    if (resumen) resumen.style.display = "none";
+    if(detalle) detalle.style.display = "block";
+    if(resumen) resumen.style.display = "none";
 
     actualizarOpcionesServiciosDelArticulo(index);
     validarArticuloVisual(div);
@@ -656,15 +658,18 @@ function validarFormulario() {
     const descuento = parseFloat(document.getElementById("cantidad_descuento")?.value || 0);
 
 
+    /* ---------- Negocio y fecha ---------- */
     if (!negocio || !fechaEstimada) {
         valido = false;
     }
 
+    /* ---------- Artículos ---------- */
     const articulos = document.querySelectorAll(".articulo-item");
     if (articulos.length === 0 || !articulosCompletos()) {
         valido = false;
     }
 
+    /* ---------- Servicios obligatorios ---------- */
     if (negocio === "1" || negocio === "2") {
         document.querySelectorAll(".servicios-box").forEach(box => {
             const selects = box.querySelectorAll("select");
@@ -686,6 +691,7 @@ function validarFormulario() {
         });
     }
 
+    /* ---------- Prepago ---------- */
     if (prepago === "si") {
         if (!tipoPago || montoPrepago <= 0) {
             valido = false;
@@ -701,6 +707,7 @@ function validarFormulario() {
         document.getElementById("errorPrepago").style.display = "none";
     }
 
+    /* ---------- Descuento ---------- */
     if (aplicaDesc) {
         const totalBruto = calcularTotal(true);
 
@@ -714,6 +721,7 @@ function validarFormulario() {
         document.getElementById("errorDescuento").style.display = "none";
     }
 
+    /* ---------- MENSAJE DE BLOQUEO ---------- */
     const motivos = obtenerMotivosBloqueo();
     const btn = document.getElementById("btnCrear");
     const msg = document.getElementById("mensajeBloqueo");
@@ -909,27 +917,25 @@ function generarResumenArticulo(item){
 
     const titulo = item.querySelector(".zapato-titulo")?.innerText || "Artículo";
 
+    const btnEl = item.querySelector(".btn--danger")?.outerHTML || "";
     resumen.innerHTML = `
         <div class="resumen-header-bar">
             <span class="resumen-header-label">${titulo}</span>
-            <span class="resumen-header-badge">${negNombre}</span>
-            <!-- ── NUEVO: botón eliminar dentro del resumen ── -->
-            <button type="button"
-                    class="btn btn--danger btn--sm resumen-btn-eliminar"
-                    onclick="event.stopPropagation(); eliminarArticulo(this)">
-                ✕
-            </button>
+            <div style="display:flex;align-items:center;gap:6px">
+                <span class="resumen-header-badge">${negNombre}</span>
+                ${btnEl}
+            </div>
         </div>
         <div class="resumen-body">
             <div class="resumen-linea">
                 <div>
                     <div class="resumen-nombre">${tipo} ${marca}</div>
                     ${detalle ? `<div class="resumen-detalle">${detalle}</div>` : ""}
-                    ${svcs ? `<div class="resumen-detalle resumen-svcs">${svcs}</div>` : ""}
+                    ${svcs ? `<div class="resumen-detalle resumen-svcs">🔧 ${svcs}</div>` : ""}
                 </div>
                 <div class="resumen-precio">$${precio.toFixed(2)}</div>
             </div>
-            <div class="resumen-hint">Toca para editar</div>
+            <div class="resumen-hint">✏️ Toca para editar</div>
         </div>
     `;
 }
@@ -979,7 +985,7 @@ function calcularTotalArticulo(item){
 
 
 
-function cerrarArticulo(item) {
+function cerrarArticulo(item){
     const detalle = item.querySelector(".articulo-detalle");
     const resumen = item.querySelector(".articulo-resumen");
 
@@ -988,7 +994,6 @@ function cerrarArticulo(item) {
     resumen.style.display = "block";
 
     item.classList.remove("abierto");
-    item.classList.add("compactado");
     validarArticuloVisual(item);
 }
 
@@ -1027,11 +1032,11 @@ function articuloCompleto(item){
 }
 
 
-function abrirArticuloDesdeResumen(resumenDiv) {
+function abrirArticuloDesdeResumen(resumenDiv){
     const item = resumenDiv.closest(".articulo-item");
 
-    document.querySelectorAll(".articulo-item.abierto").forEach(a => {
-        if (a !== item) cerrarArticulo(a);
+    document.querySelectorAll(".articulo-item.abierto").forEach(a=>{
+        if(a !== item) cerrarArticulo(a);
     });
 
     const detalle = item.querySelector(".articulo-detalle");
@@ -1040,7 +1045,6 @@ function abrirArticuloDesdeResumen(resumenDiv) {
     detalle.style.display = "block";
     resumen.style.display = "none";
 
-    item.classList.remove("compactado");
     item.classList.add("abierto");
 }
 

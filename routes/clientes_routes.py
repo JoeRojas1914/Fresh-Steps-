@@ -42,11 +42,11 @@ def guardar_cliente():
     try:
         resultado = guardar_cliente_service(request.form, id_usuario)
         flash(
-            "✅ Cliente actualizado correctamente." if resultado == "actualizado"
-            else "✅ Cliente creado correctamente.", "success"
+            "Cliente actualizado correctamente." if resultado == "actualizado"
+            else "Cliente creado correctamente.", "success"
         )
     except Exception:
-        flash("❌ Error al guardar el cliente. Verifica los datos.", "error")
+        flash("Error al guardar el cliente. Verifica los datos.", "error")
     return redirect(url_for("clientes.clientes"))
 
 
@@ -56,11 +56,11 @@ def eliminar_cliente(id_cliente):
     try:
         ok = eliminar_cliente_service(id_cliente, id_usuario)
         if not ok:
-            flash("❌ No puedes eliminar el cliente porque ya tiene ventas registradas.", "error")
+            flash("No puedes eliminar el cliente porque ya tiene ventas registradas.", "error")
         else:
-            flash("🗑️ Cliente eliminado correctamente.", "success")
+            flash("Cliente eliminado correctamente.", "success")
     except Exception:
-        flash("❌ Error al eliminar el cliente.", "error")
+        flash("Error al eliminar el cliente.", "error")
     return redirect(url_for("clientes.clientes"))
 
 
@@ -69,9 +69,9 @@ def restaurar_cliente(id_cliente):
     id_usuario = session.get("id_usuario")
     try:
         restaurar_cliente_service(id_cliente, id_usuario)
-        flash("♻️ Cliente restaurado correctamente.", "success")
+        flash("Cliente restaurado correctamente.", "success")
     except Exception:
-        flash("❌ Error al restaurar el cliente.", "error")
+        flash("Error al restaurar el cliente.", "error")
     return redirect(url_for("clientes.clientes"))
 
 

@@ -61,9 +61,9 @@ def guardar_usuario():
             correo   = request.form.get("correo")   or None,
             cp       = request.form.get("cp")       or None,
         )
-        flash("✅ Usuario editado correctamente." if id_usuario else "✅ Usuario creado correctamente.", "success")
+        flash("Usuario editado correctamente." if id_usuario else "Usuario creado correctamente.", "success")
     except ValueError as e:
-        flash(f"❌ {e}", "error")
+        flash(str(e), "error")
 
     return redirect(url_for("usuarios.listar_usuarios"))
 
@@ -74,11 +74,11 @@ def toggle_usuario(id):
         return redirect("/")
     nuevo_activo = toggle_usuario_service(id)
     if nuevo_activo is None:
-        flash("⚠️ No se puede cambiar el estado de este usuario.", "error")
+        flash("No se puede cambiar el estado de este usuario.", "error")
     elif nuevo_activo:
-        flash("✅ Usuario activado correctamente.", "success")
+        flash("Usuario activado correctamente.", "success")
     else:
-        flash("🔒 Usuario desactivado correctamente.", "success")
+        flash("Usuario desactivado correctamente.", "success")
     return redirect(url_for("usuarios.listar_usuarios"))
 
 

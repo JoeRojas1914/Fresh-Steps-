@@ -55,10 +55,10 @@ def guardar_gasto():
     )
     try:
         resultado = guardar_gasto_service(id_gasto, datos, id_usuario)
-        flash("✅ Gasto editado correctamente."  if resultado == "actualizado"
-              else "✅ Gasto creado correctamente.", "success")
+        flash("Gasto editado correctamente." if resultado == "actualizado"
+              else "Gasto creado correctamente.", "success")
     except Exception:
-        flash("❌ Error al guardar el gasto. Verifica los datos ingresados.", "error")
+        flash("Error al guardar el gasto. Verifica los datos ingresados.", "error")
     return redirect(url_for("gastos.gastos"))
 
 
@@ -67,9 +67,9 @@ def eliminar_gasto(id_gasto):
     id_usuario = session.get("id_usuario")
     try:
         eliminar_gasto_service(id_gasto, id_usuario)
-        flash("✅ Gasto eliminado correctamente.", "success")
+        flash("Gasto eliminado correctamente.", "success")
     except Exception:
-        flash("❌ Error al eliminar el gasto.", "error")
+        flash("Error al eliminar el gasto.", "error")
     return redirect(url_for("gastos.gastos"))
 
 
@@ -82,7 +82,7 @@ def historial_gasto(id_gasto):
 def restaurar_gasto_route(id_gasto):
     id_usuario = session.get("id_usuario")
     restaurar_gasto_service(id_gasto, id_usuario)
-    flash("\u267b\ufe0f Gasto restaurado correctamente.", "success")
+    flash("Gasto restaurado correctamente.", "success")
     return redirect(url_for("gastos.gastos"))
 
 

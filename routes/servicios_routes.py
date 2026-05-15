@@ -63,10 +63,10 @@ def guardar_servicio():
     id_usuario = session.get("id_usuario")
     try:
         resultado = guardar_servicio_service(id_servicio, id_negocio, nombre, precio, id_usuario)
-        flash("✅ Servicio actualizado correctamente." if resultado == "actualizado"
-              else "✅ Servicio creado correctamente.", "success")
+        flash("Servicio actualizado correctamente." if resultado == "actualizado"
+              else "Servicio creado correctamente.", "success")
     except Exception:
-        flash("❌ Error al guardar el servicio.", "error")
+        flash("Error al guardar el servicio.", "error")
     return redirect(url_for("servicios.servicios"))
 
 
@@ -111,7 +111,7 @@ def restaurar_servicio(id_servicio):
         return render_template("403.html"), 403
     id_usuario = session.get("id_usuario")
     restaurar_servicio_service(id_servicio, id_usuario)
-    flash("♻️ Servicio restaurado correctamente.", "success")
+    flash("Servicio restaurado correctamente.", "success")
     return redirect(url_for("servicios.servicios"))
 
 

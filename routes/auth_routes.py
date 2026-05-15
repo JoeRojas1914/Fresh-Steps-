@@ -23,7 +23,7 @@ def login():
         )
 
         if usuario == "LOCKED":
-            flash("🚫 Cuenta bloqueada por demasiados intentos.", "error")
+            flash("Cuenta bloqueada por demasiados intentos.", "error")
             return render_template("login.html")
 
         if not usuario:
@@ -72,7 +72,7 @@ def pin_login():
     )
 
     if usuario == "LOCKED":
-        flash("🚫 PIN bloqueado por demasiados intentos.", "error")
+        flash("PIN bloqueado por demasiados intentos.", "error")
         return render_template("pin.html")
 
     if not usuario:

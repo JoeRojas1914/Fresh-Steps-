@@ -8,10 +8,11 @@
 }
 
 .home-greeting h1 {
-    font-size: 24px;
-    font-weight: 700;
+    font-size: 28px;
+    font-weight: 800;
     color: #0b3c5d;
     margin: 0;
+    letter-spacing: -0.5px;
 }
 
 .home-greeting p {
@@ -22,12 +23,14 @@
 
 .home-fecha {
     font-size: 12px;
-    color: #94a3b8;
-    background: white;
-    border: 1px solid #e2e8f0;
-    padding: 6px 14px;
-    border-radius: 8px;
+    color: #64748b;
+    background: rgba(255,255,255,0.85);
+    border: 1px solid #dde8f5;
+    padding: 7px 16px;
+    border-radius: 999px;
     white-space: nowrap;
+    backdrop-filter: blur(4px);
+    font-weight: 500;
 }
 
 .home-section-label {
@@ -47,41 +50,47 @@
 }
 
 .accion-card {
-    background: white;
-    border-radius: 14px;
-    border: 1.5px solid #e2e8f0;
+    border-radius: 16px;
+    border: 1.5px solid #e8eef5;
     border-left-width: 4px;
     padding: 20px 18px;
     text-decoration: none;
     display: flex;
     align-items: center;
     gap: 14px;
-    transition: transform .15s ease, box-shadow .15s ease;
+    transition: transform .2s ease, box-shadow .2s ease;
 }
 
-.accion-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0,0,0,.08);
+.accion-card.nueva-venta {
+    border-left-color: #2fa4ff;
+    background: linear-gradient(135deg, #ffffff 0%, #f0f8ff 100%);
+}
+.accion-card.pendientes {
+    border-left-color: #f59e0b;
+    background: linear-gradient(135deg, #ffffff 0%, #fffbf0 100%);
+}
+.accion-card.procesadas {
+    border-left-color: #22c55e;
+    background: linear-gradient(135deg, #ffffff 0%, #f0fdf5 100%);
 }
 
-.accion-card.nueva-venta { border-left-color: #2fa4ff; }
-.accion-card.pendientes  { border-left-color: #1e7fd6; }
-.accion-card.procesadas  { border-left-color: #22c55e; }
+.accion-card.nueva-venta:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(47,164,255,.18); }
+.accion-card.pendientes:hover  { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(245,158,11,.18); }
+.accion-card.procesadas:hover  { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(34,197,94,.18); }
 
 .accion-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 10px;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 22px;
     flex-shrink: 0;
 }
 
-.accion-card.nueva-venta .accion-icon { background: #e6f3ff; }
-.accion-card.pendientes  .accion-icon { background: #dbeafe; }
-.accion-card.procesadas  .accion-icon { background: #dcfce7; }
+.accion-card.nueva-venta .accion-icon { background: #dbeafe; color: #2563eb; }
+.accion-card.pendientes  .accion-icon { background: #fef3c7; color: #d97706; }
+.accion-card.procesadas  .accion-icon { background: #dcfce7; color: #16a34a; }
 
 .accion-label { font-size: 14px; font-weight: 700; color: #0b3c5d; }
 .accion-sub   { font-size: 12px; color: #94a3b8; margin-top: 3px; }
@@ -95,39 +104,48 @@
 
 .admin-card {
     background: white;
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    border: 1px solid #e8eef5;
     padding: 16px 18px;
     text-decoration: none;
     display: flex;
     align-items: center;
     gap: 12px;
-    transition: background .15s ease, border-color .15s ease, transform .15s ease, box-shadow .15s ease;
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
 }
 
 .admin-card:hover {
-    background: #f0f7ff;
-    border-color: #1e7fd6;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(30,127,214,.1);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.09);
 }
 
+.admin-card.clientes:hover  { border-color: #3b82f6; box-shadow: 0 8px 20px rgba(59,130,246,.14); }
+.admin-card.servicios:hover { border-color: #7c3aed; box-shadow: 0 8px 20px rgba(124,58,237,.14); }
+.admin-card.gastos:hover    { border-color: #ef4444; box-shadow: 0 8px 20px rgba(239,68,68,.14); }
+.admin-card.usuarios:hover  { border-color: #4f46e5; box-shadow: 0 8px 20px rgba(79,70,229,.14); }
+.admin-card.historial:hover { border-color: #d97706; box-shadow: 0 8px 20px rgba(217,119,6,.14); }
+.admin-card.estadisticas:hover { border-color: #16a34a; box-shadow: 0 8px 20px rgba(22,163,74,.14); }
+
 .admin-icon {
-    width: 38px;
-    height: 38px;
-    border-radius: 9px;
-    background: #e6f3ff;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
     flex-shrink: 0;
-    transition: background .15s ease;
+    transition: transform .18s ease;
 }
 
-.admin-card:hover .admin-icon {
-    background: #d6ecff;
-}
+.admin-card:hover .admin-icon { transform: scale(1.08); }
+
+.admin-card.clientes  .admin-icon { background: #dbeafe; color: #2563eb; }
+.admin-card.servicios .admin-icon { background: #ede9fe; color: #7c3aed; }
+.admin-card.gastos    .admin-icon { background: #fee2e2; color: #dc2626; }
+.admin-card.usuarios  .admin-icon { background: #e0e7ff; color: #4f46e5; }
+.admin-card.historial .admin-icon { background: #fef3c7; color: #d97706; }
+.admin-card.estadisticas .admin-icon { background: #dcfce7; color: #16a34a; }
 
 .admin-label { font-size: 13px; font-weight: 600; color: #0b3c5d; }
 

@@ -10,7 +10,10 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(to bottom, var(--color-bg-blue) 0%, #ffffff 60%);
+  background:
+    radial-gradient(ellipse 900px 700px at 8% -5%, rgba(47, 164, 255, 0.10) 0%, transparent 65%),
+    radial-gradient(ellipse 600px 500px at 92% 8%, rgba(30, 127, 214, 0.07) 0%, transparent 60%),
+    linear-gradient(165deg, #eaf5ff 0%, #f3f8ff 20%, #fafcff 50%, #ffffff 100%);
   color: var(--color-text);
 }
 

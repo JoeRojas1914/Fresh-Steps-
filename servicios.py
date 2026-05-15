@@ -67,15 +67,6 @@ def eliminar_servicio(id_servicio, id_usuario):
     cursor = conn.cursor(dictionary=True)
 
     try:
-        cursor.execute("""
-            SELECT COUNT(*) AS total
-            FROM articulo_servicio
-            WHERE id_servicio=%s
-        """, (id_servicio,))
-
-        if cursor.fetchone()["total"] > 0:
-            return False
-
         cursor.execute("SELECT * FROM servicio WHERE id_servicio=%s", (id_servicio,))
         antes = cursor.fetchone()
 

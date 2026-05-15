@@ -117,3 +117,19 @@ document.addEventListener("click", function (e) {
         });
     });
 }());
+
+(function () {
+    const toggle = document.getElementById("toggle-eliminados");
+    if (!toggle) return;
+
+    toggle.addEventListener("change", () => {
+        const url = new URL(window.location.href);
+        if (toggle.checked) {
+            url.searchParams.set("eliminados", "1");
+        } else {
+            url.searchParams.delete("eliminados");
+        }
+        url.searchParams.delete("pagina");
+        window.location.href = url.toString();
+    });
+}());

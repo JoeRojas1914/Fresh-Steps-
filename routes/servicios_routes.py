@@ -76,13 +76,10 @@ def eliminar_servicio(id_servicio):
         return render_template("403.html"), 403
     id_usuario = session.get("id_usuario")
     try:
-        ok = eliminar_servicio_service(id_servicio, id_usuario)
-        if not ok:
-            flash("❌ No puedes eliminar el servicio porque ya tiene ventas.", "error")
-        else:
-            flash("✅ Servicio eliminado correctamente.", "success")
+        eliminar_servicio_service(id_servicio, id_usuario)
+        flash("Servicio eliminado correctamente.", "success")
     except Exception:
-        flash("❌ Error al eliminar el servicio.", "error")
+        flash("Error al eliminar el servicio.", "error")
     return redirect(url_for("servicios.servicios"))
 
 

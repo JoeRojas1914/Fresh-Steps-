@@ -75,7 +75,7 @@ def restaurar_gasto_route(id_gasto):
     id_usuario = session.get("id_usuario")
     restaurar_gasto_service(id_gasto, id_usuario)
     flash("\u267b\ufe0f Gasto restaurado correctamente.", "success")
-    return redirect(request.referrer or url_for("gastos.gastos"))
+    return redirect(url_for("gastos.gastos"))
 
 
 @gastos_bp.route("/gastos/exportar")

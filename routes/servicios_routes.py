@@ -1,6 +1,6 @@
 import io
 from datetime import datetime
-from flask import Blueprint, render_template, request, redirect, flash, jsonify, session, send_file
+from flask import Blueprint, render_template, request, redirect, flash, jsonify, session, send_file, url_for
 from openpyxl import Workbook
 from services.excel_helpers import (
     C, xl_cell, xl_row_bg,
@@ -121,7 +121,7 @@ def restaurar_servicio(id_servicio):
     restaurar_servicio_service(id_servicio, id_usuario)
 
     flash("♻️ Servicio restaurado correctamente.", "success")
-    return redirect(request.referrer or "/servicios")
+    return redirect(url_for("servicios.servicios"))
 
 
 

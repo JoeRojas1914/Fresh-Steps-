@@ -63,7 +63,7 @@ def restaurar_cliente(id_cliente):
     id_usuario = session.get("id_usuario")
     restaurar_cliente_service(id_cliente, id_usuario)
     flash("♻️ Cliente restaurado correctamente.", "success")
-    return redirect(request.referrer or url_for("clientes.clientes"))
+    return redirect(url_for("clientes.clientes"))
 
 
 @clientes_bp.route("/clientes/<int:id_cliente>/historial")

@@ -31,6 +31,11 @@ from ventas import contar_entregas_pendientes, contar_entregas_listas
 load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY")
+app.config.update({
+    "SESSION_COOKIE_HTTPONLY": True,
+    "SESSION_COOKIE_SAMESITE": "Lax",
+    "SESSION_COOKIE_SECURE": os.getenv("FLASK_ENV") != "development",
+})
 csrf = CSRFProtect()
 csrf.init_app(app)
 app.register_blueprint(servicios_bp)
@@ -76,4 +81,4 @@ def index():
 
 # ================= RUN =================
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=os.getenv("FLASK_ENV") == "development")

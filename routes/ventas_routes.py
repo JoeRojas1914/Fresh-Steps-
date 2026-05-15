@@ -58,10 +58,8 @@ def entregar_venta(id_venta):
             })
 
     except Exception as e:
-        return jsonify({
-            "ok": False,
-            "error": str(e)
-        }), 500
+        logger.error("Error en guardar_venta: %s", e, exc_info=True)
+        return jsonify({"ok": False, "error": "Error interno del servidor"}), 500
 
 
 @ventas_bp.route("/ventas/ticket/<int:id_venta>")
@@ -102,8 +100,8 @@ def ventas_pendientes():
         )
 
     except Exception as e:
-        logger.error("ERROR EN ventas_pendientes: %s", e, exc_info=True)
-        return str(e), 500
+        logger.error("Error en ventas_pendientes: %s", e, exc_info=True)
+        return render_template("403.html"), 500
 
 
 @ventas_bp.route("/ventas/marcar-lista/<int:id_venta>", methods=["POST"])
@@ -121,11 +119,9 @@ def marcar_lista(id_venta):
                 "error": "La venta ya está lista o fue entregada"
             })
     except Exception as e:
-        return jsonify({
-            "ok": False,
-            "error": str(e)
-        }), 500
-    
+        logger.error("Error en marcar_lista: %s", e, exc_info=True)
+        return jsonify({"ok": False, "error": "Error interno del servidor"}), 500
+
 
 @ventas_bp.route("/ventas/detalles/<int:id_venta>")
 def detalles_venta(id_venta):
@@ -152,11 +148,9 @@ def registrar_pago_final():
         })
 
     except Exception as e:
-        return jsonify({
-            "ok": False,
-            "error": str(e)
-        }), 500
-    
+        logger.error("Error en registrar_pago_final: %s", e, exc_info=True)
+        return jsonify({"ok": False, "error": "Error interno del servidor"}), 500
+
 
 @ventas_bp.route("/ventas/eliminar/<int:id_venta>", methods=["POST"])
 def eliminar_venta_route(id_venta):
@@ -192,10 +186,8 @@ def eliminar_venta_route(id_venta):
         })
 
     except Exception as e:
-        return jsonify({
-            "ok": False,
-            "error": str(e)
-        }), 500
+        logger.error("Error en eliminar_venta: %s", e, exc_info=True)
+        return jsonify({"ok": False, "error": "Error interno del servidor"}), 500
 
 @ventas_bp.route("/ventas/historial")
 def historial_ventas():

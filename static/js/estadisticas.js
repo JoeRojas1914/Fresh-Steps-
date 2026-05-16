@@ -6,9 +6,10 @@ const fmtFecha = iso => {
     const M = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
     return `${parseInt(d)} ${M[parseInt(m)-1]} ${y}`;
 };
-const badgePct = pct => {
+const badgePct = (pct, invert=false) => {
     if (pct===null||pct===undefined) return "";
-    const c = pct>=0?"#22c55e":"#ef4444";
+    const bueno = invert ? pct < 0 : pct >= 0;
+    const c = bueno ? "#22c55e" : "#ef4444";
     return `<span style="font-size:12px;font-weight:600;color:${c};margin-left:6px">${pct>=0?"↑":"↓"} ${Math.abs(pct).toFixed(1)}%</span>`;
 };
 
@@ -38,10 +39,10 @@ Chart.register({
     beforeDatasetsDraw(chart) {
         chart.data.datasets.forEach((ds, i) => {
             if (!ds._gradient) return;
-            const { ctx, chartArea, canvas } = chart;
-            const top    = chartArea ? chartArea.top    : 0;
-            const bottom = chartArea ? chartArea.bottom : canvas.height;
-            if (bottom === 0) return;
+            const { ctx, chartArea } = chart;
+            if (!chartArea) return;
+            const { top, bottom } = chartArea;
+            if (bottom <= top) return;
             const g = ctx.createLinearGradient(0, top, 0, bottom);
             g.addColorStop(0, ds._gradient[0]);
             g.addColorStop(1, ds._gradient[1]);
@@ -133,6 +134,7 @@ function initCharts() {
                 data: [],
                 borderColor: '#22c55e',
                 borderWidth: 2.5,
+                backgroundColor: 'rgba(34,197,94,0.15)',
                 _gradient: ['rgba(34,197,94,0.30)', 'rgba(34,197,94,0)'],
                 fill: true,
                 tension: 0.4,
@@ -165,6 +167,7 @@ function initCharts() {
                 data: [],
                 borderColor: '#f59e0b',
                 borderWidth: 2.5,
+                backgroundColor: 'rgba(245,158,11,0.15)',
                 _gradient: ['rgba(245,158,11,0.30)', 'rgba(245,158,11,0)'],
                 fill: true,
                 tension: 0.4,
@@ -187,6 +190,7 @@ function initCharts() {
                 data: [],
                 borderColor: '#14b8a6',
                 borderWidth: 2.5,
+                backgroundColor: 'rgba(20,184,166,0.15)',
                 _gradient: ['rgba(20,184,166,0.30)', 'rgba(20,184,166,0)'],
                 fill: true,
                 tension: 0.4,
@@ -268,6 +272,7 @@ function initCharts() {
                 data: [0,0,0,0,0,0],
                 borderColor: '#6366f1',
                 borderWidth: 2.5,
+                backgroundColor: 'rgba(99,102,241,0.15)',
                 _gradient: ['rgba(99,102,241,0.30)', 'rgba(99,102,241,0)'],
                 fill: true,
                 tension: 0.4,
@@ -462,7 +467,7 @@ async function cargarDashboard() {
 
         const k = data.kpis||{};
         setKpi("ventasMes",     k.ingresos,        k.ingresos_pct);
-        setKpi("gastosMes",     k.gastos,           k.gastos_pct);
+        setKpi("gastosMes",     k.gastos,           k.gastos_pct,  true);
         setKpi("gananciaMes",   k.ganancia,         k.ganancia_pct);
         setKpi("ticketPromedio",k.ticket_promedio,  k.ticket_pct);
         setKpi("saldoCobrar",   k.saldo_por_cobrar, k.saldo_pct);
@@ -559,7 +564,7 @@ function renderTopClientes(clientes) {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function setKpi(id,valor,pct) { const el=document.getElementById(id); if(el) el.innerHTML=fmt$(valor)+badgePct(pct); }
+function setKpi(id,valor,pct,invert=false) { const el=document.getElementById(id); if(el) el.innerHTML=fmt$(valor)+badgePct(pct,invert); }
 function mostrarError(msg) {
     let el=document.getElementById("dashboard-error");
     if (!el) { el=document.createElement("div"); el.id="dashboard-error"; el.style.cssText="background:#fee2e2;color:#b91c1c;padding:10px 16px;border-radius:8px;margin:12px 0;font-size:13px;font-weight:500;"; document.querySelector(".filtro-box").after(el); }

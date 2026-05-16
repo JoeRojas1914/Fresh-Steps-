@@ -156,10 +156,10 @@ async function buscarClientes() {
             ? `${c.total_ventas} venta${c.total_ventas !== 1 ? 's' : ''}`
             : 'Cliente nuevo';
         item.innerHTML = `
-            <div class="result-avatar">${iniciales}</div>
+            <div class="result-avatar">${escapeHtml(iniciales)}</div>
             <div class="result-info">
-                <div class="result-name">${c.nombre} ${c.apellido}</div>
-                <div class="result-tel">${c.telefono || ''}</div>
+                <div class="result-name">${escapeHtml(c.nombre)} ${escapeHtml(c.apellido)}</div>
+                <div class="result-tel">${escapeHtml(c.telefono || '')}</div>
             </div>
             <div class="result-ventas-badge ${c.total_ventas > 0 ? 'has-ventas' : 'no-ventas'}">${ventasLabel}</div>
         `;

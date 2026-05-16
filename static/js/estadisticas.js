@@ -548,9 +548,9 @@ function renderTopClientes(clientes) {
         return `
         <div class="tc-item">
             <div class="tc-rank" style="background:${rankMedal[i]};color:${rankTextColor[i]}">${i+1}</div>
-            <div class="tc-avatar" style="background:${avatarColors[i]};color:${avatarText[i]}">${initials}</div>
+            <div class="tc-avatar" style="background:${avatarColors[i]};color:${avatarText[i]}">${escapeHtml(initials)}</div>
             <div class="tc-body">
-                <div class="tc-name">${cl.nombre}</div>
+                <div class="tc-name">${escapeHtml(cl.nombre)}</div>
                 <div class="tc-bar-wrap">
                     <div class="tc-bar" style="width:${barPct}%;background:${rankColors[i]}"></div>
                 </div>

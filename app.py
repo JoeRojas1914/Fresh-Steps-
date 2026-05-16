@@ -46,6 +46,14 @@ csrf.init_app(app)
 limiter.init_app(app)
 
 _is_dev = os.getenv("FLASK_ENV") == "development"
+_CSP = {
+    "default-src": "'self'",
+    "script-src": ["'self'", "unpkg.com", "cdn.jsdelivr.net"],
+    "style-src": ["'self'", "'unsafe-inline'", "fonts.googleapis.com"],
+    "font-src": ["'self'", "fonts.gstatic.com"],
+    "img-src": ["'self'", "data:"],
+    "connect-src": "'self'",
+}
 Talisman(
     app,
     force_https=not _is_dev,
@@ -53,7 +61,7 @@ Talisman(
     strict_transport_security_max_age=31536000,
     session_cookie_secure=not _is_dev,
     frame_options="DENY",
-    content_security_policy=False,  # Se activará en semana 3 tras migrar scripts inline
+    content_security_policy=_CSP,
 )
 app.register_blueprint(servicios_bp)
 app.register_blueprint(gastos_bp)

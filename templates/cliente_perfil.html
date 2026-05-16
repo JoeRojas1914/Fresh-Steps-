@@ -219,8 +219,8 @@
 
           <div class="btn-row">
             <button type="button"
-                    class="btn btn--info btn--sm"
-                    onclick="window.open('{{ url_for('ventas.venta_ticket', id_venta=p.id_venta) }}', '_blank')">
+                    class="btn btn--info btn--sm js-ver-ticket"
+                    data-url="{{ url_for('ventas.venta_ticket', id_venta=p.id_venta) }}">
               <i data-lucide="receipt" width="14" height="14"></i> Ver ticket
             </button>
           </div>

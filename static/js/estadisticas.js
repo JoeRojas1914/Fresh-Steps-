@@ -593,4 +593,15 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     cargarDashboard();
+
+    document.addEventListener("click", function (e) {
+        const btnModo = e.target.closest(".modo-btn[data-modo]");
+        if (btnModo) { setModo(btnModo.dataset.modo, btnModo); return; }
+
+        const btnTab = e.target.closest(".tab-btn[data-tab]");
+        if (btnTab) { switchTab(btnTab.dataset.tab, btnTab); return; }
+
+        const btnVerVentas = e.target.closest(".js-ver-ventas");
+        if (btnVerVentas) { verVentasRelacionadas(); return; }
+    });
 });

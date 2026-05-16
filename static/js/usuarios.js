@@ -136,6 +136,23 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
+document.addEventListener("click", function (e) {
+    const btnAbrir = e.target.closest(".js-abrir-modal-usuario");
+    if (btnAbrir) { abrirModalUsuario(); return; }
+
+    const btnEditar = e.target.closest(".js-editar-usuario");
+    if (btnEditar) { e.stopPropagation(); editarUsuario(e, JSON.parse(btnEditar.dataset.user)); return; }
+
+    const btnToggle = e.target.closest(".js-confirmar-toggle");
+    if (btnToggle) { confirmarToggleUsuario(parseInt(btnToggle.dataset.id), btnToggle.dataset.accion); return; }
+
+    const btnHistorial = e.target.closest(".js-ver-historial-usuario");
+    if (btnHistorial) { e.stopPropagation(); verHistorialUsuario(e, parseInt(btnHistorial.dataset.id)); return; }
+
+    const btnEjecutar = e.target.closest(".js-ejecutar-toggle-usuario");
+    if (btnEjecutar) { ejecutarToggleUsuario(); return; }
+});
+
 window.verHistorialUsuario = function (e, id) {
     e.stopPropagation();
     abrirHistorial(

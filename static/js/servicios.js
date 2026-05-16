@@ -77,3 +77,20 @@ window.verHistorialServicio = function (id) {
         h => renderDiff(h, "Servicio")
     );
 };
+
+document.addEventListener("click", function (e) {
+    const btnNuevo = e.target.closest(".js-abrir-nuevo-servicio");
+    if (btnNuevo) { abrirNuevoServicio(); return; }
+
+    const btnEditar = e.target.closest(".js-editar-servicio");
+    if (btnEditar) { editarServicio(btnEditar); return; }
+
+    const btnHistorial = e.target.closest(".js-ver-historial-servicio");
+    if (btnHistorial) { verHistorialServicio(parseInt(btnHistorial.dataset.id)); return; }
+
+    const btnEliminar = e.target.closest(".js-confirmar-eliminar-servicio");
+    if (btnEliminar) { confirmarEliminarServicio(parseInt(btnEliminar.dataset.id)); return; }
+
+    const btnEjecutar = e.target.closest(".js-ejecutar-eliminar-servicio");
+    if (btnEjecutar) { ejecutarEliminarServicio(); return; }
+});

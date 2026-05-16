@@ -38,7 +38,7 @@
         </div>
 
         <div style="margin-left:auto; display:flex; align-items:flex-end;">
-            <button onclick="abrirModalUsuario()" class="btn btn--primary btn--sm">
+            <button class="btn btn--primary btn--sm js-abrir-modal-usuario">
                 <i data-lucide="plus" width="14" height="14"></i> Agregar usuario
             </button>
         </div>
@@ -91,19 +91,20 @@
 
         <td>
         {% if u.rol != 'admin' %}
-            <button class="btn btn--success btn--sm no-row-click"
-                onclick='editarUsuario(event, {{ u|tojson }})'>
+            <button class="btn btn--success btn--sm no-row-click js-editar-usuario"
+                data-user='{{ u|tojson }}'>
                 Editar
             </button>
 
             <button type="button"
-                    class="btn btn--danger btn--sm no-row-click"
-                    onclick="confirmarToggleUsuario({{ u.id_usuario }}, '{{ 'Desactivar' if u.activo else 'Activar' }}')">
+                    class="btn btn--danger btn--sm no-row-click js-confirmar-toggle"
+                    data-id="{{ u.id_usuario }}"
+                    data-accion="{{ 'Desactivar' if u.activo else 'Activar' }}">
                 {{ 'Desactivar' if u.activo else 'Activar' }}
             </button>
 
-            <button class="btn btn--info btn--sm no-row-click"
-                onclick="verHistorialUsuario(event, {{ u.id_usuario }})">
+            <button class="btn btn--info btn--sm no-row-click js-ver-historial-usuario"
+                data-id="{{ u.id_usuario }}">
                 Historial
             </button>
         {% else %}
@@ -127,7 +128,7 @@
 
         <div class="modal__header">
             <h2 id="modalTitulo" class="modal__title">Agregar usuario</h2>
-            <button class="modal__close" onclick="cerrarModal('modalUsuario')">&times;</button>
+            <button class="modal__close" data-modal-close="modalUsuario">&times;</button>
         </div>
 
         <form method="POST" action="/usuarios/guardar" id="formUsuario">
@@ -198,7 +199,7 @@
 
         <div class="modal__footer">
             <button type="button" class="btn btn--danger"
-                    onclick="cerrarModal('modalUsuario')">Cancelar</button>
+                    data-modal-close="modalUsuario">Cancelar</button>
             <button type="submit" class="btn btn--primary">Guardar usuario</button>
         </div>
 
@@ -213,7 +214,7 @@
 
         <div class="modal__header">
             <h2 class="modal__title">Historial del usuario</h2>
-            <button class="modal__close" onclick="cerrarModal('modalHistorialUsuario')">&times;</button>
+            <button class="modal__close" data-modal-close="modalHistorialUsuario">&times;</button>
         </div>
 
         <div class="modal__body">
@@ -231,7 +232,7 @@
         </div>
 
         <div class="modal__footer">
-            <button class="btn btn--primary" onclick="cerrarModal('modalHistorialUsuario')">Cerrar</button>
+            <button class="btn btn--primary" data-modal-close="modalHistorialUsuario">Cerrar</button>
         </div>
 
     </div>
@@ -243,7 +244,7 @@
     <div class="modal__dialog modal--sm">
         <div class="modal__header">
             <h2 id="modalToggleTitulo" class="modal__title">Cambiar estado</h2>
-            <button class="modal__close" onclick="cerrarModal('modalConfirmarToggleUsuario')">&times;</button>
+            <button class="modal__close" data-modal-close="modalConfirmarToggleUsuario">&times;</button>
         </div>
         <div class="modal__body">
             <p id="modalToggleMensaje" class="modal-question"></p>
@@ -252,8 +253,8 @@
             </p>
         </div>
         <div class="modal__footer">
-            <button class="btn btn--primary btn--sm" onclick="cerrarModal('modalConfirmarToggleUsuario')">Cancelar</button>
-            <button class="btn btn--danger btn--sm" onclick="ejecutarToggleUsuario()">Confirmar</button>
+            <button class="btn btn--primary btn--sm" data-modal-close="modalConfirmarToggleUsuario">Cancelar</button>
+            <button class="btn btn--danger btn--sm js-ejecutar-toggle-usuario">Confirmar</button>
         </div>
     </div>
 </div>

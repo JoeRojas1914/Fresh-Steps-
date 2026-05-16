@@ -51,7 +51,6 @@
                                name="eliminadas"
                                value="1"
                                id="toggle-eliminadas"
-                               onchange="this.form.submit()"
                                {% if mostrar_eliminadas %}checked{% endif %}>
                         <span class="slider"></span>
                     </label>
@@ -183,8 +182,8 @@
  
             <div class="btn-row">
                 <button type="button"
-                        class="btn btn--info btn--sm"
-                        onclick="window.open('{{ url_for('ventas.venta_ticket', id_venta=v.id_venta) }}', '_blank')">
+                        class="btn btn--info btn--sm js-ver-ticket"
+                        data-url="{{ url_for('ventas.venta_ticket', id_venta=v.id_venta) }}">
                     <i data-lucide="receipt" width="14" height="14"></i> Ver ticket
                 </button>
                 <button type="button"
@@ -240,7 +239,7 @@
 </table>
 {% endif %}
 {% if section == 'footer' %}
-<button class="btn btn--primary btn--sm" onclick="cerrarModal('modalHistorialVenta')">Cerrar</button>
+<button class="btn btn--primary btn--sm" data-modal-close="modalHistorialVenta">Cerrar</button>
 {% endif %}
 {% endcall %}
 

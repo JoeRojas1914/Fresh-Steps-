@@ -4,7 +4,7 @@
 
     <div class="modal__header">
       <h2 id="{{ id }}_title" class="modal__title">{{ titulo }}</h2>
-      <button class="modal__close" onclick="cerrarModal('{{ id }}')">&times;</button>
+      <button class="modal__close" data-modal-close="{{ id }}">&times;</button>
     </div>
 
     <div class="modal__body">
@@ -27,7 +27,7 @@
   <div class="modal__dialog modal--sm">
     <div class="modal__header">
       <h2 class="modal__title">Eliminar venta</h2>
-      <button class="modal__close" onclick="cerrarModal('modalEliminarVenta')">&times;</button>
+      <button class="modal__close" data-modal-close="modalEliminarVenta">&times;</button>
     </div>
     <div class="modal__body">
       <p class="modal-question">
@@ -39,7 +39,7 @@
       </p>
     </div>
     <div class="modal__footer">
-      <button class="btn btn--primary btn--sm" onclick="cerrarModal('modalEliminarVenta')">Cancelar</button>
+      <button class="btn btn--primary btn--sm" data-modal-close="modalEliminarVenta">Cancelar</button>
       <button id="btnConfirmarEliminar" class="btn btn--danger btn--sm">Sí, eliminar</button>
     </div>
   </div>

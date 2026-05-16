@@ -73,14 +73,26 @@ window.restaurarCliente = function (idCliente) {
 };
 
 document.addEventListener("click", function (e) {
-    if (e.target.closest(".modal")) return;
+    const btnEditar = e.target.closest(".js-editar-cliente");
+    if (btnEditar) { e.stopPropagation(); editarClienteBtn(e, btnEditar); return; }
 
+    const btnHistorial = e.target.closest(".js-ver-historial-cliente");
+    if (btnHistorial) { e.stopPropagation(); verHistorialCliente(e, parseInt(btnHistorial.dataset.id)); return; }
+
+    const btnEliminar = e.target.closest(".js-confirmar-eliminar-cliente");
+    if (btnEliminar) { confirmarEliminarCliente(parseInt(btnEliminar.dataset.id)); return; }
+
+    const btnRestaurar = e.target.closest(".js-restaurar-cliente");
+    if (btnRestaurar) { restaurarCliente(parseInt(btnRestaurar.dataset.id)); return; }
+
+    const btnEjecutar = e.target.closest(".js-ejecutar-eliminar-cliente");
+    if (btnEjecutar) { ejecutarEliminarCliente(); return; }
+
+    if (e.target.closest(".modal")) return;
     const row = e.target.closest("tr[data-href]");
     if (!row) return;
-
     if (e.target.closest(".no-row-click")) return;
     if (e.target.tagName === "BUTTON" || e.target.tagName === "A") return;
-
     window.location.href = row.dataset.href;
 });
 

@@ -44,7 +44,7 @@
                class="btn btn--success btn--sm" style="text-decoration:none;">
                 <i data-lucide="download" width="14" height="14"></i> Exportar Excel
             </a>
-            <button type="button" onclick="abrirModal('modalCliente')" class="btn btn--primary btn--sm">
+            <button type="button" data-modal-open="modalCliente" class="btn btn--primary btn--sm">
                 <i data-lucide="plus" width="14" height="14"></i> Agregar cliente
             </button>
         </div>
@@ -94,7 +94,7 @@
 {% if section == 'footer' %}
 <button type="button"
         class="btn btn--danger btn--sm"
-        onclick="cerrarModal('modalCliente')">
+        data-modal-close="modalCliente">
   Cancelar
 </button>
 
@@ -142,34 +142,33 @@
         {% if c.activo %}
 
             <button type="button"
-                class="btn btn--success btn--sm no-row-click"
+                class="btn btn--success btn--sm no-row-click js-editar-cliente"
                 data-id="{{ c.id_cliente }}"
                 data-nombre="{{ c.nombre }}"
                 data-apellido="{{ c.apellido }}"
                 data-correo="{{ c.correo or '' }}"
                 data-telefono="{{ c.telefono }}"
-                data-direccion="{{ c.direccion or '' }}"
-                onclick="editarClienteBtn(event, this)">
+                data-direccion="{{ c.direccion or '' }}">
                 Editar
             </button>
 
             <button type="button"
-                    class="btn btn--info btn--sm no-row-click"
-                    onclick="verHistorialCliente(event, {{ c.id_cliente }})">
+                    class="btn btn--info btn--sm no-row-click js-ver-historial-cliente"
+                    data-id="{{ c.id_cliente }}">
                 Historial
             </button>
 
             <button type="button"
-                    class="btn btn--danger btn--sm no-row-click"
-                    onclick="confirmarEliminarCliente({{ c.id_cliente }})">
+                    class="btn btn--danger btn--sm no-row-click js-confirmar-eliminar-cliente"
+                    data-id="{{ c.id_cliente }}">
                 Eliminar
             </button>
 
         {% else %}
 
             <button type="button"
-                    class="btn btn--primary btn--sm no-row-click"
-                    onclick="restaurarCliente({{ c.id_cliente }})">
+                    class="btn btn--primary btn--sm no-row-click js-restaurar-cliente"
+                    data-id="{{ c.id_cliente }}">
                 Restaurar
             </button>
 
@@ -214,8 +213,8 @@
 </p>
 {% endif %}
 {% if section == 'footer' %}
-<button class="btn btn--primary btn--sm" onclick="cerrarModal('modalConfirmarEliminarCliente')">Cancelar</button>
-<button class="btn btn--danger btn--sm" onclick="ejecutarEliminarCliente()">Sí, eliminar</button>
+<button class="btn btn--primary btn--sm" data-modal-close="modalConfirmarEliminarCliente">Cancelar</button>
+<button class="btn btn--danger btn--sm js-ejecutar-eliminar-cliente">Sí, eliminar</button>
 {% endif %}
 {% endcall %}
 

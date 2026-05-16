@@ -55,7 +55,7 @@
                    class="btn btn--success btn--sm" style="text-decoration:none;">
                     <i data-lucide="download" width="14" height="14"></i> Exportar Excel
                 </a>
-                <button type="button" onclick="abrirNuevoServicio()" class="btn btn--primary btn--sm">
+                <button type="button" class="btn btn--primary btn--sm js-abrir-nuevo-servicio">
                     <i data-lucide="plus" width="14" height="14"></i> Agregar servicio
                 </button>
             </div>
@@ -95,7 +95,7 @@
 
 {% if section == 'footer' %}
     <button class="btn btn--danger btn--sm"
-            onclick="cerrarModal('modalServicio')">
+            data-modal-close="modalServicio">
         Cancelar
     </button>
 
@@ -135,23 +135,22 @@
         <td>
         {% if s.activo %}
 
-            <button class="btn btn--success btn--sm"
+            <button class="btn btn--success btn--sm js-editar-servicio"
                 data-id="{{ s.id_servicio }}"
                 data-negocio="{{ s.id_negocio }}"
                 data-nombre="{{ s.nombre }}"
-                data-precio="{{ s.precio }}"
-                onclick="editarServicio(this)">
+                data-precio="{{ s.precio }}">
                 Editar
             </button>
 
-            <button class="btn btn--info btn--sm"
-                onclick="verHistorialServicio({{ s.id_servicio }})">
+            <button class="btn btn--info btn--sm js-ver-historial-servicio"
+                data-id="{{ s.id_servicio }}">
                 Historial
             </button>
 
             <button type="button"
-                    class="btn btn--danger btn--sm"
-                    onclick="confirmarEliminarServicio({{ s.id_servicio }})">
+                    class="btn btn--danger btn--sm js-confirmar-eliminar-servicio"
+                    data-id="{{ s.id_servicio }}">
                 Eliminar
             </button>
 
@@ -203,8 +202,8 @@
 </p>
 {% endif %}
 {% if section == 'footer' %}
-<button class="btn btn--primary btn--sm" onclick="cerrarModal('modalConfirmarEliminarServicio')">Cancelar</button>
-<button class="btn btn--danger btn--sm" onclick="ejecutarEliminarServicio()">Sí, eliminar</button>
+<button class="btn btn--primary btn--sm" data-modal-close="modalConfirmarEliminarServicio">Cancelar</button>
+<button class="btn btn--danger btn--sm js-ejecutar-eliminar-servicio">Sí, eliminar</button>
 {% endif %}
 {% endcall %}
 

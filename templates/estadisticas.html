@@ -6,10 +6,10 @@
 
 {# ── Selector de modo ── #}
 <div class="modo-selector">
-    <button class="modo-btn" onclick="setModo('dia', this)"><i data-lucide="calendar" width="14" height="14"></i> Día</button>
-    <button class="modo-btn" onclick="setModo('semana', this)"><i data-lucide="calendar-days" width="14" height="14"></i> Semana</button>
-    <button class="modo-btn active" onclick="setModo('mes', this)"><i data-lucide="calendar" width="14" height="14"></i> Mes</button>
-    <button class="modo-btn" onclick="setModo('personalizado', this)"><i data-lucide="search" width="14" height="14"></i> Personalizado</button>
+    <button class="modo-btn" data-modo="dia"><i data-lucide="calendar" width="14" height="14"></i> Día</button>
+    <button class="modo-btn" data-modo="semana"><i data-lucide="calendar-days" width="14" height="14"></i> Semana</button>
+    <button class="modo-btn active" data-modo="mes"><i data-lucide="calendar" width="14" height="14"></i> Mes</button>
+    <button class="modo-btn" data-modo="personalizado"><i data-lucide="search" width="14" height="14"></i> Personalizado</button>
 </div>
 
 {# ── Paneles de filtro por modo ── #}
@@ -20,7 +20,7 @@
             <div class="filtro-item"><label>Fecha</label><input type="date" id="fecha-dia"></div>
             <div class="filtro-item"><label>Negocio</label><div class="select-wrapper"><select id="negocio-dia"><option value="all">Todos</option>{% for n in negocios %}<option value="{{ n.id_negocio }}">{{ n.nombre }}</option>{% endfor %}</select></div></div>
             <div class="filtro-actions">
-                <button class="btn btn--info btn--sm" onclick="verVentasRelacionadas()"><i data-lucide="clipboard-list" width="14" height="14"></i> Ver ventas</button>
+                <button class="btn btn--info btn--sm js-ver-ventas"><i data-lucide="clipboard-list" width="14" height="14"></i> Ver ventas</button>
             </div>
         </div>
     </div>
@@ -30,7 +30,7 @@
             <div class="filtro-item"><label>Semana</label><input type="week" id="fecha-semana"></div>
             <div class="filtro-item"><label>Negocio</label><div class="select-wrapper"><select id="negocio-semana"><option value="all">Todos</option>{% for n in negocios %}<option value="{{ n.id_negocio }}">{{ n.nombre }}</option>{% endfor %}</select></div></div>
             <div class="filtro-actions">
-                <button class="btn btn--info btn--sm" onclick="verVentasRelacionadas()"><i data-lucide="clipboard-list" width="14" height="14"></i> Ver ventas</button>
+                <button class="btn btn--info btn--sm js-ver-ventas"><i data-lucide="clipboard-list" width="14" height="14"></i> Ver ventas</button>
             </div>
         </div>
     </div>
@@ -40,7 +40,7 @@
             <div class="filtro-item"><label>Mes</label><input type="month" id="fecha-mes" value="{{ fecha_inicio[:7] }}"></div>
             <div class="filtro-item"><label>Negocio</label><div class="select-wrapper"><select id="negocio-mes"><option value="all">Todos</option>{% for n in negocios %}<option value="{{ n.id_negocio }}">{{ n.nombre }}</option>{% endfor %}</select></div></div>
             <div class="filtro-actions">
-                <button class="btn btn--info btn--sm" onclick="verVentasRelacionadas()"><i data-lucide="clipboard-list" width="14" height="14"></i> Ver ventas</button>
+                <button class="btn btn--info btn--sm js-ver-ventas"><i data-lucide="clipboard-list" width="14" height="14"></i> Ver ventas</button>
             </div>
         </div>
     </div>
@@ -51,7 +51,7 @@
             <div class="filtro-item"><label>Hasta</label><input type="date" id="fecha-fin-custom" value="{{ fecha_fin }}"></div>
             <div class="filtro-item"><label>Negocio</label><div class="select-wrapper"><select id="negocio-custom"><option value="all">Todos</option>{% for n in negocios %}<option value="{{ n.id_negocio }}">{{ n.nombre }}</option>{% endfor %}</select></div></div>
             <div class="filtro-actions">
-                <button class="btn btn--info btn--sm" onclick="verVentasRelacionadas()"><i data-lucide="clipboard-list" width="14" height="14"></i> Ver ventas</button>
+                <button class="btn btn--info btn--sm js-ver-ventas"><i data-lucide="clipboard-list" width="14" height="14"></i> Ver ventas</button>
             </div>
         </div>
     </div>
@@ -89,9 +89,9 @@
 
 {# ── Pestañas ── #}
 <div class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab('financiero', this)"><i data-lucide="bar-chart-2" width="14" height="14"></i> Financiero</button>
-    <button class="tab-btn" onclick="switchTab('operacional', this)"><i data-lucide="shopping-bag" width="14" height="14"></i> Operacional</button>
-    <button class="tab-btn" onclick="switchTab('clientes', this)"><i data-lucide="users" width="14" height="14"></i> Clientes</button>
+    <button class="tab-btn active" data-tab="financiero"><i data-lucide="bar-chart-2" width="14" height="14"></i> Financiero</button>
+    <button class="tab-btn" data-tab="operacional"><i data-lucide="shopping-bag" width="14" height="14"></i> Operacional</button>
+    <button class="tab-btn" data-tab="clientes"><i data-lucide="users" width="14" height="14"></i> Clientes</button>
 </div>
 
 {# ── Financiero ── #}

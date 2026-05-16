@@ -6,6 +6,11 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
+document.addEventListener("click", function (e) {
+    const btn = e.target.closest(".js-ver-ticket");
+    if (btn) { window.open(btn.dataset.url, "_blank"); }
+});
+
 function toggleDetalles(idVenta, btn) {
     const fila = document.getElementById(`detalles-${idVenta}`);
     const lista = document.getElementById(`lista-detalles-${idVenta}`);

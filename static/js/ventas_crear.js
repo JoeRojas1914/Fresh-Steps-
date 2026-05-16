@@ -113,6 +113,29 @@ if (typeof ventaState === "undefined") {
         toggleDescuento();
     });
 
+    document.getElementById("id_negocio").addEventListener("change", seleccionarNegocio);
+    document.getElementById("fecha_estimada_fecha").addEventListener("change", () => {
+        actualizarFechaEstimadaCompleta();
+        validarFormulario();
+    });
+    document.getElementById("fecha_estimada_hora").addEventListener("change", () => {
+        actualizarFechaEstimadaCompleta();
+        validarFormulario();
+    });
+    document.getElementById("tipo_pago").addEventListener("change", () => {
+        validarFormulario();
+        actualizarTotal();
+    });
+    document.getElementById("monto_prepago").addEventListener("input", () => {
+        validarFormulario();
+        actualizarTotal();
+    });
+    document.getElementById("cantidad_descuento").addEventListener("input", () => {
+        validarFormulario();
+        actualizarTotal();
+    });
+    document.getElementById("btnAgregarArticulo").addEventListener("click", agregarArticulo);
+
     bloquearFechaMinima();
     togglePrepago();
     toggleDescuento();

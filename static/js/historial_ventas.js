@@ -8,6 +8,11 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.addEventListener("click", () => verHistorialVenta(btn.dataset.id));
     });
 
+    const toggleEliminadas = document.getElementById("toggle-eliminadas");
+    if (toggleEliminadas) {
+        toggleEliminadas.addEventListener("change", () => toggleEliminadas.form.submit());
+    }
+
 });
 
 async function verHistorialVenta(idVenta) {

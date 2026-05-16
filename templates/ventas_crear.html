@@ -37,7 +37,7 @@
 </form>
 {% endif %}
 {% if section == 'footer' %}
-<button type="button" class="btn btn--danger btn--sm" onclick="cerrarModal('modalCliente')">Cancelar</button>
+<button type="button" class="btn btn--danger btn--sm" data-modal-close="modalCliente">Cancelar</button>
 <button type="submit" form="formNuevoCliente" class="btn btn--primary btn--lg">Guardar cliente</button>
 {% endif %}
 {% endcall %}
@@ -66,7 +66,7 @@
                                        placeholder="Buscar por nombre..."
                                        autocomplete="off">
                                 <button type="button" class="btn btn--primary btn--sm"
-                                        onclick="abrirModal('modalCliente')">
+                                        data-modal-open="modalCliente">
                                     <i data-lucide="plus" width="14" height="14"></i> Nuevo
                                 </button>
                             </div>
@@ -80,7 +80,7 @@
                     </div>
                     <div class="cliente-negocio-col">
                         <label class="form-label">Negocio</label>
-                        <select name="id_negocio" id="id_negocio" onchange="seleccionarNegocio()" style="width:100%;">
+                        <select name="id_negocio" id="id_negocio" style="width:100%;">
                             <option value="">-- Selecciona --</option>
                             <option value="1">Fresh Steps</option>
                             <option value="2">Confección</option>
@@ -112,8 +112,7 @@
                     </div>
                 </div>
                 <button type="button" id="btnAgregarArticulo"
-                        class="btn btn--primary btn--sm"
-                        onclick="agregarArticulo()">
+                        class="btn btn--primary btn--sm">
                     <i data-lucide="plus" width="14" height="14"></i> Agregar artículo
                 </button>
             </div>
@@ -134,13 +133,11 @@
             <div class="venta-seccion-body">
                 <div class="form-group">
                     <label class="form-label">Fecha</label>
-                    <input type="date" id="fecha_estimada_fecha"
-                           onchange="actualizarFechaEstimadaCompleta(); validarFormulario();">
+                    <input type="date" id="fecha_estimada_fecha">
                 </div>
                 <div class="form-group" style="margin-top:10px;">
                     <label class="form-label">Hora</label>
-                    <input type="time" id="fecha_estimada_hora"
-                           onchange="actualizarFechaEstimadaCompleta(); validarFormulario();">
+                    <input type="time" id="fecha_estimada_hora">
                 </div>
                 <input type="hidden" name="fecha_estimada" id="fecha_estimada">
                 <div id="errorFecha" style="color:var(--color-danger);font-size:.9em;display:none;margin-top:4px;">
@@ -173,8 +170,7 @@
                     <input type="hidden" name="prepago" id="prepago" value="no">
                     <div class="field-group">
                         <label class="form-label">Método de pago</label>
-                        <select name="tipo_pago" id="tipo_pago"
-                                onchange="validarFormulario(); actualizarTotal()">
+                        <select name="tipo_pago" id="tipo_pago">
                             <option value="">-- Selecciona --</option>
                             <option value="efectivo">Efectivo</option>
                             <option value="tarjeta">Tarjeta</option>
@@ -185,8 +181,7 @@
                         <label class="form-label">Monto ($)</label>
                         <input type="number" min="0" step="0.01"
                                name="monto_prepago" id="monto_prepago"
-                               placeholder="0.00"
-                               oninput="validarFormulario(); actualizarTotal()">
+                               placeholder="0.00">
                         <div id="errorPrepago" class="error-msg" style="display:none;">
                             El prepago no puede ser mayor al total.
                         </div>
@@ -213,8 +208,7 @@
                         <label class="form-label">Descuento ($)</label>
                         <input type="number" min="0" step="0.01"
                                name="cantidad_descuento" id="cantidad_descuento"
-                               placeholder="0.00"
-                               oninput="validarFormulario(); actualizarTotal()">
+                               placeholder="0.00">
                         <div id="errorDescuento" class="error-msg" style="display:none;">
                             El descuento no puede ser mayor al total.
                         </div>

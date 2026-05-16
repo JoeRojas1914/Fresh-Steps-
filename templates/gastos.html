@@ -51,7 +51,6 @@
                  name="eliminados"
                  value="1"
                  id="toggle-eliminados-gastos"
-                 onchange="this.form.submit()"
                  {% if incluir_eliminados %}checked{% endif %}>
           <span class="slider"></span>
         </label>
@@ -73,7 +72,7 @@
          class="btn btn--success btn--sm" style="text-decoration:none;">
         <i data-lucide="download" width="14" height="14"></i> Exportar Excel
       </a>
-      <button type="button" onclick="abrirModal('modalGasto')" class="btn btn--primary btn--sm">
+      <button type="button" data-modal-open="modalGasto" class="btn btn--primary btn--sm">
         <i data-lucide="plus" width="14" height="14"></i> Agregar gasto
       </button>
     </div>
@@ -147,7 +146,7 @@
 {% if section == 'footer' %}
 <button type="button"
         class="btn btn--danger btn--sm"
-        onclick="cerrarModal('modalGasto')">
+        data-modal-close="modalGasto">
     Cancelar
 </button>
 
@@ -216,20 +215,27 @@
         {% if g.activo %}
 
             <button type="button"
-                class="btn btn--success btn--sm"
-                onclick='editarGasto({{ g.id_gasto }}, {{ g.id_negocio }}, {{ g.descripcion|tojson }}, {{ g.proveedor|tojson }}, {{ g.total|tojson }}, "{{ g.fecha_registro.strftime("%Y-%m-%d") if g.fecha_registro else "" }}", "{{ g.tipo_comprobante }}", "{{ g.tipo_pago }}")'>
+                class="btn btn--success btn--sm js-editar-gasto"
+                data-id="{{ g.id_gasto }}"
+                data-id-negocio="{{ g.id_negocio }}"
+                data-descripcion="{{ g.descripcion }}"
+                data-proveedor="{{ g.proveedor }}"
+                data-total="{{ g.total }}"
+                data-fecha="{{ g.fecha_registro.strftime('%Y-%m-%d') if g.fecha_registro else '' }}"
+                data-tipo-comprobante="{{ g.tipo_comprobante }}"
+                data-tipo-pago="{{ g.tipo_pago }}">
                 Editar
             </button>
 
             <button type="button"
-                    class="btn btn--info btn--sm" 
-                    onclick="verHistorial({{ g.id_gasto }})">
+                    class="btn btn--info btn--sm js-ver-historial-gasto"
+                    data-id="{{ g.id_gasto }}">
                 Historial
             </button>
 
             <button type="button"
-                    class="btn btn--danger btn--sm"
-                    onclick="confirmarEliminarGasto({{ g.id_gasto }})">
+                    class="btn btn--danger btn--sm js-confirmar-eliminar-gasto"
+                    data-id="{{ g.id_gasto }}">
                 Eliminar
             </button>
 
@@ -281,8 +287,8 @@
 </p>
 {% endif %}
 {% if section == 'footer' %}
-<button class="btn btn--primary btn--sm" onclick="cerrarModal('modalConfirmarEliminarGasto')">Cancelar</button>
-<button class="btn btn--danger btn--sm" onclick="ejecutarEliminarGasto()">Sí, eliminar</button>
+<button class="btn btn--primary btn--sm" data-modal-close="modalConfirmarEliminarGasto">Cancelar</button>
+<button class="btn btn--danger btn--sm js-ejecutar-eliminar-gasto">Sí, eliminar</button>
 {% endif %}
 {% endcall %}
 

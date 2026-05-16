@@ -5,10 +5,12 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from dotenv import load_dotenv
 from werkzeug.security import check_password_hash
 from flask_wtf import CSRFProtect
+from flask_talisman import Talisman
 
 # ================= LOGGING =================
+_log_level = logging.DEBUG if os.getenv("FLASK_ENV") == "development" else logging.WARNING
 logging.basicConfig(
-    level=logging.WARNING,
+    level=_log_level,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S"
 )
@@ -31,6 +33,8 @@ from ventas import contar_entregas_pendientes, contar_entregas_listas
 load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY")
+if not app.secret_key:
+    raise RuntimeError("SECRET_KEY no está configurada. Defínela en el archivo .env antes de arrancar.")
 app.config.update({
     "SESSION_COOKIE_HTTPONLY": True,
     "SESSION_COOKIE_SAMESITE": "Lax",
@@ -38,6 +42,17 @@ app.config.update({
 })
 csrf = CSRFProtect()
 csrf.init_app(app)
+
+_is_dev = os.getenv("FLASK_ENV") == "development"
+Talisman(
+    app,
+    force_https=not _is_dev,
+    strict_transport_security=not _is_dev,
+    strict_transport_security_max_age=31536000,
+    session_cookie_secure=not _is_dev,
+    frame_options="DENY",
+    content_security_policy=False,  # Se activará en semana 3 tras migrar scripts inline
+)
 app.register_blueprint(servicios_bp)
 app.register_blueprint(gastos_bp)
 app.register_blueprint(clientes_bp)

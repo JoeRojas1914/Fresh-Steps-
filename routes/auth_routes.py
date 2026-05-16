@@ -38,7 +38,7 @@ def login():
 
 
 
-        if admin_mode:
+        if admin_mode == "1":
 
             session["id_usuario"] = usuario["id_usuario"]
             session["usuario"]    = usuario["usuario"]

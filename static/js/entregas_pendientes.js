@@ -2,15 +2,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let ventaSeleccionada = null;
 
-    const detallesCargados = {};
-
-
-    document.querySelectorAll(".btn-detalles[data-id]").forEach(btn => {
-        btn.addEventListener("click", () => {
-            toggleDetalles(btn.dataset.id, btn);
-        });
-    });
-
     document.querySelectorAll(".btn-marcar-lista").forEach(btn => {
         btn.addEventListener("click", () => {
             ventaSeleccionada = btn.dataset.id;

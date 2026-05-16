@@ -3,15 +3,6 @@ let saldoPendienteActual = 0;
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    const detallesCargados = {};
-
-    
-    document.querySelectorAll(".btn-detalles[data-id]").forEach(btn => {
-        btn.addEventListener("click", () => {
-            toggleDetalles(btn.dataset.id, btn);
-        });
-    });
-
     document.querySelectorAll(".btn-eliminar").forEach(btn => {
         btn.addEventListener("click", () => confirmarEliminarVenta(btn.dataset.id));
     });

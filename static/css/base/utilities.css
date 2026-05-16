@@ -9,6 +9,13 @@
 .text-sm  { font-size: 13px; }
 .text-xs  { font-size: 11px; }
 
+.modal-question {
+    margin: 0 0 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #0b3c5d;
+}
+
 .modal-hint {
     margin: 0;
     font-size: 13px;

@@ -102,6 +102,11 @@ hr {
 }
 
 
+.mt-4   { margin-top: 4px; }
+.mt-6   { margin-top: 6px; }
+.mt-10  { margin-top: 10px; }
+.fw-bold { font-weight: bold; }
+
 @media print {
   @page {
     size: 80mm auto;

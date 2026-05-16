@@ -117,3 +117,15 @@
   gap: 10px;
   margin-bottom: 24px;
 }
+
+.filtro-item--auto   { flex: 0 0 auto; min-width: auto; }
+.filtro-item--max220 { max-width: 220px; }
+.filtro-item--max260 { max-width: 260px; }
+.filtro-item--max280 { max-width: 280px; }
+
+.filtro-actions--right {
+  margin-left: auto;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}

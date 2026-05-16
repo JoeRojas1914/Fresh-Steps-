@@ -12,8 +12,8 @@
 
 {{ alerts(get_flashed_messages(with_categories=true)) }}
 
-<div class="monthly-cards" style="margin-bottom:20px;">
-    <div class="monthly-card small" style="border-left-color:#1e7fd6;">
+<div class="monthly-cards mb-20">
+    <div class="monthly-card small azul">
         <h4><i data-lucide="store" width="14" height="14"></i> Total servicios</h4>
         <p class="text-primary">{{ total_servicios }}</p>
     </div>
@@ -34,9 +34,9 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="filtro-item" style="flex:0 0 auto; min-width:auto;">
+            <div class="filtro-item filtro-item--auto">
                 <label>&nbsp;</label>
-                <div class="filtro-toggle" style="margin:0; gap:10px;">
+                <div class="filtro-toggle filtro-toggle--compact">
                     <label class="switch">
                         <input type="checkbox"
                                name="eliminados"
@@ -52,7 +52,7 @@
                 <a href="{{ url_for('servicios.exportar_servicios_excel',
                             id_negocio=request.args.get('id_negocio') or '',
                             eliminados='1' if incluir_eliminados else '') }}"
-                   class="btn btn--success btn--sm" style="text-decoration:none;">
+                   class="btn btn--success btn--sm no-underline">
                     <i data-lucide="download" width="14" height="14"></i> Exportar Excel
                 </a>
                 <button type="button" class="btn btn--primary btn--sm js-abrir-nuevo-servicio">
@@ -166,7 +166,7 @@
     </tr>
     {% else %}
     <tr>
-        <td colspan="5" class="dim" style="text-align:center; padding:2rem;">
+        <td colspan="5" class="dim td-empty">
             No se encontraron servicios con esos filtros.
         </td>
     </tr>

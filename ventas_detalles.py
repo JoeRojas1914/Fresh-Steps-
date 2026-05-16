@@ -29,32 +29,43 @@ def obtener_venta(id_venta):
         return cursor.fetchone()
 
 
+def _extraer_datos(tipo, fila):
+    if tipo == "calzado":
+        return {
+            "tipo": fila["c_tipo"], "marca": fila["c_marca"],
+            "material": fila["c_material"], "color_base": fila["c_color_base"],
+            "color_secundario": fila["c_color_secundario"],
+            "color_agujetas": fila["c_color_agujetas"],
+        }
+    if tipo == "confeccion":
+        return {
+            "tipo": fila["cf_tipo"], "marca": fila["cf_marca"],
+            "material": fila["cf_material"], "color_base": fila["cf_color_base"],
+            "color_secundario": fila["cf_color_secundario"],
+            "cantidad": fila["cf_cantidad"], "agujetas": fila["cf_agujetas"],
+        }
+    return {
+        "tipo": fila["m_tipo"], "cantidad": fila["m_cantidad"],
+        "precio_unitario": fila["m_precio_unitario"],
+    }
+
+
 def obtener_detalles_venta(ids_venta):
     if not ids_venta:
         return {}
 
     with get_db() as (_, cursor):
         ph = ','.join(['%s'] * len(ids_venta))
-
         cursor.execute(
             "SELECT"
             "  a.id_articulo, a.id_venta, a.tipo_articulo, a.comentario,"
-            "  ac.tipo          AS c_tipo,"
-            "  ac.marca         AS c_marca,"
-            "  ac.material      AS c_material,"
-            "  ac.color_base    AS c_color_base,"
-            "  ac.color_secundario AS c_color_secundario,"
-            "  ac.color_agujetas   AS c_color_agujetas,"
-            "  acf.tipo         AS cf_tipo,"
-            "  acf.marca        AS cf_marca,"
-            "  acf.material     AS cf_material,"
-            "  acf.color_base   AS cf_color_base,"
-            "  acf.color_secundario AS cf_color_secundario,"
-            "  acf.cantidad     AS cf_cantidad,"
-            "  acf.agujetas     AS cf_agujetas,"
-            "  am.tipo          AS m_tipo,"
-            "  am.cantidad      AS m_cantidad,"
-            "  am.precio_unitario AS m_precio_unitario"
+            "  ac.tipo AS c_tipo, ac.marca AS c_marca, ac.material AS c_material,"
+            "  ac.color_base AS c_color_base, ac.color_secundario AS c_color_secundario,"
+            "  ac.color_agujetas AS c_color_agujetas,"
+            "  acf.tipo AS cf_tipo, acf.marca AS cf_marca, acf.material AS cf_material,"
+            "  acf.color_base AS cf_color_base, acf.color_secundario AS cf_color_secundario,"
+            "  acf.cantidad AS cf_cantidad, acf.agujetas AS cf_agujetas,"
+            "  am.tipo AS m_tipo, am.cantidad AS m_cantidad, am.precio_unitario AS m_precio_unitario"
             " FROM articulo a"
             " LEFT JOIN articulo_calzado    ac  ON ac.id_articulo  = a.id_articulo"
             " LEFT JOIN articulo_confeccion acf ON acf.id_articulo = a.id_articulo"
@@ -63,13 +74,11 @@ def obtener_detalles_venta(ids_venta):
             tuple(ids_venta),
         )
         filas = cursor.fetchall()
-
         if not filas:
             return {}
 
         ids_articulo = [f["id_articulo"] for f in filas]
         ph_art = ','.join(['%s'] * len(ids_articulo))
-
         cursor.execute(
             "SELECT asv.id_articulo, s.nombre, asv.precio_aplicado"
             " FROM articulo_servicio asv"
@@ -79,39 +88,18 @@ def obtener_detalles_venta(ids_venta):
         )
         servicios_por_articulo: dict = {}
         for s in cursor.fetchall():
-            servicios_por_articulo.setdefault(s["id_articulo"], []).append({
-                "nombre": s["nombre"], "precio_aplicado": s["precio_aplicado"]
-            })
+            servicios_por_articulo.setdefault(s["id_articulo"], []).append(
+                {"nombre": s["nombre"], "precio_aplicado": s["precio_aplicado"]}
+            )
 
         detalles_por_venta: dict = {}
         for f in filas:
-            tipo = f["tipo_articulo"]
-            if tipo == "calzado":
-                datos = {
-                    "tipo": f["c_tipo"], "marca": f["c_marca"],
-                    "material": f["c_material"], "color_base": f["c_color_base"],
-                    "color_secundario": f["c_color_secundario"],
-                    "color_agujetas": f["c_color_agujetas"],
-                }
-            elif tipo == "confeccion":
-                datos = {
-                    "tipo": f["cf_tipo"], "marca": f["cf_marca"],
-                    "material": f["cf_material"], "color_base": f["cf_color_base"],
-                    "color_secundario": f["cf_color_secundario"],
-                    "cantidad": f["cf_cantidad"], "agujetas": f["cf_agujetas"],
-                }
-            else:
-                datos = {
-                    "tipo": f["m_tipo"], "cantidad": f["m_cantidad"],
-                    "precio_unitario": f["m_precio_unitario"],
-                }
             detalles_por_venta.setdefault(f["id_venta"], []).append({
-                "tipo_articulo": tipo,
-                "datos": datos,
-                "servicios": servicios_por_articulo.get(f["id_articulo"], []),
-                "comentario": f["comentario"],
+                "tipo_articulo": f["tipo_articulo"],
+                "datos":         _extraer_datos(f["tipo_articulo"], f),
+                "servicios":     servicios_por_articulo.get(f["id_articulo"], []),
+                "comentario":    f["comentario"],
             })
-
         return detalles_por_venta
 
 

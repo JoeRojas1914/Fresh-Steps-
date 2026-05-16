@@ -13,9 +13,9 @@
 </div>
 
 {# ── Paneles de filtro por modo ── #}
-<div class="filtro-box" style="margin-top:16px;">
+<div class="filtro-box mt-16">
 
-    <div id="panel-dia" class="modo-panel" style="display:none;">
+    <div id="panel-dia" class="modo-panel d-none">
         <div class="filtro-row">
             <div class="filtro-item"><label>Fecha</label><input type="date" id="fecha-dia"></div>
             <div class="filtro-item"><label>Negocio</label><div class="select-wrapper"><select id="negocio-dia"><option value="all">Todos</option>{% for n in negocios %}<option value="{{ n.id_negocio }}">{{ n.nombre }}</option>{% endfor %}</select></div></div>
@@ -25,7 +25,7 @@
         </div>
     </div>
 
-    <div id="panel-semana" class="modo-panel" style="display:none;">
+    <div id="panel-semana" class="modo-panel d-none">
         <div class="filtro-row">
             <div class="filtro-item"><label>Semana</label><input type="week" id="fecha-semana"></div>
             <div class="filtro-item"><label>Negocio</label><div class="select-wrapper"><select id="negocio-semana"><option value="all">Todos</option>{% for n in negocios %}<option value="{{ n.id_negocio }}">{{ n.nombre }}</option>{% endfor %}</select></div></div>
@@ -45,7 +45,7 @@
         </div>
     </div>
 
-    <div id="panel-personalizado" class="modo-panel" style="display:none;">
+    <div id="panel-personalizado" class="modo-panel d-none">
         <div class="filtro-row">
             <div class="filtro-item"><label>Desde</label><input type="date" id="fecha-inicio-custom" value="{{ fecha_inicio }}"></div>
             <div class="filtro-item"><label>Hasta</label><input type="date" id="fecha-fin-custom" value="{{ fecha_fin }}"></div>
@@ -56,15 +56,11 @@
         </div>
     </div>
 
-    <div id="comparativaBox" style="display:none;margin-top:12px;align-items:center;gap:10px;flex-wrap:wrap;">
-        <span style="font-size:12px;font-weight:600;color:var(--color-muted);text-transform:uppercase;letter-spacing:.05em;">Comparando</span>
-        <span id="comparativaPeriodoActual"
-              style="background:var(--color-bg-blue);color:var(--color-primary-dark);font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;border:1px solid var(--color-primary);">
-        </span>
-        <span style="font-size:14px;color:var(--color-muted);">vs</span>
-        <span id="comparativaPeriodoAnterior"
-              style="background:#f3f4f6;color:var(--color-muted);font-size:12px;font-weight:500;padding:4px 10px;border-radius:999px;border:1px solid #e5e7eb;">
-        </span>
+    <div id="comparativaBox" class="comparativa-box">
+        <span class="comparativa-label">Comparando</span>
+        <span id="comparativaPeriodoActual" class="comparativa-badge--actual"></span>
+        <span class="comparativa-vs">vs</span>
+        <span id="comparativaPeriodoAnterior" class="comparativa-badge--anterior"></span>
         <span id="comparativaNota" class="text-xs dim-soft text-muted"></span>
     </div>
 </div>
@@ -125,7 +121,7 @@
 </div>
 
 {# ── Operacional ── #}
-<div id="tab-operacional" class="tab-panel" style="display:none;">
+<div id="tab-operacional" class="tab-panel d-none">
     <div class="stats-page">
         <div class="card stats-card">
             <h2 class="stats-title" id="titulo-ventas">Número de ventas</h2>
@@ -165,27 +161,27 @@
 </div>
 
 {# ── Clientes ── #}
-<div id="tab-clientes" class="tab-panel" style="display:none;">
+<div id="tab-clientes" class="tab-panel d-none">
 
-    <div class="monthly-cards" style="margin-top:16px;">
-        <div class="monthly-card small" style="border-left-color:#6366f1;">
+    <div class="monthly-cards mt-16">
+        <div class="monthly-card small indigo">
             <h4><i data-lucide="user" width="14" height="14"></i> Clientes únicos</h4>
-            <p id="clientesUnicos" style="color:#6366f1;">0</p>
+            <p id="clientesUnicos">0</p>
             <span class="kpi-sub">Visitaron el negocio</span>
         </div>
-        <div class="monthly-card small" style="border-left-color:#22c55e;">
+        <div class="monthly-card small ventas">
             <h4><i data-lucide="sparkles" width="14" height="14"></i> Clientes nuevos</h4>
-            <p id="clientesNuevos" style="color:#22c55e;">0</p>
+            <p id="clientesNuevos">0</p>
             <span class="kpi-sub">Primera visita</span>
         </div>
-        <div class="monthly-card small" style="border-left-color:#f59e0b;">
+        <div class="monthly-card small ambar">
             <h4><i data-lucide="refresh-cw" width="14" height="14"></i> Tasa de retorno</h4>
-            <p id="tasaRetorno" style="color:#f59e0b;">0%</p>
+            <p id="tasaRetorno">0%</p>
             <span class="kpi-sub" id="tasaRetornoSub">Clientes recurrentes</span>
         </div>
-        <div class="monthly-card small" style="border-left-color:#14b8a6;">
+        <div class="monthly-card small teal">
             <h4><i data-lucide="dollar-sign" width="14" height="14"></i> Gasto promedio por cliente</h4>
-            <p id="gastoPorCliente" style="color:#14b8a6;">$0</p>
+            <p id="gastoPorCliente">$0</p>
             <span class="kpi-sub">Promedio por visita única</span>
         </div>
     </div>
@@ -194,7 +190,7 @@
         <div class="card stats-card full-width">
             <h2 class="stats-title"><i data-lucide="trophy" width="18" height="18"></i> Top 5 clientes del período</h2>
             <div id="topClientesContainer">
-                <p class="dim" style="text-align:center;padding:2rem;">Cargando...</p>
+                <p class="dim td-empty">Cargando...</p>
             </div>
         </div>
     </div>

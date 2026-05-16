@@ -10,8 +10,8 @@
 
 {{ alerts(get_flashed_messages(with_categories=true)) }}
 
-<div class="monthly-cards" style="margin-bottom:20px;">
-    <div class="monthly-card small" style="border-left-color:#1e7fd6;">
+<div class="monthly-cards mb-20">
+    <div class="monthly-card small azul">
         <h4><i data-lucide="user" width="14" height="14"></i> Total usuarios</h4>
         <p class="text-primary">{{ total_usuarios }}</p>
     </div>
@@ -21,7 +21,7 @@
 <div class="filtro-box">
     <div class="filtro-row">
 
-        <div class="filtro-item" style="max-width:260px;">
+        <div class="filtro-item filtro-item--max260">
             <label>Buscar</label>
             <input type="text" id="buscar-input"
                    placeholder="Usuario, nombre, apellido o teléfono..."
@@ -29,7 +29,7 @@
                    autocomplete="off">
         </div>
 
-        <div class="filtro-toggle" style="margin:0;">
+        <div class="filtro-toggle filtro-toggle--compact">
             <label class="switch">
                 <input type="checkbox" id="toggle-inactivos">
                 <span class="slider"></span>
@@ -37,7 +37,7 @@
             <span class="toggle-text">Mostrar inactivos</span>
         </div>
 
-        <div style="margin-left:auto; display:flex; align-items:flex-end;">
+        <div class="filtro-actions--right">
             <button class="btn btn--primary btn--sm js-abrir-modal-usuario">
                 <i data-lucide="plus" width="14" height="14"></i> Agregar usuario
             </button>
@@ -114,7 +114,7 @@
     </tr>
     {% else %}
     <tr>
-        <td colspan="8" class="dim" style="text-align:center; padding:2rem;">
+        <td colspan="8" class="dim td-empty">
             No se encontraron usuarios con esos filtros.
         </td>
     </tr>
@@ -135,7 +135,7 @@
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="id_usuario" id="id_usuario">
 
-        <div class="modal__body" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div class="modal__body modal__body--grid-2">
 
             <div class="modal-field">
                 <label>Nombre</label>
@@ -185,11 +185,11 @@
                        maxlength="4" pattern="\d{4}" placeholder="1234">
             </div>
 
-            <div class="modal-field" style="grid-column:1/-1;">
+            <div class="modal-field modal-field--full">
                 <label>
                     Contraseña
                     <span id="pass-requerido" class="text-danger">*</span>
-                    <span id="pass-opcional" class="dim" style="font-size:12px; display:none;">(dejar vacío para no cambiar)</span>
+                    <span id="pass-opcional" class="dim text-2xs d-none">(dejar vacío para no cambiar)</span>
                 </label>
                 <input type="password" name="password" id="password"
                        minlength="6" placeholder="Mínimo 6 caracteres y 1 número">

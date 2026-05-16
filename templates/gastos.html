@@ -43,9 +43,9 @@
              value="{{ request.args.get('fecha_fin', '') }}">
     </div>
 
-    <div class="filtro-item" style="flex:0 0 auto; min-width:auto;">
+    <div class="filtro-item filtro-item--auto">
       <label>&nbsp;</label>
-      <div class="filtro-toggle" style="margin:0; gap:10px;">
+      <div class="filtro-toggle filtro-toggle--compact">
         <label class="switch">
           <input type="checkbox"
                  name="eliminados"
@@ -62,14 +62,14 @@
       <button type="submit" class="btn btn--primary btn--sm"><i data-lucide="search" width="14" height="14"></i> Filtrar</button>
       {% if request.args.get('id_negocio') or request.args.get('fecha_inicio') or request.args.get('fecha_fin') %}
         <a href="{{ url_for('gastos.gastos') }}"
-           class="btn btn--danger btn--sm" style="text-decoration:none;">✕ Limpiar</a>
+           class="btn btn--danger btn--sm no-underline">✕ Limpiar</a>
       {% endif %}
       <a href="{{ url_for('gastos.exportar_gastos_excel',
                   id_negocio=request.args.get('id_negocio') or '',
                   fecha_inicio=request.args.get('fecha_inicio') or '',
                   fecha_fin=request.args.get('fecha_fin') or '',
                   eliminados='1' if incluir_eliminados else '') }}"
-         class="btn btn--success btn--sm" style="text-decoration:none;">
+         class="btn btn--success btn--sm no-underline">
         <i data-lucide="download" width="14" height="14"></i> Exportar Excel
       </a>
       <button type="button" data-modal-open="modalGasto" class="btn btn--primary btn--sm">
@@ -251,7 +251,7 @@
     </tr>
     {% else %}
     <tr>
-        <td colspan="9" class="dim" style="text-align:center; padding:2rem;">
+        <td colspan="9" class="dim td-empty">
             No se encontraron gastos con esos filtros.
         </td>
     </tr>

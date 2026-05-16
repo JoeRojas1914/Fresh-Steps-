@@ -133,6 +133,18 @@
 
 .monthly-card.small p   { font-size: 20px; }
 
+.monthly-card.azul   { border-left-color: #1e7fd6; }
+.monthly-card.azul p { color: #1e7fd6; }
+
+.monthly-card.indigo   { border-left-color: #6366f1; }
+.monthly-card.indigo p { color: #6366f1; }
+
+.monthly-card.ambar   { border-left-color: #f59e0b; }
+.monthly-card.ambar p { color: #f59e0b; }
+
+.monthly-card.teal   { border-left-color: #14b8a6; }
+.monthly-card.teal p { color: #14b8a6; }
+
 .summary-cards {
   display: flex;
   gap: 20px;

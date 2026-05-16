@@ -9,8 +9,7 @@ const fmtFecha = iso => {
 const badgePct = (pct, invert=false) => {
     if (pct===null||pct===undefined) return "";
     const bueno = invert ? pct < 0 : pct >= 0;
-    const c = bueno ? "#22c55e" : "#ef4444";
-    return `<span style="font-size:12px;font-weight:600;color:${c};margin-left:6px">${pct>=0?"↑":"↓"} ${Math.abs(pct).toFixed(1)}%</span>`;
+    return `<span class="badge-pct ${bueno ? 'badge-pct--ok' : 'badge-pct--mal'}">${pct>=0?"↑":"↓"} ${Math.abs(pct).toFixed(1)}%</span>`;
 };
 
 // ── Color palettes ────────────────────────────────────────────────────────────
@@ -18,7 +17,7 @@ const redPalette       = ["#7f1d1d","#991b1b","#b91c1c","#dc2626","#ef4444"];
 const serviciosPalette = ["#60a5fa","#34d399","#fbbf24","#a78bfa","#fb7185","#38bdf8","#4ade80"];
 const negocioPalette   = ["#6366f1","#22c55e","#f59e0b","#ef4444","#3b82f6"];
 const pagoPalette      = ["#22c55e","#3b82f6","#f59e0b","#a78bfa","#fb7185"];
-const rankColors       = ["#f59e0b","#9ca3af","#b45309","#6366f1","#22c55e"];
+const rankColors       = ["#f59e0b","#9ca3af","#b45309","#6366f1","#22c55e"]; // kept for chart use
 const aplicarRojos = ds => ds.map((d,i) => ({
     ...d,
     backgroundColor: redPalette[i%5],
@@ -359,7 +358,7 @@ function setModo(modo, btn) {
     modoActual = modo;
     document.querySelectorAll(".modo-panel").forEach(p => p.style.display="none");
     document.querySelectorAll(".modo-btn").forEach(b => b.classList.remove("active"));
-    document.getElementById(`panel-${modo}`).style.display = "";
+    document.getElementById(`panel-${modo}`).style.display = "block";
     if (btn) btn.classList.add("active");
 
     const hoy = new Date();
@@ -376,7 +375,7 @@ function setModo(modo, btn) {
     }
 
     const cardDia = document.getElementById("card-ventas-por-dia");
-    if (cardDia) cardDia.style.display = modo==="dia" ? "none" : "";
+    if (cardDia) cardDia.style.display = modo==="dia" ? "none" : "block";
 
     cargarDashboard();
 }
@@ -426,7 +425,7 @@ const chartsPerTab = {
 function switchTab(nombre, btn) {
     document.querySelectorAll(".tab-panel").forEach(p => p.style.display="none");
     document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-    document.getElementById(`tab-${nombre}`).style.display="";
+    document.getElementById(`tab-${nombre}`).style.display="block";
     btn.classList.add("active");
     // Forzar re-render para que el plugin de gradiente tenga chartArea válido
     (chartsPerTab[nombre]?.() || []).forEach(c => c?.update('none'));
@@ -520,17 +519,6 @@ async function cargarDashboard() {
     } catch(err) { mostrarError("Error inesperado al cargar el dashboard."); }
 }
 
-const rankMedal = [
-    'linear-gradient(135deg,#f59e0b,#d97706)',
-    'linear-gradient(135deg,#94a3b8,#64748b)',
-    'linear-gradient(135deg,#cd7f32,#92400e)',
-    '#e2e8f0',
-    '#e2e8f0',
-];
-const rankTextColor = ['#fff','#fff','#fff','#64748b','#64748b'];
-const avatarColors  = ['#dbeafe','#dcfce7','#fef3c7','#ede9fe','#fce7f3'];
-const avatarText    = ['#1e40af','#166534','#92400e','#5b21b6','#9d174d'];
-
 function renderTopClientes(clientes) {
     const c = document.getElementById("topClientesContainer");
     if (!c) return;
@@ -538,21 +526,20 @@ function renderTopClientes(clientes) {
         c.innerHTML = '<div class="tc-empty">Sin datos para este período.</div>';
         return;
     }
-    const maxVisitas   = clientes[0].visitas      || 1;
-    const maxGastado   = clientes[0].total_gastado || 1;
+    const maxVisitas = clientes[0].visitas || 1;
 
     c.innerHTML = `<div class="tc-list">${clientes.map((cl, i) => {
-        const initials  = cl.nombre.split(' ').slice(0,2).map(w => w[0]?.toUpperCase() || '').join('');
-        const barPct    = ((cl.visitas / maxVisitas) * 100).toFixed(0);
-        const montoPct  = ((cl.total_gastado / maxGastado) * 100).toFixed(0);
+        const rank     = i + 1;
+        const initials = cl.nombre.split(' ').slice(0,2).map(w => w[0]?.toUpperCase() || '').join('');
+        const barPct   = ((cl.visitas / maxVisitas) * 100).toFixed(0);
         return `
         <div class="tc-item">
-            <div class="tc-rank" style="background:${rankMedal[i]};color:${rankTextColor[i]}">${i+1}</div>
-            <div class="tc-avatar" style="background:${avatarColors[i]};color:${avatarText[i]}">${escapeHtml(initials)}</div>
+            <div class="tc-rank tc-rank--${rank}">${rank}</div>
+            <div class="tc-avatar tc-avatar--${rank}">${escapeHtml(initials)}</div>
             <div class="tc-body">
                 <div class="tc-name">${escapeHtml(cl.nombre)}</div>
                 <div class="tc-bar-wrap">
-                    <div class="tc-bar" style="width:${barPct}%;background:${rankColors[i]}"></div>
+                    <div class="tc-bar tc-bar--${rank}" data-pct="${barPct}"></div>
                 </div>
             </div>
             <div class="tc-meta">
@@ -561,6 +548,10 @@ function renderTopClientes(clientes) {
             </div>
         </div>`;
     }).join('')}</div>`;
+
+    c.querySelectorAll(".tc-bar[data-pct]").forEach(bar => {
+        bar.style.width = bar.dataset.pct + "%";
+    });
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

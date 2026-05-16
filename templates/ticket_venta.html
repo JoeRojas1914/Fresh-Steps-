@@ -41,7 +41,7 @@
     <div class="seccion">
       <div><b>Cliente:</b> {{ venta.nombre_cliente or "" }}</div>
 
-      <div style="margin-top:6px;">
+      <div class="mt-6">
         <b>Fecha de recibo:</b>
         {% if venta.fecha_recibo %}
           {{ venta.fecha_recibo.day }}
@@ -110,13 +110,13 @@
       {% endif %}
 
       <!-- SUBTOTAL -->
-      <div class="linea" style="margin-top:4px;">
+      <div class="linea mt-4">
         <span><b>Subtotal</b></span>
         <span><b>${{ "%.2f"|format(ns.subtotal) }}</b></span>
       </div>
 
       {% if art.comentario %}
-        <div class="subtexto" style="margin-top:4px;">
+        <div class="subtexto mt-4">
           <b>Comentario:</b> {{ art.comentario }}
         </div>
       {% endif %}
@@ -138,17 +138,17 @@
       </div>
 
       {% if venta.total_pagado > 0 %}
-        <div class="linea" style="margin-top:6px;">
+        <div class="linea mt-6">
           <span>Prepago</span>
           <span>$ {{ "%.2f"|format(venta.total_pagado) }}</span>
         </div>
 
-        <div class="linea" style="font-weight:bold;">
+        <div class="linea fw-bold">
           <span>Restante</span>
           <span>$ {{ "%.2f"|format(venta.saldo_pendiente) }}</span>
         </div>
       {% else %}
-        <div class="linea dim-soft" style="margin-top:6px;">
+        <div class="linea dim-soft mt-6">
           <span>Sin prepago</span>
           <span></span>
         </div>
@@ -170,7 +170,7 @@
           {% endif %}
         </div>
 
-        <div class="center subtexto" style="margin-top:10px;">
+        <div class="center subtexto mt-10">
           <b>GRACIAS POR SU PREFERENCIA</b>
         </div>
     </div>

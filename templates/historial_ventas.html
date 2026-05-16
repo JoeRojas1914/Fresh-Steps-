@@ -43,9 +43,9 @@
                 <input type="date" name="fecha_fin" value="{{ fecha_fin or '' }}">
             </div>
  
-            <div class="filtro-item" style="flex:0 0 auto; min-width:auto;">
+            <div class="filtro-item filtro-item--auto">
                 <label>&nbsp;</label>
-                <div class="filtro-toggle" style="margin:0; gap:10px;">
+                <div class="filtro-toggle filtro-toggle--compact">
                     <label class="switch">
                         <input type="checkbox"
                                name="eliminadas"
@@ -61,15 +61,14 @@
             <div class="filtro-actions">
                 <button type="submit" class="btn btn--primary btn--sm"><i data-lucide="search" width="14" height="14"></i> Filtrar</button>
                 {% if id_negocio or fecha_inicio or fecha_fin or q %}
-                <a href="/ventas/historial" class="btn btn--danger btn--sm" style="text-decoration:none;">✕ Limpiar</a>
+                <a href="/ventas/historial" class="btn btn--danger btn--sm no-underline">✕ Limpiar</a>
                 {% endif %}
                 <a href="{{ url_for('ventas.exportar_historial_excel',
                             id_negocio=id_negocio or '',
                             fecha_inicio=fecha_inicio or '',
                             fecha_fin=fecha_fin or '',
                             q=q or '') }}"
-                   class="btn btn--success btn--sm"
-                   style="text-decoration:none;">
+                   class="btn btn--success btn--sm no-underline">
                     <i data-lucide="download" width="14" height="14"></i> Exportar Excel
                 </a>
             </div>
@@ -135,12 +134,12 @@
     </td>
     <td>
         <button class="btn btn--info btn--sm btn-detalles" data-id="{{ v.id_venta }}">
-            <i data-lucide="chevron-down" width="14" height="14" class="chevron-icon" style="transition:transform .2s;"></i> Detalles
+            <i data-lucide="chevron-down" width="14" height="14" class="chevron-icon transition-transform"></i> Detalles
         </button>
     </td>
 </tr>
  
-<tr id="detalles-{{ v.id_venta }}" class="table--details" style="display:none;">
+<tr id="detalles-{{ v.id_venta }}" class="table--details d-none">
     <td colspan="11">
         <div class="detalles-box">
             <div class="detalles-title"><i data-lucide="receipt" width="16" height="16"></i> Detalles de la venta</div>
@@ -163,7 +162,7 @@
                 </div>
                 {% endfor %}
             {% else %}
-                <div class="dim-soft text-sm" style="font-style:italic; margin-bottom:10px;">Sin pagos registrados</div>
+                <div class="dim-soft text-sm nota-italic">Sin pagos registrados</div>
             {% endif %}
  
             <div class="pagos-title"><i data-lucide="user" width="14" height="14"></i> Usuarios</div>

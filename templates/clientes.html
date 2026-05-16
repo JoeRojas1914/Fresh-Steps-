@@ -13,8 +13,8 @@
 {{ alerts(get_flashed_messages(with_categories=true)) }}
 
 {# ── KPI cards ── #}
-<div class="monthly-cards" style="margin-bottom:20px;">
-    <div class="monthly-card small" style="border-left-color:#1e7fd6;">
+<div class="monthly-cards mb-20">
+    <div class="monthly-card small azul">
         <h4><i data-lucide="users" width="14" height="14"></i> Total clientes</h4>
         <p class="text-primary">{{ total_clientes }}</p>
     </div>
@@ -22,15 +22,15 @@
 
 <div class="filtro-box">
     <div class="filtro-row">
-        <div class="filtro-item" style="max-width:280px;">
+        <div class="filtro-item filtro-item--max280">
             <label>Buscar cliente</label>
             <input type="text" id="buscar-cliente-input"
                    placeholder="Nombre o apellido..."
                    value="{{ q or '' }}"
                    autocomplete="off">
         </div>
-        <div style="margin-left:auto; display:flex; align-items:flex-end; gap:12px;">
-            <div class="filtro-toggle" style="margin:0; gap:10px;">
+        <div class="filtro-actions--right">
+            <div class="filtro-toggle filtro-toggle--compact">
                 <label class="switch">
                     <input type="checkbox"
                            id="toggle-eliminados"
@@ -41,7 +41,7 @@
             </div>
             <a href="{{ url_for('clientes.exportar_clientes_excel',
                         eliminados='1' if incluir_eliminados else '') }}"
-               class="btn btn--success btn--sm" style="text-decoration:none;">
+               class="btn btn--success btn--sm no-underline">
                 <i data-lucide="download" width="14" height="14"></i> Exportar Excel
             </a>
             <button type="button" data-modal-open="modalCliente" class="btn btn--primary btn--sm">

@@ -31,7 +31,7 @@ function toggleDetalles(idVenta, btn) {
 
     if (detallesCargados[idVenta]) return;
 
-    lista.innerHTML = `<li style="opacity:0.6;">Cargando...</li>`;
+    lista.innerHTML = `<li class="dim-soft">Cargando...</li>`;
 
     fetch(`/ventas/detalles/${idVenta}`)
         .then(r => r.json())
@@ -103,7 +103,7 @@ function toggleDetalles(idVenta, btn) {
 
                 if (item.comentario) {
                     html += `
-                        <div style="margin-top:6px; font-style:italic; opacity:0.8;">
+                        <div class="mt-6 dim-mid nota-italic">
                             <i data-lucide="message-circle" width="13" height="13"></i>
                             ${escapeHtml(item.comentario)}
                         </div>

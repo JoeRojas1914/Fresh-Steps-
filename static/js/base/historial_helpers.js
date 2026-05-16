@@ -11,9 +11,9 @@ function renderDiff(h, entidad) {
             .filter(k => antes[k] !== despues[k])
             .map(k =>
                 `<div><b>${escapeHtml(k)}</b>: ` +
-                `<span style="color:#ef4444">${escapeHtml(String(antes[k] ?? ""))}</span>` +
+                `<span class="text-danger">${escapeHtml(String(antes[k] ?? ""))}</span>` +
                 ` → ` +
-                `<span style="color:#22c55e">${escapeHtml(String(despues[k] ?? ""))}</span></div>`
+                `<span class="text-success">${escapeHtml(String(despues[k] ?? ""))}</span></div>`
             );
         return diffs.length ? diffs.join("") : "Sin cambios";
     }
@@ -35,7 +35,7 @@ async function abrirHistorial(url, modalId, tbodySelector, getCambios) {
         const data = await res.json();
 
         if (!data.length) {
-            tbody.innerHTML = "<tr><td colspan='4' style='text-align:center;opacity:.5;'>Sin historial</td></tr>";
+            tbody.innerHTML = "<tr><td colspan='4' class="text-center dim">Sin historial</td></tr>";
             return;
         }
 
@@ -46,6 +46,6 @@ async function abrirHistorial(url, modalId, tbodySelector, getCambios) {
             <td>${getCambios(h)}</td>
         </tr>`).join("");
     } catch {
-        tbody.innerHTML = "<tr><td colspan='4' style='text-align:center;opacity:.5;'>Error al cargar historial.</td></tr>";
+        tbody.innerHTML = "<tr><td colspan='4' class="text-center dim">Error al cargar historial.</td></tr>";
     }
 }

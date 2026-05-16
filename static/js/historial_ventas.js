@@ -19,7 +19,7 @@ async function verHistorialVenta(idVenta) {
     abrirModal("modalHistorialVenta");
 
     const tbody = document.querySelector("#tablaHistorialVenta tbody");
-    tbody.innerHTML = "<tr><td colspan='4' style='text-align:center;opacity:.5;'>Cargando...</td></tr>";
+    tbody.innerHTML = "<tr><td colspan='4' class="text-center dim">Cargando...</td></tr>";
 
     try {
     const res  = await fetch(`/ventas/${idVenta}/historial`);
@@ -27,7 +27,7 @@ async function verHistorialVenta(idVenta) {
     const data = await res.json();
 
     if (!data.length) {
-        tbody.innerHTML = "<tr><td colspan='4' style='text-align:center;opacity:.5;'>Sin historial registrado</td></tr>";
+        tbody.innerHTML = "<tr><td colspan='4' class="text-center dim">Sin historial registrado</td></tr>";
         return;
     }
 
@@ -38,16 +38,8 @@ async function verHistorialVenta(idVenta) {
         ELIMINADO: "",
     };
 
-    const colores = {
-        CREADO:    "#1e7fd6",
-        LISTA:     "#f59e0b",
-        ENTREGADO: "#22c55e",
-        ELIMINADO: "#ef4444",
-    };
-
     tbody.innerHTML = data.map(h => {
         const icono  = iconos[h.accion]  || "•";
-        const color  = colores[h.accion] || "#6b7280";
         const fecha  = new Date(h.fecha).toLocaleString("es-MX");
 
         let detalle = "—";
@@ -59,13 +51,13 @@ async function verHistorialVenta(idVenta) {
         }
 
         return `<tr>
-            <td><span style="font-weight:700;color:${color}">${escapeHtml(h.accion)}</span></td>
+            <td><span class="accion-badge accion--${h.accion.toLowerCase()}">${escapeHtml(h.accion)}</span></td>
             <td>${escapeHtml(h.usuario || "—")}</td>
             <td>${fecha}</td>
             <td>${detalle}</td>
         </tr>`;
     }).join("");
     } catch {
-        tbody.innerHTML = "<tr><td colspan='4' style='text-align:center;opacity:.5;'>Error al cargar historial.</td></tr>";
+        tbody.innerHTML = "<tr><td colspan='4' class="text-center dim">Error al cargar historial.</td></tr>";
     }
 }

@@ -113,6 +113,14 @@
   gap: 14px;
 }
 
+.modal__body--grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.modal-field--full { grid-column: 1 / -1; }
+
 
 .modal__body .select-wrapper {
   position: relative;

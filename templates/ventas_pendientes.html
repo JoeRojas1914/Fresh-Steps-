@@ -10,12 +10,12 @@
 
     <div class="filtro-box">
         <div class="filtro-row">
-            <div class="filtro-item" style="max-width:280px;">
+            <div class="filtro-item filtro-item--max280">
                 <label>Buscar cliente</label>
                 <input type="text" id="buscador-cliente"
                        placeholder="Nombre o apellido...">
             </div>
-            <div class="filtro-item" style="max-width:220px; margin-left:12px;">
+            <div class="filtro-item filtro-item--max220 ml-12">
                 <label>Negocio</label>
                 <select id="filtro-negocio">
                     <option value="">Todos los negocios</option>
@@ -99,7 +99,7 @@
 
             <td>
                 <button class="btn btn--info btn--sm btn-detalles" data-id="{{ v.id_venta }}">
-                    <i data-lucide="chevron-down" width="14" height="14" class="chevron-icon" style="transition:transform .2s;"></i> Detalles
+                    <i data-lucide="chevron-down" width="14" height="14" class="chevron-icon transition-transform"></i> Detalles
                 </button>
             </td>
 
@@ -112,7 +112,7 @@
             </td>
         </tr>
 
-        <tr id="detalles-{{ v.id_venta }}" class="table--details" style="display:none;">
+        <tr id="detalles-{{ v.id_venta }}" class="table--details d-none">
             <td colspan="13">
                 <div class="detalles-box">
                     <div class="detalles-title"><i data-lucide="receipt" width="16" height="16"></i> Detalles de la venta</div>

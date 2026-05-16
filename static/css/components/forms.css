@@ -178,3 +178,7 @@ select:focus {
   color: var(--color-navy);
   font-size: 14px;
 }
+
+.filtro-toggle--compact { margin: 0; }
+
+.select--full { max-width: none; }

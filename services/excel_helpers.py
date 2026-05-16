@@ -169,6 +169,129 @@ def xl_badge_activo(ws, r, col, activo, borde=None):
     ce.border    = borde or BORDE
 
 
+def _build_ws_resumen(ws, pedidos, pagos_map, nombre_cliente, filtro_txt):
+    ws.freeze_panes = "A4"
+    COLS = ["# Recibo","Negocio","Fecha recibo","Fecha estimada","Fecha lista","Fecha entrega",
+            "Total ($)","Cobrado ($)","Saldo ($)","Estado"]
+    xl_titulo_hoja(ws, f"Historial de pedidos — {nombre_cliente}", len(COLS), filtro_txt)
+    xl_fila_headers(ws, COLS)
+    for i, p in enumerate(pedidos):
+        r = i + 4; bg = xl_row_bg(i)
+        estado  = estado_venta(p)
+        total   = float(p.get("total") or 0)
+        pagos   = pagos_map.get(p["id_venta"], [])
+        cobrado = sum(float(pg["monto"]) for pg in pagos)
+        saldo   = max(total - cobrado, 0)
+        xl_cell(ws, r, 1,  f"#{p['id_venta']}",           fg=bg, bold=True, align="center")
+        xl_cell(ws, r, 2,  p.get("negocio",""),            fg=bg)
+        xl_cell(ws, r, 3,  fmt_dt(p.get("fecha_recibo")),  fg=bg)
+        xl_cell(ws, r, 4,  fmt_dt(p.get("fecha_estimada")),fg=bg)
+        xl_cell(ws, r, 5,  fmt_dt(p.get("fecha_lista")),   fg=bg)
+        xl_cell(ws, r, 6,  fmt_dt(p.get("fecha_entrega")), fg=bg)
+        xl_cell(ws, r, 7,  total,   fg=bg, bold=True, align="right", num_fmt='"$"#,##0.00')
+        xl_cell(ws, r, 8,  cobrado, fg=bg, bold=True, align="right", num_fmt='"$"#,##0.00')
+        xl_cell(ws, r, 9,  saldo,   fg=bg, bold=True, align="right", num_fmt='"$"#,##0.00',
+                color=C["rojo"] if saldo > 0 else C["verde"])
+        xl_badge_estado(ws, r, 10, estado)
+        ws.row_dimensions[r].height = 16
+    if pedidos:
+        xl_fila_totales(ws, len(pedidos) + 4, len(COLS), [7, 8, 9])
+    xl_col_widths(ws, [10, 18, 20, 20, 18, 18, 13, 13, 13, 13])
+
+
+def _build_ws_articulos(ws, pedidos, detalles_map, nombre_cliente, filtro_txt):
+    ws.freeze_panes = "A4"
+    COLS = ["# Recibo","Negocio","Tipo artículo","Descripción","Material / Notas",
+            "Cantidad","Servicio","Precio ($)","Comentario"]
+    xl_titulo_hoja(ws, f"Artículos — {nombre_cliente}", len(COLS), filtro_txt)
+    xl_fila_headers(ws, COLS)
+    r = 4
+    for p in pedidos:
+        detalles = detalles_map.get(p["id_venta"], [])
+        if not detalles:
+            bg = xl_row_bg(r)
+            xl_cell(ws, r, 1, f"#{p['id_venta']}", fg=bg, bold=True, align="center")
+            xl_cell(ws, r, 2, p.get("negocio",""), fg=bg)
+            for ci in range(3, 10):
+                xl_cell(ws, r, ci, "—", fg=bg, color=C["gris_txt"], align="center")
+            ws.row_dimensions[r].height = 15; r += 1; continue
+        for det in detalles:
+            tipo     = det.get("tipo_articulo","")
+            datos    = det.get("datos") or {}
+            coment   = det.get("comentario") or ""
+            servicios= det.get("servicios", [])
+            if tipo == "calzado":
+                desc = f"{datos.get('tipo','')} {datos.get('marca','')}".strip()
+                mat  = f"Color: {datos.get('color_base','—')}  Material: {datos.get('material','—')}"
+                cant = 1
+            elif tipo == "confeccion":
+                desc = f"{datos.get('tipo','')} {datos.get('marca','')}".strip()
+                mat  = f"Material: {datos.get('material','—')}"
+                cant = datos.get("cantidad", 1)
+            elif tipo == "maquila":
+                desc = datos.get("tipo","—")
+                mat  = f"Precio unitario: ${float(datos.get('precio_unitario') or 0):.2f}"
+                cant = datos.get("cantidad", 1)
+            else:
+                desc = mat = "—"; cant = "—"
+            for si, svc in enumerate(servicios if servicios else [None]):
+                bg = xl_row_bg(r)
+                xl_cell(ws,r,1,f"#{p['id_venta']}" if si==0 else "",fg=bg,bold=si==0,align="center")
+                xl_cell(ws,r,2,p.get("negocio","") if si==0 else "",fg=bg)
+                xl_cell(ws,r,3,tipo.capitalize() if si==0 else "",fg=bg,align="center")
+                xl_cell(ws,r,4,desc if si==0 else "",fg=bg)
+                xl_cell(ws,r,5,mat if si==0 else "",fg=bg,wrap=True)
+                xl_cell(ws,r,6,cant if si==0 else "",fg=bg,align="center")
+                xl_cell(ws,r,7,svc.get("nombre","") if svc else "—",fg=bg)
+                xl_cell(ws,r,8,float(svc.get("precio_aplicado") or 0) if svc else "—",
+                        fg=bg,align="right",num_fmt='"$"#,##0.00' if svc else None)
+                xl_cell(ws,r,9,coment if si==0 else "",fg=bg,wrap=True,italic=bool(coment))
+                ws.row_dimensions[r].height = 15; r += 1
+    xl_col_widths(ws, [10, 18, 14, 24, 28, 10, 24, 13, 24])
+
+
+def _build_ws_pagos(ws, pedidos, pagos_map, nombre_cliente, filtro_txt):
+    ws.freeze_panes = "A4"
+    COLS = ["# Recibo","Negocio","Tipo pago","Método","Monto ($)","Total venta ($)"]
+    xl_titulo_hoja(ws, f"Pagos — {nombre_cliente}", len(COLS), filtro_txt)
+    xl_fila_headers(ws, COLS)
+    r = 4
+    for p in pedidos:
+        pagos = pagos_map.get(p["id_venta"], [])
+        total = float(p.get("total") or 0)
+        if not pagos:
+            bg = xl_row_bg(r)
+            xl_cell(ws,r,1,f"#{p['id_venta']}",fg=bg,bold=True,align="center")
+            xl_cell(ws,r,2,p.get("negocio",""),fg=bg)
+            xl_cell(ws,r,3,"Sin pagos",fg=bg,color=C["gris_txt"],italic=True)
+            xl_cell(ws,r,4,"—",fg=bg,align="center")
+            xl_cell(ws,r,5,"—",fg=bg,align="center")
+            xl_cell(ws,r,6,total,fg=bg,align="right",num_fmt='"$"#,##0.00')
+            ws.row_dimensions[r].height = 15; r += 1; continue
+        for pi, pg in enumerate(pagos):
+            bg = xl_row_bg(r)
+            xl_cell(ws,r,1,f"#{p['id_venta']}" if pi==0 else "",fg=bg,bold=pi==0,align="center")
+            xl_cell(ws,r,2,p.get("negocio","") if pi==0 else "",fg=bg)
+            xl_cell(ws,r,3,(pg.get("tipo_pago_venta") or "—").capitalize(),fg=bg)
+            xl_cell(ws,r,4,(pg.get("tipo_pago") or "—").capitalize(),fg=bg)
+            xl_cell(ws,r,5,float(pg.get("monto") or 0),fg=bg,bold=True,align="right",
+                    color=C["verde"],num_fmt='"$"#,##0.00')
+            xl_cell(ws,r,6,total if pi==0 else "",fg=bg,align="right",num_fmt='"$"#,##0.00')
+            ws.row_dimensions[r].height = 15; r += 1
+    xl_col_widths(ws, [10, 18, 16, 16, 14, 14])
+
+
+def build_excel_cliente(pedidos, detalles_map, pagos_map, nombre_cliente, filtro_txt):
+    wb = Workbook()
+    _build_ws_resumen(wb.active, pedidos, pagos_map, nombre_cliente, filtro_txt)
+    wb.active.title = "Resumen pedidos"
+    ws2 = wb.create_sheet("Artículos")
+    _build_ws_articulos(ws2, pedidos, detalles_map, nombre_cliente, filtro_txt)
+    ws3 = wb.create_sheet("Pagos")
+    _build_ws_pagos(ws3, pedidos, pagos_map, nombre_cliente, filtro_txt)
+    return wb
+
+
 def send_excel(wb, nombre_base):
     buf = io.BytesIO()
     wb.save(buf)

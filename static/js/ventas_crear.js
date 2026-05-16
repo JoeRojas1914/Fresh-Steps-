@@ -13,7 +13,7 @@ if (typeof ventaState === "undefined") {
         const q = document.getElementById("buscarCliente").value.trim();
         const lista = document.getElementById("listaClientes");
         if (q.length < 2) { lista.innerHTML = ""; return; }
-        lista.innerHTML = `<div class="result-item" style="opacity:0.55;grid-column:1/-1;justify-content:center;">Buscando...</div>`;
+        lista.innerHTML = `<div class="result-item resultado-buscando">Buscando...</div>`;
         _buscarTimer = setTimeout(buscarClientes, 350);
     });
 
@@ -321,7 +321,7 @@ function agregarArticulo() {
     div.className = "articulo-item";
     const negocioNombre = document.getElementById("id_negocio")?.selectedOptions[0]?.text || "";
     div.innerHTML = `
-    <div class="articulo-resumen" style="display:none;"></div>
+    <div class="articulo-resumen"></div>
 
     <div class="articulo-detalle">
     <div class="zapato-header">
@@ -505,8 +505,7 @@ function crearServiciosSelect(indexArticulo) {
 
 function crearFilaServicio(indexArticulo, indexServicio, opcionesHTML) {
     return `
-        <div class="servicio-item" data-index-servicio="${indexServicio}"
-             style="display:flex; gap:10px; align-items:center; margin-bottom:8px;">
+        <div class="servicio-item" data-index-servicio="${indexServicio}">
 
             <select name="articulos[${indexArticulo}][servicios][${indexServicio}][id_servicio]"
                     onchange="onChangeServicio(this, ${indexArticulo}); validarFormulario(); actualizarTotal(); validarArticuloVisual(this.closest('.articulo-item'))">
@@ -523,7 +522,6 @@ function crearFilaServicio(indexArticulo, indexServicio, opcionesHTML) {
                    disabled
                    data-editado="0"
                    oninput="marcarPrecioEditado(this); validarFormulario(); actualizarTotal()"
-                   style="width:150px;">
 
             <button type="button"
                     class="btn btn--danger btn--sm"
@@ -1003,7 +1001,7 @@ function generarResumenArticulo(item){
     resumen.innerHTML = `
         <div class="resumen-header-bar">
             <span class="resumen-header-label">${titulo}</span>
-            <div style="display:flex;align-items:center;gap:6px">
+            <div class="resumen-header-actions">
                 <span class="resumen-header-badge">${negNombre}</span>
                 ${btnEl}
             </div>

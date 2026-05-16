@@ -6,6 +6,7 @@
 
 .dim      { opacity: 0.5; }
 .dim-soft { opacity: 0.6; }
+.dim-mid  { opacity: 0.8; }
 .text-sm  { font-size: 13px; }
 .text-xs  { font-size: 11px; }
 
@@ -29,3 +30,38 @@
   flex-shrink: 0;
   stroke: currentColor;
 }
+
+/* ── Display ───────────────────── */
+.d-none       { display: none; }
+.d-flex       { display: flex; }
+
+/* ── Spacing ───────────────────── */
+.mb-20        { margin-bottom: 20px; }
+.mt-10        { margin-top: 10px; }
+.ml-auto      { margin-left: auto; }
+
+/* ── Text ──────────────────────── */
+.no-underline { text-decoration: none; }
+
+/* ── Transitions ───────────────── */
+.transition-transform { transition: transform .2s; }
+
+/* ── Positioning ───────────────── */
+.relative     { position: relative; }
+
+/* ── Table empty state ─────────── */
+.td-empty     { text-align: center; padding: 2rem; }
+
+/* ── Inline notes ──────────────── */
+.nota-italic  { font-style: italic; margin-bottom: 10px; }
+
+/* Extra spacing */
+.mt-6   { margin-top: 6px; }
+.mt-16  { margin-top: 16px; }
+.ml-12  { margin-left: 12px; }
+
+/* Font sizes */
+.text-2xs { font-size: 12px; }
+
+/* Alignment */
+.text-center { text-align: center; }

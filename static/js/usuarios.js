@@ -67,9 +67,9 @@ window.abrirModalUsuario = function () {
 
     document.getElementById("password").required = true;
     document.getElementById("pin").required      = true;
-    document.getElementById("pass-requerido").style.display = "";
+    document.getElementById("pass-requerido").style.display = "inline";
     document.getElementById("pass-opcional").style.display  = "none";
-    document.getElementById("pin-requerido").style.display  = "";
+    document.getElementById("pin-requerido").style.display  = "inline";
 };
 
 
@@ -92,7 +92,7 @@ window.editarUsuario = function (e, u) {
     document.getElementById("password").required = false;
     document.getElementById("pin").required      = false;
     document.getElementById("pass-requerido").style.display = "none";
-    document.getElementById("pass-opcional").style.display  = "";
+    document.getElementById("pass-opcional").style.display  = "inline";
     document.getElementById("pin-requerido").style.display  = "none";
 };
 

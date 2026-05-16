@@ -46,3 +46,9 @@
   font-weight: 600;
   margin-left: 8px;
 }
+
+.accion-badge { font-weight: 700; }
+.accion--creado    { color: #1e7fd6; }
+.accion--lista     { color: #f59e0b; }
+.accion--entregado { color: #22c55e; }
+.accion--eliminado { color: #ef4444; }

@@ -345,6 +345,7 @@
 #btnCrear { width: 100%; height: 46px; font-size: 15px; margin-top: 10px; }
 
 .articulo-resumen {
+  display: none;
   background: white;
   border: 1.5px solid #e2e8f0;
   border-radius: 12px;
@@ -478,9 +479,22 @@
 
 .servicio-item {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
   flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.resumen-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.resultado-buscando {
+  opacity: 0.55;
+  grid-column: 1 / -1;
+  justify-content: center;
 }
 
 .servicio-item select { min-width: 220px; max-width: 300px; }

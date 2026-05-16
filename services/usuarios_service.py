@@ -1,6 +1,7 @@
 from werkzeug.security import generate_password_hash
 from flask import session
 import usuario
+from validators import validar_correo, validar_telefono, validar_pin, validar_password
 
 
 def guardar_usuario_service(
@@ -17,11 +18,14 @@ def guardar_usuario_service(
 ) -> None:
     admin = session.get("usuario")
 
+    telefono = validar_telefono(telefono)
+    correo   = validar_correo(correo)
+
     if not id_usuario:
-        if not password:
-            raise ValueError("Password obligatorio")
+        validar_password(password, obligatorio=True)
         if not pin:
             raise ValueError("PIN obligatorio")
+        validar_pin(pin)
 
         rol = rol or "caja"
         password_hash = generate_password_hash(password)
@@ -52,9 +56,11 @@ def guardar_usuario_service(
     )
 
     if password:
+        validar_password(password)
         usuario.actualizar_password(id_usuario, generate_password_hash(password))
 
     if pin:
+        validar_pin(pin)
         usuario.actualizar_pin(id_usuario, generate_password_hash(pin))
 
     despues = usuario.obtener_usuario_por_id(id_usuario)

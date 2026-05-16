@@ -63,7 +63,7 @@ def test_crear_usuario_sin_password_lanza_error(app):
     with app.test_request_context("/"):
         from flask import session
         session["usuario"] = "admin_test"
-        with pytest.raises(ValueError, match="Password"):
+        with pytest.raises(ValueError, match="contrase"):
             guardar_usuario_service(
                 id_usuario=None,
                 username="usuario_sin_pass",

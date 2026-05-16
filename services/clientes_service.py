@@ -1,3 +1,4 @@
+from validators import validar_nombre, validar_correo, validar_telefono
 from clientes import (
     buscar_clientes,
     contar_clientes,
@@ -35,11 +36,11 @@ def listar_clientes_service(
 def guardar_cliente_service(form: dict, id_usuario: int, api: bool = False) -> str | dict:
     id_cliente = form.get("id_cliente")
 
-    nombre    = form.get("nombre", "").strip()
-    apellido  = form.get("apellido", "").strip()
-    correo    = form.get("correo")
-    telefono  = form.get("telefono")
-    direccion = form.get("direccion")
+    nombre    = validar_nombre(form.get("nombre"), "Nombre")
+    apellido  = validar_nombre(form.get("apellido"), "Apellido")
+    correo    = validar_correo(form.get("correo"))
+    telefono  = validar_telefono(form.get("telefono"))
+    direccion = form.get("direccion", "").strip() or None
 
     if id_cliente:
         actualizar_cliente(id_cliente, nombre, apellido, correo, telefono, direccion, id_usuario)

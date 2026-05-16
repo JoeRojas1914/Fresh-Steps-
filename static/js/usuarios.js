@@ -136,38 +136,18 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-window.verHistorialUsuario = async function (e, id) {
+window.verHistorialUsuario = function (e, id) {
     e.stopPropagation();
-    abrirModal("modalHistorialUsuario");
-
-    const tbody = document.querySelector("#tablaHistorialUsuario tbody");
-    tbody.innerHTML = "<tr><td colspan='4'>Cargando...</td></tr>";
-
-    try {
-    const res  = await fetch(`/usuarios/${id}/historial`);
-    if (!res.ok) throw new Error("Error de red");
-    const data = await res.json();
-
-    if (!data.length) {
-        tbody.innerHTML = "<tr><td colspan='4' style='text-align:center;opacity:.5;'>Sin historial</td></tr>";
-        return;
-    }
-
-    tbody.innerHTML = data.map(h => `
-        <tr>
-            <td><strong>${escapeHtml(h.accion)}</strong></td>
-            <td>${escapeHtml(h.usuario_admin || "—")}</td>
-            <td>${new Date(h.fecha).toLocaleString("es-MX")}</td>
-            <td>${_detalleHistorial(h)}</td>
-        </tr>
-    `).join("");
-    } catch {
-        tbody.innerHTML = "<tr><td colspan='4' style='text-align:center;opacity:.5;'>Error al cargar historial.</td></tr>";
-    }
+    abrirHistorial(
+        `/usuarios/${id}/historial`,
+        "modalHistorialUsuario",
+        "#tablaHistorialUsuario tbody",
+        _detalleHistorialUsuario
+    );
 };
 
-function _detalleHistorial(h) {
-    if (h.accion === "CREADO")       return "Usuario creado";
+function _detalleHistorialUsuario(h) {
+    if (h.accion === "CREADO") return "Usuario creado";
     if (h.accion === "TOGGLE_ACTIVO") {
         try {
             const d = JSON.parse(h.datos_despues);
@@ -178,14 +158,12 @@ function _detalleHistorial(h) {
         try {
             const a = JSON.parse(h.datos_antes  || "{}");
             const d = JSON.parse(h.datos_despues || "{}");
-            const cambios = [];
-            const campos = ["usuario","rol","nombre","apellido","telefono","correo","cp"];
-            campos.forEach(c => {
-                if ((a[c] || "") !== (d[c] || ""))
-                    cambios.push(`${escapeHtml(c)}: <em>${escapeHtml(a[c] || "—")}</em> → <strong>${escapeHtml(d[c] || "—")}</strong>`);
-            });
+            const campos = ["usuario", "rol", "nombre", "apellido", "telefono", "correo", "cp"];
+            const cambios = campos
+                .filter(c => (a[c] || "") !== (d[c] || ""))
+                .map(c => `${escapeHtml(c)}: <em>${escapeHtml(a[c] || "—")}</em> → <strong>${escapeHtml(d[c] || "—")}</strong>`);
             return cambios.length ? cambios.join(" | ") : "Sin cambios visibles";
         } catch { return "Editado"; }
     }
-    return h.accion;
+    return escapeHtml(h.accion);
 }

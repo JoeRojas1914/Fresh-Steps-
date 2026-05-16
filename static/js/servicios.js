@@ -69,67 +69,11 @@ window.editarServicio = function (btn) {
 };
 
 
-window.verHistorialServicio = async function (id) {
-
-    abrirModal("modalHistorialServicio");
-
-    const tbody = document.getElementById("tablaHistorialServicio");
-
-    tbody.innerHTML = "<tr><td colspan='4'>Cargando...</td></tr>";
-
-    try {
-    const res = await fetch(`/servicios/${id}/historial`);
-    if (!res.ok) throw new Error("Error de red");
-    const data = await res.json();
-
-    if (!data.length) {
-        tbody.innerHTML = "<tr><td colspan='4'>Sin historial</td></tr>";
-        return;
-    }
-
-    tbody.innerHTML = "";
-
-    data.forEach(h => {
-
-        const antes = h.datos_antes ? JSON.parse(h.datos_antes) : null;
-        const despues = h.datos_despues ? JSON.parse(h.datos_despues) : null;
-
-        let cambios = "";
-
-        if (h.accion === "CREADO") {
-            cambios = "Servicio creado";
-        }
-        else if (h.accion === "EDITADO" && antes && despues) {
-            Object.keys(despues).forEach(k => {
-                if (antes[k] !== despues[k]) {
-                    cambios += `
-                        <div>
-                            <b>${escapeHtml(k)}</b>:
-                            <span style="color:#ef4444">${escapeHtml(antes[k])}</span>
-                            →
-                            <span style="color:#22c55e">${escapeHtml(despues[k])}</span>
-                        </div>
-                    `;
-                }
-            });
-        }
-        else if (h.accion === "ELIMINADO") {
-            cambios = "Servicio eliminado";
-        }
-        else if (h.accion === "RESTAURADO") {
-            cambios = "Servicio restaurado";
-        }
-
-        tbody.innerHTML += `
-            <tr>
-                <td><b>${escapeHtml(h.accion)}</b></td>
-                <td>${escapeHtml(h.usuario)}</td>
-                <td>${new Date(h.fecha).toLocaleString()}</td>
-                <td>${cambios}</td>
-            </tr>
-        `;
-    });
-    } catch {
-        tbody.innerHTML = "<tr><td colspan='4'>Error al cargar historial.</td></tr>";
-    }
+window.verHistorialServicio = function (id) {
+    abrirHistorial(
+        `/servicios/${id}/historial`,
+        "modalHistorialServicio",
+        "#tablaHistorialServicio",
+        h => renderDiff(h, "Servicio")
+    );
 };

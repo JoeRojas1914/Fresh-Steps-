@@ -46,38 +46,14 @@ window.cerrarHistorialCliente = function () {
     document.getElementById("modalHistorialCliente").style.display = "none";
 };
 
-window.verHistorialCliente = async function (e, id) {
-  e.stopPropagation();
-
-  const tbody = document.querySelector("#tablaHistorialCliente tbody");
-  tbody.innerHTML = "<tr><td colspan='4'>Cargando...</td></tr>";
-
-  abrirModal("modalHistorialCliente");
-
-  try {
-    const res = await fetch(`/clientes/${id}/historial`);
-    if (!res.ok) throw new Error("Error de red");
-    const data = await res.json();
-
-    if (!data.length) {
-      tbody.innerHTML = "<tr><td colspan='4'>Sin historial</td></tr>";
-      return;
-    }
-
-    tbody.innerHTML = "";
-    data.forEach(h => {
-      tbody.innerHTML += `
-        <tr>
-          <td><b>${escapeHtml(h.accion)}</b></td>
-          <td>${escapeHtml(h.usuario)}</td>
-          <td>${new Date(h.fecha).toLocaleString()}</td>
-          <td>${h.datos_despues ? "Modificación" : escapeHtml(h.accion)}</td>
-        </tr>
-      `;
-    });
-  } catch {
-    tbody.innerHTML = "<tr><td colspan='4'>Error al cargar historial.</td></tr>";
-  }
+window.verHistorialCliente = function (e, id) {
+    e.stopPropagation();
+    abrirHistorial(
+        `/clientes/${id}/historial`,
+        "modalHistorialCliente",
+        "#tablaHistorialCliente tbody",
+        h => renderDiff(h, "Cliente")
+    );
 };
 
 

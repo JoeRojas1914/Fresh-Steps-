@@ -1,10 +1,8 @@
-from db import get_connection
+from db import get_db
 
 
 def obtener_venta(id_venta):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    try:
+    with get_db() as (_, cursor):
         cursor.execute("""
             SELECT
                 v.id_venta,
@@ -29,45 +27,41 @@ def obtener_venta(id_venta):
             GROUP BY v.id_venta
         """, (id_venta,))
         return cursor.fetchone()
-    finally:
-        cursor.close()
-        conn.close()
 
 
 def obtener_detalles_venta(ids_venta):
     if not ids_venta:
         return {}
 
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    try:
+    with get_db() as (_, cursor):
         ph = ','.join(['%s'] * len(ids_venta))
 
-        cursor.execute(f"""
-            SELECT
-                a.id_articulo, a.id_venta, a.tipo_articulo, a.comentario,
-                ac.tipo          AS c_tipo,
-                ac.marca         AS c_marca,
-                ac.material      AS c_material,
-                ac.color_base    AS c_color_base,
-                ac.color_secundario AS c_color_secundario,
-                ac.color_agujetas   AS c_color_agujetas,
-                acf.tipo         AS cf_tipo,
-                acf.marca        AS cf_marca,
-                acf.material     AS cf_material,
-                acf.color_base   AS cf_color_base,
-                acf.color_secundario AS cf_color_secundario,
-                acf.cantidad     AS cf_cantidad,
-                acf.agujetas     AS cf_agujetas,
-                am.tipo          AS m_tipo,
-                am.cantidad      AS m_cantidad,
-                am.precio_unitario AS m_precio_unitario
-            FROM articulo a
-            LEFT JOIN articulo_calzado    ac  ON ac.id_articulo  = a.id_articulo
-            LEFT JOIN articulo_confeccion acf ON acf.id_articulo = a.id_articulo
-            LEFT JOIN articulo_maquila    am  ON am.id_articulo  = a.id_articulo
-            WHERE a.id_venta IN ({ph})
-        """, ids_venta)
+        cursor.execute(
+            "SELECT"
+            "  a.id_articulo, a.id_venta, a.tipo_articulo, a.comentario,"
+            "  ac.tipo          AS c_tipo,"
+            "  ac.marca         AS c_marca,"
+            "  ac.material      AS c_material,"
+            "  ac.color_base    AS c_color_base,"
+            "  ac.color_secundario AS c_color_secundario,"
+            "  ac.color_agujetas   AS c_color_agujetas,"
+            "  acf.tipo         AS cf_tipo,"
+            "  acf.marca        AS cf_marca,"
+            "  acf.material     AS cf_material,"
+            "  acf.color_base   AS cf_color_base,"
+            "  acf.color_secundario AS cf_color_secundario,"
+            "  acf.cantidad     AS cf_cantidad,"
+            "  acf.agujetas     AS cf_agujetas,"
+            "  am.tipo          AS m_tipo,"
+            "  am.cantidad      AS m_cantidad,"
+            "  am.precio_unitario AS m_precio_unitario"
+            " FROM articulo a"
+            " LEFT JOIN articulo_calzado    ac  ON ac.id_articulo  = a.id_articulo"
+            " LEFT JOIN articulo_confeccion acf ON acf.id_articulo = a.id_articulo"
+            " LEFT JOIN articulo_maquila    am  ON am.id_articulo  = a.id_articulo"
+            " WHERE a.id_venta IN (" + ph + ")",
+            tuple(ids_venta),
+        )
         filas = cursor.fetchall()
 
         if not filas:
@@ -76,12 +70,13 @@ def obtener_detalles_venta(ids_venta):
         ids_articulo = [f["id_articulo"] for f in filas]
         ph_art = ','.join(['%s'] * len(ids_articulo))
 
-        cursor.execute(f"""
-            SELECT asv.id_articulo, s.nombre, asv.precio_aplicado
-            FROM articulo_servicio asv
-            JOIN servicio s ON s.id_servicio = asv.id_servicio
-            WHERE asv.id_articulo IN ({ph_art})
-        """, ids_articulo)
+        cursor.execute(
+            "SELECT asv.id_articulo, s.nombre, asv.precio_aplicado"
+            " FROM articulo_servicio asv"
+            " JOIN servicio s ON s.id_servicio = asv.id_servicio"
+            " WHERE asv.id_articulo IN (" + ph_art + ")",
+            tuple(ids_articulo),
+        )
         servicios_por_articulo: dict = {}
         for s in cursor.fetchall():
             servicios_por_articulo.setdefault(s["id_articulo"], []).append({
@@ -118,16 +113,11 @@ def obtener_detalles_venta(ids_venta):
             })
 
         return detalles_por_venta
-    finally:
-        cursor.close()
-        conn.close()
 
 
 def obtener_ventas_listas(id_negocio=None):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    try:
-        query = """
+    with get_db() as (_, cursor):
+        sql = """
             SELECT
                 v.id_venta,
                 v.fecha_recibo,
@@ -147,21 +137,16 @@ def obtener_ventas_listas(id_negocio=None):
         """
         params = []
         if id_negocio:
-            query += " AND v.id_negocio = %s"
+            sql += " AND v.id_negocio = %s"
             params.append(id_negocio)
-        query += " ORDER BY v.id_venta ASC"
-        cursor.execute(query, params)
+        sql += " ORDER BY v.id_venta ASC"
+        cursor.execute(sql, params)
         return cursor.fetchall()
-    finally:
-        cursor.close()
-        conn.close()
 
 
 def obtener_entregas_pendientes(id_negocio=None):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    try:
-        query = """
+    with get_db() as (_, cursor):
+        sql = """
             SELECT
                 v.id_venta,
                 v.fecha_recibo,
@@ -183,67 +168,48 @@ def obtener_entregas_pendientes(id_negocio=None):
         """
         params = []
         if id_negocio:
-            query += " AND v.id_negocio = %s"
+            sql += " AND v.id_negocio = %s"
             params.append(id_negocio)
-        query += " GROUP BY v.id_venta ORDER BY v.fecha_estimada ASC"
-        cursor.execute(query, params)
+        sql += " GROUP BY v.id_venta ORDER BY v.fecha_estimada ASC"
+        cursor.execute(sql, params)
         return cursor.fetchall()
-    finally:
-        cursor.close()
-        conn.close()
 
 
 def contar_entregas_listas(id_negocio=None):
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-        filtros = ""
+    with get_db() as (_, cursor):
+        sql = (
+            "SELECT COUNT(*) AS total FROM venta"
+            " WHERE fecha_lista IS NOT NULL"
+            "   AND fecha_entrega IS NULL"
+            "   AND eliminado = 0"
+        )
         params = []
         if id_negocio is not None:
-            filtros = " AND id_negocio = %s"
+            sql += " AND id_negocio = %s"
             params.append(id_negocio)
-        cursor.execute(f"""
-            SELECT COUNT(*)
-            FROM venta
-            WHERE fecha_lista IS NOT NULL
-              AND fecha_entrega IS NULL
-              AND eliminado = 0
-            {filtros}
-        """, params)
-        return cursor.fetchone()[0]
-    finally:
-        cursor.close()
-        conn.close()
+        cursor.execute(sql, params)
+        return cursor.fetchone()["total"]
 
 
 def contar_entregas_pendientes(id_negocio=None):
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-        filtros = ""
+    with get_db() as (_, cursor):
+        sql = (
+            "SELECT COUNT(*) AS total FROM venta"
+            " WHERE fecha_lista IS NULL"
+            "   AND fecha_entrega IS NULL"
+            "   AND eliminado = 0"
+        )
         params = []
         if id_negocio is not None:
-            filtros = " AND id_negocio = %s"
+            sql += " AND id_negocio = %s"
             params.append(id_negocio)
-        cursor.execute(f"""
-            SELECT COUNT(*)
-            FROM venta
-            WHERE fecha_lista IS NULL
-              AND fecha_entrega IS NULL
-              AND eliminado = 0
-            {filtros}
-        """, params)
-        return cursor.fetchone()[0]
-    finally:
-        cursor.close()
-        conn.close()
+        cursor.execute(sql, params)
+        return cursor.fetchone()["total"]
 
 
 def contar_ventas_cliente(id_cliente, id_negocio=None, fecha_inicio=None, fecha_fin=None):
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-        sql = "SELECT COUNT(*) FROM venta WHERE id_cliente=%s AND eliminado=0"
+    with get_db() as (_, cursor):
+        sql = "SELECT COUNT(*) AS total FROM venta WHERE id_cliente=%s AND eliminado=0"
         params = [id_cliente]
         if id_negocio:
             sql += " AND id_negocio=%s"
@@ -255,16 +221,11 @@ def contar_ventas_cliente(id_cliente, id_negocio=None, fecha_inicio=None, fecha_
             sql += " AND fecha_recibo <= %s"
             params.append(fecha_fin)
         cursor.execute(sql, params)
-        return cursor.fetchone()[0]
-    finally:
-        cursor.close()
-        conn.close()
+        return cursor.fetchone()["total"]
 
 
 def obtener_ventas_cliente(id_cliente, id_negocio, fecha_inicio, fecha_fin, limit, offset):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    try:
+    with get_db() as (_, cursor):
         sql = """
             SELECT v.id_venta, v.fecha_recibo, v.fecha_estimada,
                    v.fecha_lista, v.fecha_entrega,
@@ -289,6 +250,3 @@ def obtener_ventas_cliente(id_cliente, id_negocio, fecha_inicio, fecha_fin, limi
         params.extend([limit, offset])
         cursor.execute(sql, params)
         return cursor.fetchall()
-    finally:
-        cursor.close()
-        conn.close()

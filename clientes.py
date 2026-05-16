@@ -1,12 +1,10 @@
 import json
-from db import get_connection
+from db import get_db
 from utils import to_json_safe
 
-def crear_cliente(nombre, apellido, correo, telefono, direccion, id_usuario):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
 
-    try:
+def crear_cliente(nombre, apellido, correo, telefono, direccion, id_usuario):
+    with get_db() as (_, cursor):
         cursor.execute("""
             INSERT INTO cliente
             (nombre, apellido, correo, telefono, direccion, activo, id_usuario)
@@ -20,29 +18,15 @@ def crear_cliente(nombre, apellido, correo, telefono, direccion, id_usuario):
             "apellido": apellido,
             "correo": correo,
             "telefono": telefono,
-            "direccion": direccion
+            "direccion": direccion,
         }
 
         registrar_historial(cursor, id_cliente, "CREADO", id_usuario, None, despues)
-
-        conn.commit()
         return id_cliente
-
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        cursor.close()
-        conn.close()
-
-
 
 
 def eliminar_cliente(id_cliente, id_usuario):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    try:
+    with get_db() as (_, cursor):
         cursor.execute("""
             SELECT COUNT(*) AS total
             FROM venta
@@ -63,25 +47,11 @@ def eliminar_cliente(id_cliente, id_usuario):
         """, (id_cliente,))
 
         registrar_historial(cursor, id_cliente, "ELIMINADO", id_usuario, antes, None)
-
-        conn.commit()
         return True
-
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        cursor.close()
-        conn.close()
-
-
 
 
 def actualizar_cliente(id_cliente, nombre, apellido, correo, telefono, direccion, id_usuario):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    try:
+    with get_db() as (_, cursor):
         cursor.execute("SELECT * FROM cliente WHERE id_cliente=%s", (id_cliente,))
         antes = cursor.fetchone()
 
@@ -100,29 +70,15 @@ def actualizar_cliente(id_cliente, nombre, apellido, correo, telefono, direccion
             "apellido": apellido,
             "correo": correo,
             "telefono": telefono,
-            "direccion": direccion
+            "direccion": direccion,
         }
 
         registrar_historial(cursor, id_cliente, "EDITADO", id_usuario, antes, despues)
 
-        conn.commit()
-
-    except Exception:
-        conn.rollback()
-        raise
-
-    finally:
-        cursor.close()
-        conn.close()
-
-
 
 def contar_clientes(q=None, incluir_eliminados=False):
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-
-        sql = "SELECT COUNT(*) FROM cliente WHERE 1=1"
+    with get_db() as (_, cursor):
+        sql = "SELECT COUNT(*) AS total FROM cliente WHERE 1=1"
         params = []
 
         if not incluir_eliminados:
@@ -133,58 +89,29 @@ def contar_clientes(q=None, incluir_eliminados=False):
             params.extend([f"%{q}%", f"%{q}%"])
 
         cursor.execute(sql, params)
-        total = cursor.fetchone()[0]
-
-        return total
-    finally:
-        cursor.close()
-        conn.close()
-
+        return cursor.fetchone()["total"]
 
 
 def buscar_clientes_por_nombre(texto):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    try:
-
+    with get_db() as (_, cursor):
         cursor.execute("""
             SELECT *
             FROM cliente
             WHERE activo = 1
               AND (nombre LIKE %s OR apellido LIKE %s)
         """, (f"%{texto}%", f"%{texto}%"))
-
-        resultados = cursor.fetchall()
-        return resultados
-    finally:
-        cursor.close()
-        conn.close()
-
+        return cursor.fetchall()
 
 
 def obtener_cliente_por_id(id_cliente):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    try:
-
+    with get_db() as (_, cursor):
         cursor.execute("""
             SELECT *,
                    DATE_FORMAT(fecha_registro, '%d/%m/%Y') as fecha_registro_fmt
             FROM cliente
             WHERE id_cliente = %s
         """, (id_cliente,))
-
-        data = cursor.fetchone()
-
-        return data
-    finally:
-        cursor.close()
-        conn.close()
-
-
-
-
-
+        return cursor.fetchone()
 
 
 def registrar_historial(cursor, id_cliente, accion, id_usuario, antes=None, despues=None):
@@ -197,14 +124,12 @@ def registrar_historial(cursor, id_cliente, accion, id_usuario, antes=None, desp
         accion,
         id_usuario,
         json.dumps(to_json_safe(antes)) if antes else None,
-        json.dumps(to_json_safe(despues)) if despues else None
+        json.dumps(to_json_safe(despues)) if despues else None,
     ))
 
-def restaurar_cliente(id_cliente, id_usuario):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
 
-    try:
+def restaurar_cliente(id_cliente, id_usuario):
+    with get_db() as (_, cursor):
         cursor.execute("SELECT * FROM cliente WHERE id_cliente=%s", (id_cliente,))
         antes = cursor.fetchone()
 
@@ -216,23 +141,9 @@ def restaurar_cliente(id_cliente, id_usuario):
 
         registrar_historial(cursor, id_cliente, "RESTAURADO", id_usuario, antes, None)
 
-        conn.commit()
-
-    except Exception:
-        conn.rollback()
-        raise
-
-    finally:
-        cursor.close()
-        conn.close()
-
-
 
 def obtener_clientes(q=None, limit=10, offset=0, incluir_eliminados=False):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    try:
-
+    with get_db() as (_, cursor):
         sql = """
             SELECT
                 id_cliente,
@@ -245,7 +156,6 @@ def obtener_clientes(q=None, limit=10, offset=0, incluir_eliminados=False):
             FROM cliente
             WHERE 1=1
         """
-
         params = []
 
         if not incluir_eliminados:
@@ -259,22 +169,13 @@ def obtener_clientes(q=None, limit=10, offset=0, incluir_eliminados=False):
         params.extend([limit, offset])
 
         cursor.execute(sql, params)
-        data = cursor.fetchall()
-
-        return data
-    finally:
-        cursor.close()
-        conn.close()
-
+        return cursor.fetchall()
 
 
 def obtener_historial_cliente(id_cliente):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    try:
+    with get_db() as (_, cursor):
         cursor.execute("""
-            SELECT 
+            SELECT
                 h.*,
                 u.usuario AS usuario
             FROM clientes_historial h
@@ -282,8 +183,4 @@ def obtener_historial_cliente(id_cliente):
             WHERE h.id_cliente = %s
             ORDER BY h.fecha DESC
         """, (id_cliente,))
-
         return cursor.fetchall()
-    finally:
-        cursor.close()
-        conn.close()

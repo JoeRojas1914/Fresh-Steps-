@@ -1,13 +1,10 @@
-import datetime
 import json
-from db import get_connection
+from db import get_db
 from utils import to_json_safe
 
 
 def existe_servicio_activo(id_negocio, nombre, excluir_id=None):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    try:
+    with get_db() as (_, cursor):
         sql = "SELECT id_servicio FROM servicio WHERE id_negocio=%s AND nombre=%s AND activo=1"
         params = [id_negocio, nombre]
         if excluir_id:
@@ -15,44 +12,22 @@ def existe_servicio_activo(id_negocio, nombre, excluir_id=None):
             params.append(excluir_id)
         cursor.execute(sql, params)
         return cursor.fetchone() is not None
-    finally:
-        cursor.close()
-        conn.close()
 
 
 def crear_servicio(id_negocio, nombre, precio, id_usuario):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    try:
+    with get_db() as (_, cursor):
         cursor.execute("""
             INSERT INTO servicio (id_negocio, nombre, precio)
             VALUES (%s, %s, %s)
         """, (id_negocio, nombre, precio))
 
         id_servicio = cursor.lastrowid
-
-        despues = {
-            "nombre": nombre,
-            "precio": precio
-        }
-
+        despues = {"nombre": nombre, "precio": precio}
         registrar_historial(cursor, id_servicio, "CREADO", id_usuario, None, despues)
-
-        conn.commit()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        cursor.close()
-        conn.close()
 
 
 def actualizar_servicio(id_servicio, id_negocio, nombre, precio, id_usuario):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    try:
+    with get_db() as (_, cursor):
         cursor.execute("SELECT * FROM servicio WHERE id_servicio=%s", (id_servicio,))
         antes = cursor.fetchone()
 
@@ -62,27 +37,12 @@ def actualizar_servicio(id_servicio, id_negocio, nombre, precio, id_usuario):
             WHERE id_servicio=%s
         """, (id_negocio, nombre, precio, id_servicio))
 
-        despues = {
-            "nombre": nombre,
-            "precio": precio
-        }
-
+        despues = {"nombre": nombre, "precio": precio}
         registrar_historial(cursor, id_servicio, "EDITADO", id_usuario, antes, despues)
-
-        conn.commit()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        cursor.close()
-        conn.close()
 
 
 def eliminar_servicio(id_servicio, id_usuario):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    try:
+    with get_db() as (_, cursor):
         cursor.execute("SELECT * FROM servicio WHERE id_servicio=%s", (id_servicio,))
         antes = cursor.fetchone()
 
@@ -92,34 +52,12 @@ def eliminar_servicio(id_servicio, id_usuario):
             WHERE id_servicio=%s
         """, (id_servicio,))
 
-        registrar_historial(
-            cursor,
-            id_servicio,
-            "ELIMINADO",
-            id_usuario,
-            antes,
-            None
-        )
-
-        conn.commit()
+        registrar_historial(cursor, id_servicio, "ELIMINADO", id_usuario, antes, None)
         return True
-
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        cursor.close()
-        conn.close()
-
-
-
 
 
 def obtener_servicio_por_id(id_servicio):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    try:
-
+    with get_db() as (_, cursor):
         cursor.execute("""
             SELECT s.id_servicio,
                    s.id_negocio,
@@ -131,21 +69,12 @@ def obtener_servicio_por_id(id_servicio):
             WHERE s.id_servicio = %s
               AND s.activo = 1
         """, (id_servicio,))
-
-        servicio = cursor.fetchone()
-        return servicio
-    finally:
-        cursor.close()
-        conn.close()
+        return cursor.fetchone()
 
 
 def contar_servicios(id_negocio=None, q=None, incluir_eliminados=False):
-
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-
-        sql = "SELECT COUNT(*) FROM servicio WHERE 1=1"
+    with get_db() as (_, cursor):
+        sql = "SELECT COUNT(*) AS total FROM servicio WHERE 1=1"
         params = []
 
         if id_negocio:
@@ -160,21 +89,11 @@ def contar_servicios(id_negocio=None, q=None, incluir_eliminados=False):
             sql += " AND activo = 1"
 
         cursor.execute(sql, params)
-        total = cursor.fetchone()[0]
-
-        return total
-    finally:
-        cursor.close()
-        conn.close()
-
+        return cursor.fetchone()["total"]
 
 
 def obtener_servicios(id_negocio=None, q=None, incluir_eliminados=False, limit=10, offset=0):
-
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    try:
-
+    with get_db() as (_, cursor):
         sql = """
             SELECT s.id_servicio,
                 s.nombre,
@@ -203,32 +122,19 @@ def obtener_servicios(id_negocio=None, q=None, incluir_eliminados=False, limit=1
         params.extend([limit, offset])
 
         cursor.execute(sql, params)
-        servicios = cursor.fetchall()
+        return cursor.fetchall()
 
-        return servicios
-    finally:
-        cursor.close()
-        conn.close()
 
 def servicio_tiene_ventas(cursor, id_servicio):
-
     cursor.execute("""
         SELECT COUNT(*) AS total
         FROM articulo_servicio
         WHERE id_servicio = %s
     """, (id_servicio,))
-
     row = cursor.fetchone()
-
     if isinstance(row, dict):
         return row["total"] > 0
-    else:
-        return row[0] > 0
-
-
-
-
-
+    return row[0] > 0
 
 
 def registrar_historial(cursor, id_servicio, accion, id_usuario, antes=None, despues=None):
@@ -241,14 +147,12 @@ def registrar_historial(cursor, id_servicio, accion, id_usuario, antes=None, des
         accion,
         id_usuario,
         json.dumps(to_json_safe(antes)) if antes else None,
-        json.dumps(to_json_safe(despues)) if despues else None
+        json.dumps(to_json_safe(despues)) if despues else None,
     ))
 
-def obtener_historial_servicio(id_servicio):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    try:
 
+def obtener_historial_servicio(id_servicio):
+    with get_db() as (_, cursor):
         cursor.execute("""
             SELECT h.*, u.usuario AS usuario
             FROM servicios_historial h
@@ -256,20 +160,11 @@ def obtener_historial_servicio(id_servicio):
             WHERE id_servicio=%s
             ORDER BY fecha DESC
         """, (id_servicio,))
-
-        data = cursor.fetchall()
-
-        return data
-    finally:
-        cursor.close()
-        conn.close()
+        return cursor.fetchall()
 
 
 def restaurar_servicio(id_servicio, id_usuario):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    try:
+    with get_db() as (_, cursor):
         cursor.execute("SELECT * FROM servicio WHERE id_servicio=%s", (id_servicio,))
         antes = cursor.fetchone()
 
@@ -279,19 +174,4 @@ def restaurar_servicio(id_servicio, id_usuario):
             WHERE id_servicio=%s
         """, (id_servicio,))
 
-        registrar_historial(
-            cursor,
-            id_servicio,
-            "RESTAURADO",
-            id_usuario,
-            antes,
-            None
-        )
-
-        conn.commit()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        cursor.close()
-        conn.close()
+        registrar_historial(cursor, id_servicio, "RESTAURADO", id_usuario, antes, None)

@@ -1,4 +1,4 @@
-from db import get_connection
+from db import get_db
 from ventas_historial import registrar_historial_venta
 
 # Re-exports — mantienen compatibilidad con todos los `from ventas import X` existentes
@@ -22,9 +22,7 @@ from ventas_detalles import (
 
 
 def marcar_entregada(id_venta, id_usuario):
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
+    with get_db() as (_, cursor):
         cursor.execute("""
             UPDATE venta
             SET fecha_entrega = NOW(),
@@ -37,21 +35,11 @@ def marcar_entregada(id_venta, id_usuario):
         if afectadas > 0:
             registrar_historial_venta(cursor, id_venta, "ENTREGADO", id_usuario)
 
-        conn.commit()
         return afectadas > 0
-
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        cursor.close()
-        conn.close()
 
 
 def marcar_como_lista(id_venta, id_usuario=None):
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
+    with get_db() as (_, cursor):
         cursor.execute("""
             UPDATE venta
             SET fecha_lista = NOW()
@@ -64,21 +52,11 @@ def marcar_como_lista(id_venta, id_usuario=None):
         if afectadas > 0 and id_usuario:
             registrar_historial_venta(cursor, id_venta, "LISTA", id_usuario)
 
-        conn.commit()
         return afectadas > 0
-
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        cursor.close()
-        conn.close()
 
 
 def eliminar_venta(id_venta, id_usuario=None):
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
+    with get_db() as (_, cursor):
         cursor.execute("""
             UPDATE venta
             SET eliminado = 1,
@@ -91,12 +69,4 @@ def eliminar_venta(id_venta, id_usuario=None):
         if afectadas > 0 and id_usuario:
             registrar_historial_venta(cursor, id_venta, "ELIMINADO", id_usuario)
 
-        conn.commit()
         return afectadas > 0
-
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        cursor.close()
-        conn.close()

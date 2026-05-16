@@ -1,6 +1,6 @@
 from decimal import Decimal, InvalidOperation
 from datetime import datetime
-from db import get_connection
+from db import get_db
 from ventas_historial import registrar_historial_venta
 
 
@@ -18,12 +18,9 @@ def crear_venta(
     aplica_descuento,
     cantidad_descuento,
     articulos,
-    id_usuario_creo
+    id_usuario_creo,
 ):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    try:
+    with get_db() as (_, cursor):
         cursor.execute("""
             INSERT INTO venta (
                 id_negocio,
@@ -43,7 +40,7 @@ def crear_venta(
             fecha_estimada,
             aplica_descuento,
             cantidad_descuento,
-            id_usuario_creo
+            id_usuario_creo,
         ))
 
         id_venta = cursor.lastrowid
@@ -75,7 +72,7 @@ def crear_venta(
                     VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """, (
                     id_articulo, d["tipo"], d["marca"], d["material"],
-                    d["color_base"], d.get("color_secundario"), d.get("color_agujetas")
+                    d["color_base"], d.get("color_secundario"), d.get("color_agujetas"),
                 ))
 
                 if not art.get("servicios"):
@@ -100,7 +97,7 @@ def crear_venta(
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """, (
                     id_articulo, d["tipo"], d["marca"], d["material"],
-                    d["color_base"], d.get("color_secundario"), int(cantidad), d["agujetas"]
+                    d["color_base"], d.get("color_secundario"), int(cantidad), d["agujetas"],
                 ))
 
                 if not art.get("servicios"):
@@ -131,7 +128,7 @@ def crear_venta(
 
         cursor.execute(
             "UPDATE venta SET total = %s WHERE id_venta = %s",
-            (str(total), id_venta)
+            (str(total), id_venta),
         )
 
         registrar_historial_venta(cursor, id_venta, "CREADO", id_usuario_creo, None, {
@@ -141,16 +138,7 @@ def crear_venta(
             "total": float(total),
         })
 
-        conn.commit()
         return id_venta
-
-    except Exception:
-        conn.rollback()
-        raise
-
-    finally:
-        cursor.close()
-        conn.close()
 
 
 def _resolver_precio(cursor, s):
@@ -162,7 +150,7 @@ def _resolver_precio(cursor, s):
     if precio <= 0:
         cursor.execute(
             "SELECT precio_base FROM servicio WHERE id_servicio = %s",
-            (int(s["id_servicio"]),)
+            (int(s["id_servicio"]),),
         )
         row = cursor.fetchone()
         precio = Decimal(str(row["precio_base"])) if row else Decimal("0")

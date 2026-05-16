@@ -1,30 +1,19 @@
 from datetime import datetime, timedelta
-from db import get_connection
+from db import get_db
 
 
 def obtener_usuario_por_username(username):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    try:
-
+    with get_db() as (_, cursor):
         cursor.execute("""
             SELECT *
             FROM usuario
             WHERE usuario = %s AND activo = 1
         """, (username,))
-
-        usuario = cursor.fetchone()
-
-        return usuario
-    finally:
-        cursor.close()
-        conn.close()
+        return cursor.fetchone()
 
 
 def obtener_usuario_caja_activo():
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    try:
+    with get_db() as (_, cursor):
         cursor.execute("""
             SELECT *
             FROM usuario
@@ -32,38 +21,20 @@ def obtener_usuario_caja_activo():
             LIMIT 1
         """)
         return cursor.fetchone()
-    finally:
-        cursor.close()
-        conn.close()
 
 
 def obtener_usuarios_caja_activos():
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    try:
+    with get_db() as (_, cursor):
         cursor.execute("""
             SELECT *
             FROM usuario
             WHERE rol = 'caja' AND activo = 1
         """)
         return cursor.fetchall()
-    finally:
-        cursor.close()
-        conn.close()
 
 
-def registrar_login_log(
-    usuario,
-    metodo,
-    exito,
-    ip,
-    id_usuario=None,
-    user_agent=None
-):
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-
+def registrar_login_log(usuario, metodo, exito, ip, id_usuario=None, user_agent=None):
+    with get_db() as (_, cursor):
         cursor.execute("""
             INSERT INTO login_log (
                 id_usuario,
@@ -74,82 +45,43 @@ def registrar_login_log(
                 user_agent
             )
             VALUES (%s, %s, %s, %s, %s, %s)
-        """, (
-            id_usuario,
-            usuario,
-            metodo,
-            int(bool(exito)), 
-            ip,
-            user_agent
-        ))
-
-        conn.commit()
-
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        cursor.close()
-        conn.close()
+        """, (id_usuario, usuario, metodo, int(bool(exito)), ip, user_agent))
 
 
 def obtener_intentos(usuario, ip):
-
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    try:
-
+    with get_db() as (_, cursor):
         cursor.execute("""
             SELECT *
             FROM login_intentos
             WHERE usuario=%s AND ip=%s
         """, (usuario, ip))
-
-        row = cursor.fetchone()
-
-
-        return row
-    finally:
-        cursor.close()
-        conn.close()
-
+        return cursor.fetchone()
 
 
 def registrar_fallo(usuario, ip, max_intentos=5, bloqueo_min=10):
-
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    try:
-
-        # 🔥 MISMA CONEXIÓN
+    with get_db() as (_, cursor):
         cursor.execute("""
             SELECT *
             FROM login_intentos
             WHERE usuario=%s AND ip=%s
         """, (usuario, ip))
-
         row = cursor.fetchone()
 
         if not row:
-
             cursor.execute("""
                 INSERT INTO login_intentos (usuario, ip, intentos)
                 VALUES (%s,%s,1)
             """, (usuario, ip))
-
         else:
             intentos = row["intentos"] + 1
 
             if intentos >= max_intentos:
-
                 bloqueo = datetime.now() + timedelta(minutes=bloqueo_min)
-
                 cursor.execute("""
                     UPDATE login_intentos
                     SET intentos=%s, bloqueado_hasta=%s
                     WHERE usuario=%s AND ip=%s
                 """, (intentos, bloqueo, usuario, ip))
-
             else:
                 cursor.execute("""
                     UPDATE login_intentos
@@ -157,33 +89,10 @@ def registrar_fallo(usuario, ip, max_intentos=5, bloqueo_min=10):
                     WHERE usuario=%s AND ip=%s
                 """, (intentos, usuario, ip))
 
-        conn.commit()
-
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        cursor.close()
-        conn.close()
-
-
 
 def limpiar_intentos(usuario, ip):
-
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-
+    with get_db() as (_, cursor):
         cursor.execute("""
             DELETE FROM login_intentos
             WHERE usuario=%s AND ip=%s
         """, (usuario, ip))
-
-        conn.commit()
-
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        cursor.close()
-        conn.close()

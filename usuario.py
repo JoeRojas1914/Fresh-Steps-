@@ -1,11 +1,9 @@
-from db import get_connection
 import json
+from db import get_db
 
 
 def obtener_usuarios(q=None, rol=None, activo=None):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    try:
+    with get_db() as (_, cursor):
         sql = """
             SELECT id_usuario, usuario, nombre, apellido,
                    telefono, correo, cp, rol, activo, creado_en
@@ -30,31 +28,21 @@ def obtener_usuarios(q=None, rol=None, activo=None):
         sql += " ORDER BY creado_en DESC"
         cursor.execute(sql, params)
         return cursor.fetchall()
-    finally:
-        cursor.close()
-        conn.close()
 
 
 def obtener_usuario_por_id(id_usuario):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    try:
+    with get_db() as (_, cursor):
         cursor.execute("""
             SELECT * FROM usuario
             WHERE id_usuario = %s
         """, (id_usuario,))
         return cursor.fetchone()
-    finally:
-        cursor.close()
-        conn.close()
 
 
 def crear_usuario(usuario_nombre, password_hash, rol, pin_hash,
                   nombre=None, apellido=None, telefono=None,
                   correo=None, cp=None):
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
+    with get_db() as (_, cursor):
         cursor.execute("""
             INSERT INTO usuario
                 (usuario, password_hash, rol, pin_hash,
@@ -62,22 +50,13 @@ def crear_usuario(usuario_nombre, password_hash, rol, pin_hash,
             VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
         """, (usuario_nombre, password_hash, rol, pin_hash,
               nombre, apellido, telefono, correo, cp))
-        conn.commit()
         return cursor.lastrowid
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        cursor.close()
-        conn.close()
 
 
 def actualizar_usuario(id_usuario, usuario_nombre, rol,
                        nombre=None, apellido=None, telefono=None,
                        correo=None, cp=None):
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
+    with get_db() as (_, cursor):
         cursor.execute("""
             UPDATE usuario
             SET usuario=%s, rol=%s,
@@ -87,51 +66,24 @@ def actualizar_usuario(id_usuario, usuario_nombre, rol,
         """, (usuario_nombre, rol,
               nombre, apellido, telefono, correo, cp,
               id_usuario))
-        conn.commit()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        cursor.close()
-        conn.close()
 
 
 def actualizar_password(id_usuario, password_hash):
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
+    with get_db() as (_, cursor):
         cursor.execute("""
             UPDATE usuario SET password_hash=%s WHERE id_usuario=%s
         """, (password_hash, id_usuario))
-        conn.commit()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        cursor.close()
-        conn.close()
 
 
 def toggle_activo(id_usuario):
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
+    with get_db() as (_, cursor):
         cursor.execute("""
             UPDATE usuario SET activo = NOT activo WHERE id_usuario=%s
         """, (id_usuario,))
-        conn.commit()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        cursor.close()
-        conn.close()
 
 
 def registrar_historial_usuario(id_usuario, accion, antes, despues, admin):
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
+    with get_db() as (_, cursor):
         cursor.execute("""
             INSERT INTO historial_usuario
             (id_usuario, accion, datos_antes, datos_despues, usuario_admin)
@@ -140,43 +92,22 @@ def registrar_historial_usuario(id_usuario, accion, antes, despues, admin):
             id_usuario, accion,
             json.dumps(antes, default=str) if antes else None,
             json.dumps(despues, default=str) if despues else None,
-            admin
+            admin,
         ))
-        conn.commit()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        cursor.close()
-        conn.close()
 
 
 def actualizar_pin(id_usuario, pin_hash):
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
+    with get_db() as (_, cursor):
         cursor.execute("""
             UPDATE usuario SET pin_hash=%s WHERE id_usuario=%s
         """, (pin_hash, id_usuario))
-        conn.commit()
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        cursor.close()
-        conn.close()
 
 
 def obtener_historial_usuario(id_usuario):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    try:
+    with get_db() as (_, cursor):
         cursor.execute("""
             SELECT * FROM historial_usuario
             WHERE id_usuario=%s
             ORDER BY fecha DESC
         """, (id_usuario,))
         return cursor.fetchall()
-    finally:
-        cursor.close()
-        conn.close()

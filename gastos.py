@@ -1,7 +1,6 @@
-from db import get_connection
 import json
+from db import get_db
 from utils import to_json_safe
-
 
 
 def crear_gasto(
@@ -12,26 +11,17 @@ def crear_gasto(
     fecha_registro,
     tipo_comprobante,
     tipo_pago,
-    id_usuario
+    id_usuario,
 ):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    try:
+    with get_db() as (_, cursor):
         cursor.execute("""
             INSERT INTO gastos
             (id_negocio, descripcion, proveedor, total, fecha_registro,
              tipo_comprobante, tipo_pago, id_usuario)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """, (
-            id_negocio,
-            descripcion,
-            proveedor,
-            total,
-            fecha_registro,
-            tipo_comprobante,
-            tipo_pago,
-            id_usuario
+            id_negocio, descripcion, proveedor, total,
+            fecha_registro, tipo_comprobante, tipo_pago, id_usuario,
         ))
 
         id_gasto = cursor.lastrowid
@@ -41,23 +31,10 @@ def crear_gasto(
             "proveedor": proveedor,
             "total": total,
             "tipo_comprobante": tipo_comprobante,
-            "tipo_pago": tipo_pago
+            "tipo_pago": tipo_pago,
         }
 
         registrar_historial(cursor, id_gasto, "CREADO", id_usuario, None, despues)
-
-        conn.commit()
-
-    except Exception:
-        conn.rollback()
-        raise
-
-    finally:
-        cursor.close()
-        conn.close()
-
-
-
 
 
 def actualizar_gasto(
@@ -69,12 +46,9 @@ def actualizar_gasto(
     fecha_registro,
     tipo_comprobante,
     tipo_pago,
-    id_usuario
+    id_usuario,
 ):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    try:
+    with get_db() as (_, cursor):
         cursor.execute("SELECT * FROM gastos WHERE id_gasto=%s", (id_gasto,))
         antes = cursor.fetchone()
 
@@ -89,14 +63,8 @@ def actualizar_gasto(
                 tipo_pago=%s
             WHERE id_gasto=%s
         """, (
-            id_negocio,
-            descripcion,
-            proveedor,
-            total,
-            fecha_registro,
-            tipo_comprobante,
-            tipo_pago,
-            id_gasto
+            id_negocio, descripcion, proveedor, total,
+            fecha_registro, tipo_comprobante, tipo_pago, id_gasto,
         ))
 
         despues = {
@@ -104,29 +72,14 @@ def actualizar_gasto(
             "proveedor": proveedor,
             "total": total,
             "tipo_comprobante": tipo_comprobante,
-            "tipo_pago": tipo_pago
+            "tipo_pago": tipo_pago,
         }
 
         registrar_historial(cursor, id_gasto, "EDITADO", id_usuario, antes, despues)
 
-        conn.commit()
-
-    except Exception:
-        conn.rollback()
-        raise
-
-    finally:
-        cursor.close()
-        conn.close()
-
-
-
 
 def eliminar_gasto(id_gasto, id_usuario):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    try:
-
+    with get_db() as (_, cursor):
         cursor.execute("SELECT * FROM gastos WHERE id_gasto=%s", (id_gasto,))
         antes = cursor.fetchone()
 
@@ -138,25 +91,18 @@ def eliminar_gasto(id_gasto, id_usuario):
 
         registrar_historial(cursor, id_gasto, "ELIMINADO", id_usuario, antes, None)
 
-        conn.commit()
 
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        cursor.close()
-        conn.close()
-
-
-
-
-def obtener_gastos(id_negocio=None, fecha_inicio=None, fecha_fin=None, limit=10, offset=0,  incluir_eliminados=False):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    try:
-
+def obtener_gastos(
+    id_negocio=None,
+    fecha_inicio=None,
+    fecha_fin=None,
+    limit=10,
+    offset=0,
+    incluir_eliminados=False,
+):
+    with get_db() as (_, cursor):
         sql = """
-            SELECT 
+            SELECT
                 g.id_gasto,
                 g.id_negocio,
                 n.nombre AS negocio,
@@ -173,7 +119,6 @@ def obtener_gastos(id_negocio=None, fecha_inicio=None, fecha_fin=None, limit=10,
             JOIN usuario u ON g.id_usuario = u.id_usuario
             WHERE 1=1
         """
-
         params = []
 
         if id_negocio:
@@ -187,31 +132,19 @@ def obtener_gastos(id_negocio=None, fecha_inicio=None, fecha_fin=None, limit=10,
         if fecha_fin:
             sql += " AND g.fecha_registro <= %s"
             params.append(fecha_fin)
-    
-        if not incluir_eliminados:
-         sql += " AND g.activo = 1"
 
+        if not incluir_eliminados:
+            sql += " AND g.activo = 1"
 
         sql += " ORDER BY g.fecha_registro DESC LIMIT %s OFFSET %s"
         params.extend([limit, offset])
 
         cursor.execute(sql, params)
-        gastos = cursor.fetchall()
-
-        return gastos
-    finally:
-        cursor.close()
-        conn.close()
-
-
-
+        return cursor.fetchall()
 
 
 def obtener_gastos_por_proveedor(id_negocio, fecha_inicio, fecha_fin):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    try:
-
+    with get_db() as (_, cursor):
         cursor.execute("""
             SELECT proveedor, SUM(total) AS total
             FROM gastos
@@ -220,20 +153,17 @@ def obtener_gastos_por_proveedor(id_negocio, fecha_inicio, fecha_fin):
             GROUP BY proveedor
             ORDER BY total DESC
         """, (id_negocio, fecha_inicio, fecha_fin))
-
-        resultados = cursor.fetchall()
-        return resultados
-    finally:
-        cursor.close()
-        conn.close()
+        return cursor.fetchall()
 
 
-def contar_gastos(id_negocio=None, fecha_inicio=None, fecha_fin=None, incluir_eliminados=False):
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-
-        sql = "SELECT COUNT(*) FROM gastos WHERE 1=1"
+def contar_gastos(
+    id_negocio=None,
+    fecha_inicio=None,
+    fecha_fin=None,
+    incluir_eliminados=False,
+):
+    with get_db() as (_, cursor):
+        sql = "SELECT COUNT(*) AS total FROM gastos WHERE 1=1"
         params = []
 
         if not incluir_eliminados:
@@ -252,18 +182,10 @@ def contar_gastos(id_negocio=None, fecha_inicio=None, fecha_fin=None, incluir_el
             params.append(fecha_fin)
 
         cursor.execute(sql, params)
-        total = cursor.fetchone()[0]
-
-        return total
-    finally:
-        cursor.close()
-        conn.close()
-
-
+        return cursor.fetchone()["total"]
 
 
 def registrar_historial(cursor, id_gasto, accion, id_usuario, antes=None, despues=None):
-
     cursor.execute("""
         INSERT INTO gastos_historial
         (id_gasto, accion, id_usuario, datos_antes, datos_despues)
@@ -273,17 +195,12 @@ def registrar_historial(cursor, id_gasto, accion, id_usuario, antes=None, despue
         accion,
         id_usuario,
         json.dumps(to_json_safe(antes)) if antes else None,
-        json.dumps(to_json_safe(despues)) if despues else None
+        json.dumps(to_json_safe(despues)) if despues else None,
     ))
 
 
-
-
 def obtener_historial_gasto(id_gasto):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    try:
-
+    with get_db() as (_, cursor):
         cursor.execute("""
             SELECT h.*, u.usuario AS usuario
             FROM gastos_historial h
@@ -291,22 +208,11 @@ def obtener_historial_gasto(id_gasto):
             WHERE id_gasto=%s
             ORDER BY fecha DESC
         """, (id_gasto,))
-
-        data = cursor.fetchall()
-
-        return data
-    finally:
-        cursor.close()
-        conn.close()
-
-
+        return cursor.fetchall()
 
 
 def restaurar_gasto(id_gasto, id_usuario):
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-    try:
-
+    with get_db() as (_, cursor):
         cursor.execute("SELECT * FROM gastos WHERE id_gasto=%s", (id_gasto,))
         antes = cursor.fetchone()
 
@@ -317,12 +223,3 @@ def restaurar_gasto(id_gasto, id_usuario):
         """, (id_gasto,))
 
         registrar_historial(cursor, id_gasto, "RESTAURADO", id_usuario, antes, None)
-
-        conn.commit()
-
-    except Exception:
-        conn.rollback()
-        raise
-    finally:
-        cursor.close()
-        conn.close()

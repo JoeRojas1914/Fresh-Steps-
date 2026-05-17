@@ -19,7 +19,7 @@ async function verHistorialVenta(idVenta) {
     abrirModal("modalHistorialVenta");
 
     const tbody = document.querySelector("#tablaHistorialVenta tbody");
-    tbody.innerHTML = "<tr><td colspan='4' class="text-center dim">Cargando...</td></tr>";
+    tbody.innerHTML = "<tr><td colspan='4' class='text-center dim'>Cargando...</td></tr>";
 
     try {
     const res  = await fetch(`/ventas/${idVenta}/historial`);
@@ -27,7 +27,7 @@ async function verHistorialVenta(idVenta) {
     const data = await res.json();
 
     if (!data.length) {
-        tbody.innerHTML = "<tr><td colspan='4' class="text-center dim">Sin historial registrado</td></tr>";
+        tbody.innerHTML = "<tr><td colspan='4' class='text-center dim'>Sin historial registrado</td></tr>";
         return;
     }
 
@@ -53,6 +53,6 @@ async function verHistorialVenta(idVenta) {
         </tr>`;
     }).join("");
     } catch {
-        tbody.innerHTML = "<tr><td colspan='4' class="text-center dim">Error al cargar historial.</td></tr>";
+        tbody.innerHTML = "<tr><td colspan='4' class='text-center dim'>Error al cargar historial.</td></tr>";
     }
 }

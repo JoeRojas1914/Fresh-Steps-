@@ -71,7 +71,7 @@ _is_dev = os.getenv("FLASK_ENV") == "development"
 _CSP = {
     "default-src": "'self'",
     "script-src": ["'self'", "unpkg.com", "cdn.jsdelivr.net"],
-    "style-src": ["'self'", "fonts.googleapis.com"],
+    "style-src": ["'self'", "fonts.googleapis.com", "'unsafe-inline'"],
     "font-src": ["'self'", "fonts.gstatic.com"],
     "img-src": ["'self'", "data:"],
     "connect-src": "'self'",

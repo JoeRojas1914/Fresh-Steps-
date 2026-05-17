@@ -4,6 +4,7 @@ from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, flash, url_for, session, jsonify, send_file
 
 logger = logging.getLogger(__name__)
+from config import MAX_FILAS_EXPORTAR, PAGO_LABEL, COMPROBANTE_LABEL
 from openpyxl import Workbook
 from services.excel_helpers import (
     C, xl_cell, xl_row_bg,
@@ -113,11 +114,8 @@ def exportar_gastos_excel():
 
     gastos = obtener_gastos(
         id_negocio, fecha_inicio, fecha_fin,
-        limit=99999, offset=0, incluir_eliminados=incluir_eliminados
+        limit=MAX_FILAS_EXPORTAR, offset=0, incluir_eliminados=incluir_eliminados
     )
-
-    PAGO_LABEL = {"efectivo": "Efectivo", "transferencia": "Transferencia", "TDC": "Tarjeta de cr\u00e9dito"}
-    COMP_LABEL = {"factura": "Factura", "ticket": "Ticket"}
 
     subtexto = "  ".join(filter(None, [
         f"Negocio ID: {id_negocio}" if id_negocio    else "",
@@ -144,7 +142,7 @@ def exportar_gastos_excel():
         xl_cell(ws, r, 2, g.get("descripcion", ""), fg=bg)
         xl_cell(ws, r, 3, g.get("proveedor",   ""), fg=bg)
         xl_cell(ws, r, 4, float(g.get("total") or 0), fg=bg, bold=True, align="right", num_fmt='"$"#,##0.00')
-        xl_cell(ws, r, 5, COMP_LABEL.get(g.get("tipo_comprobante",""), g.get("tipo_comprobante","")), fg=bg)
+        xl_cell(ws, r, 5, COMPROBANTE_LABEL.get(g.get("tipo_comprobante",""), g.get("tipo_comprobante","")), fg=bg)
         xl_cell(ws, r, 6, PAGO_LABEL.get(g.get("tipo_pago",""), g.get("tipo_pago","")), fg=bg)
         fr = g.get("fecha_registro")
         xl_cell(ws, r, 7, fr.strftime("%d/%m/%Y") if fr else "\u2014", fg=bg)

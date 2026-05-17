@@ -4,6 +4,7 @@ from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session, send_file
 
 logger = logging.getLogger(__name__)
+from config import MAX_FILAS_EXPORTAR
 from openpyxl import Workbook
 from services.excel_helpers import (
     C, xl_cell, xl_row_bg, fmt_dt, estado_venta,
@@ -120,7 +121,7 @@ def exportar_clientes_excel():
     from clientes import obtener_clientes
 
     incluir_eliminados = request.args.get("eliminados") == "1"
-    clientes = obtener_clientes(limit=99999, offset=0, incluir_eliminados=incluir_eliminados)
+    clientes = obtener_clientes(limit=MAX_FILAS_EXPORTAR, offset=0, incluir_eliminados=incluir_eliminados)
 
     wb = Workbook()
     ws = wb.active
@@ -158,7 +159,7 @@ def exportar_cliente_excel(id_cliente):
     fecha_fin    = request.args.get("fecha_fin")    or None
 
     cliente      = obtener_cliente_por_id(id_cliente)
-    pedidos      = obtener_ventas_cliente(id_cliente, id_negocio, fecha_inicio, fecha_fin, limit=99999, offset=0)
+    pedidos      = obtener_ventas_cliente(id_cliente, id_negocio, fecha_inicio, fecha_fin, limit=MAX_FILAS_EXPORTAR, offset=0)
     ids_venta    = [p["id_venta"] for p in pedidos]
     detalles_map = obtener_detalles_venta(ids_venta)
     pagos_map    = obtener_pagos_venta(ids_venta)

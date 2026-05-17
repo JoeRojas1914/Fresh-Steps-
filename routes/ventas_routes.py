@@ -2,6 +2,7 @@ import logging
 import io
 from datetime import date, datetime
 from flask import Blueprint, render_template, jsonify, session, request, send_file
+from config import MAX_FILAS_EXPORTAR
 from openpyxl import Workbook
 from services.excel_helpers import (
     C, xl_cell, xl_row_bg, fmt_dt, estado_venta,
@@ -216,7 +217,7 @@ def exportar_historial_excel():
     fecha_inicio = request.args.get("fecha_inicio") or None
     fecha_fin    = request.args.get("fecha_fin")    or None
 
-    ventas = obtener_historial_ventas(id_negocio, fecha_inicio, fecha_fin, limit=99999, offset=0)
+    ventas = obtener_historial_ventas(id_negocio, fecha_inicio, fecha_fin, limit=MAX_FILAS_EXPORTAR, offset=0)
     ids_venta    = [v["id_venta"] for v in ventas]
     detalles_map = obtener_detalles_venta(ids_venta)
     pagos_map    = obtener_pagos_venta(ids_venta)

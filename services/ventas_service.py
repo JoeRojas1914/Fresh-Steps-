@@ -1,5 +1,6 @@
 from datetime import date
 
+from config import METODOS_PAGO_VALIDOS
 from ventas import (
     eliminar_venta,
     marcar_entregada,
@@ -76,9 +77,6 @@ def listar_entregas_pendientes_service(id_negocio: int | None = None) -> dict:
     }
 
 
-_METODOS_PAGO_VALIDOS = {"efectivo", "transferencia"}
-
-
 def registrar_pago_final_service(data: dict, id_usuario: int) -> tuple[bool, str]:
     id_venta    = data.get("id_venta")
     monto       = data.get("monto")
@@ -87,7 +85,7 @@ def registrar_pago_final_service(data: dict, id_usuario: int) -> tuple[bool, str
     if not id_venta or not monto or not metodo_pago:
         return False, "Datos incompletos para el pago final"
 
-    if metodo_pago not in _METODOS_PAGO_VALIDOS:
+    if metodo_pago not in METODOS_PAGO_VALIDOS:
         return False, f"Método de pago no válido: '{metodo_pago}'"
 
     registrar_pago_final_db(

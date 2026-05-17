@@ -4,6 +4,7 @@ from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, flash, jsonify, session, send_file, url_for
 
 logger = logging.getLogger(__name__)
+from config import MAX_FILAS_EXPORTAR
 from openpyxl import Workbook
 from services.excel_helpers import (
     C, xl_cell, xl_row_bg,
@@ -140,7 +141,7 @@ def exportar_servicios_excel():
 
     servicios = obtener_servicios(
         id_negocio=id_negocio, incluir_eliminados=incluir_eliminados,
-        limit=99999, offset=0
+        limit=MAX_FILAS_EXPORTAR, offset=0
     )
 
     subtexto = f"Negocio ID: {id_negocio}" if id_negocio else "Todos los negocios"

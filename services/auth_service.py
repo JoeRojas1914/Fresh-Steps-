@@ -11,6 +11,7 @@ from login import (
     registrar_fallo,
     limpiar_intentos
 )
+from config import MAX_INTENTOS_PIN, BLOQUEO_MIN_PIN
 
 
 def _ua() -> str | None:
@@ -36,8 +37,13 @@ def _esta_bloqueado(username: str, ip: str, metodo: str, id_usuario: int | None 
     return False
 
 
-def _fallo(username: str, metodo: str, ip: str) -> None:
-    registrar_fallo(username, ip)
+def _fallo(username: str, metodo: str, ip: str, max_intentos: int | None = None, bloqueo_min: int | None = None) -> None:
+    kwargs = {}
+    if max_intentos is not None:
+        kwargs["max_intentos"] = max_intentos
+    if bloqueo_min is not None:
+        kwargs["bloqueo_min"] = bloqueo_min
+    registrar_fallo(username, ip, **kwargs)
 
     registrar_login_log(
         username,
@@ -93,7 +99,7 @@ def login_pin_service(pin: str, ip: str) -> dict | str | None:
             _exito(usuario, "pin_caja", ip)
             return usuario
 
-        _fallo(username, "pin_caja", ip)
+        _fallo(username, "pin_caja", ip, max_intentos=MAX_INTENTOS_PIN, bloqueo_min=BLOQUEO_MIN_PIN)
 
     # Verificar si todos están bloqueados
     for usuario in usuarios:

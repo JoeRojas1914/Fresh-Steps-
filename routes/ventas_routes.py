@@ -37,12 +37,14 @@ def guardar_venta():
     id_usuario = session.get("id_usuario")
     if not id_usuario:
         return jsonify({"ok": False, "error": "Sesión expirada. Vuelve a iniciar sesión."}), 401
-    id_venta, error = guardar_venta_service(request.form, id_usuario)
-
-    if error:
-        return jsonify({"ok": False, "error": error}), 400
-
-    return jsonify({"ok": True, "id_venta": id_venta}), 200
+    try:
+        id_venta = guardar_venta_service(request.form, id_usuario)
+        return jsonify({"ok": True, "id_venta": id_venta}), 200
+    except ValueError as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
+    except Exception:
+        logger.exception("Error en guardar_venta id_usuario=%s", id_usuario)
+        return jsonify({"ok": False, "error": "Error interno del servidor"}), 500
 
 
 @ventas_bp.route("/ventas")
@@ -148,19 +150,10 @@ def registrar_pago_final():
     id_usuario = session.get("id_usuario")
 
     try:
-        ok, mensaje = registrar_pago_final_service(data, id_usuario)
-
-        if not ok:
-            return jsonify({
-                "ok": False,
-                "error": mensaje
-            }), 400
-
-        return jsonify({
-            "ok": True,
-            "message": mensaje
-        })
-
+        mensaje = registrar_pago_final_service(data, id_usuario)
+        return jsonify({"ok": True, "message": mensaje})
+    except ValueError as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
     except Exception:
         logger.exception("Error en registrar_pago_final id_usuario=%s", id_usuario)
         return jsonify({"ok": False, "error": "Error interno del servidor"}), 500
@@ -173,19 +166,10 @@ def eliminar_venta_route(id_venta):
     id_usuario = session.get("id_usuario")
 
     try:
-        ok, mensaje = eliminar_venta_service(id_venta, id_usuario)
-
-        if not ok:
-            return jsonify({
-                "ok": False,
-                "error": mensaje
-            }), 400
-
-        return jsonify({
-            "ok": True,
-            "message": mensaje
-        })
-
+        eliminar_venta_service(id_venta, id_usuario)
+        return jsonify({"ok": True, "message": "Venta eliminada correctamente"})
+    except ValueError as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
     except Exception:
         logger.exception("Error en eliminar_venta id_venta=%s id_usuario=%s", id_venta, id_usuario)
         return jsonify({"ok": False, "error": "Error interno del servidor"}), 500

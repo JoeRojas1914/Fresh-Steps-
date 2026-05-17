@@ -2,6 +2,7 @@ from functools import wraps
 from flask import session, redirect, url_for, flash, render_template, request, jsonify
 from datetime import datetime, timedelta
 from config import TIMEOUT_ADMIN, TIMEOUT_CAJA
+from usuario import obtener_session_token
 
 
 def admin_required(f):
@@ -83,6 +84,14 @@ def init_auth_middleware(app):
             if pin_habilitado:
                 return redirect(url_for("auth.pin_login"))
 
+            return redirect(url_for("auth.login"))
+
+
+        # Verificar que la sesión activa en BD coincide (invalida sesiones concurrentes)
+        token_bd = obtener_session_token(session["id_usuario"])
+        if token_bd != session.get("session_token"):
+            session.clear()
+            flash("Tu sesión fue iniciada en otro dispositivo.", "error")
             return redirect(url_for("auth.login"))
 
 

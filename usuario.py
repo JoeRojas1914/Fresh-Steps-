@@ -103,6 +103,22 @@ def actualizar_pin(id_usuario, pin_hash):
         """, (pin_hash, id_usuario))
 
 
+def actualizar_session_token(id_usuario, token):
+    with get_db() as (_, cursor):
+        cursor.execute("""
+            UPDATE usuario SET session_token=%s WHERE id_usuario=%s
+        """, (token, id_usuario))
+
+
+def obtener_session_token(id_usuario):
+    with get_db() as (_, cursor):
+        cursor.execute("""
+            SELECT session_token FROM usuario WHERE id_usuario=%s
+        """, (id_usuario,))
+        row = cursor.fetchone()
+        return row["session_token"] if row else None
+
+
 def obtener_historial_usuario(id_usuario):
     with get_db() as (_, cursor):
         cursor.execute("""

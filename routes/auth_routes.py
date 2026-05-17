@@ -6,6 +6,7 @@ from services.auth_service import (
     login_pin_service
 )
 from extensions import limiter
+from usuario import actualizar_session_token
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -42,11 +43,12 @@ def login():
 
         if admin_mode == "1":
 
-            session["id_usuario"] = usuario["id_usuario"]
-            session["usuario"]    = usuario["usuario"]
-            session["nombre"]     = usuario.get("nombre") or usuario["usuario"].capitalize()
-            session["rol"]        = usuario["rol"]
+            session["id_usuario"]       = usuario["id_usuario"]
+            session["usuario"]          = usuario["usuario"]
+            session["nombre"]           = usuario.get("nombre") or usuario["usuario"].capitalize()
+            session["rol"]              = usuario["rol"]
             session["ultima_actividad"] = datetime.now().isoformat()
+            session["session_token"]    = usuario.get("_session_token")
 
             return redirect(url_for("index"))
 
@@ -84,20 +86,24 @@ def pin_login():
 
 
     session.clear()
-    session["pin_habilitado"]   = True 
+    session["pin_habilitado"]   = True
     session["id_usuario"]       = usuario["id_usuario"]
     session["usuario"]          = usuario["usuario"]
     session["nombre"]           = usuario.get("nombre") or usuario["usuario"].capitalize()
     session["rol"]              = "caja"
     session["ultima_actividad"] = datetime.now().isoformat()
+    session["session_token"]    = usuario.get("_session_token")
 
     return redirect(url_for("index"))
 
 
 @auth_bp.route("/logout")
 def logout():
-
     pin_habilitado = session.get("pin_habilitado")
+    id_usuario     = session.get("id_usuario")
+
+    if id_usuario:
+        actualizar_session_token(id_usuario, None)
 
     session.clear()
 

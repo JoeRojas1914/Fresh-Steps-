@@ -1,3 +1,4 @@
+import secrets
 from datetime import datetime
 from werkzeug.security import check_password_hash
 from flask import request
@@ -12,6 +13,7 @@ from login import (
     limpiar_intentos
 )
 from config import MAX_INTENTOS_PIN, BLOQUEO_MIN_PIN
+from usuario import actualizar_session_token
 
 
 def _ua() -> str | None:
@@ -55,6 +57,10 @@ def _fallo(username: str, metodo: str, ip: str, max_intentos: int | None = None,
 
 
 def _exito(usuario: dict, metodo: str, ip: str) -> None:
+    token = secrets.token_hex(32)
+    actualizar_session_token(usuario["id_usuario"], token)
+    usuario["_session_token"] = token
+
     limpiar_intentos(usuario["usuario"], ip)
 
     registrar_login_log(

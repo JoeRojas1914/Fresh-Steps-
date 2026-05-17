@@ -35,7 +35,7 @@ async function abrirHistorial(url, modalId, tbodySelector, getCambios) {
         const data = await res.json();
 
         if (!data.length) {
-            tbody.innerHTML = "<tr><td colspan='4' class="text-center dim">Sin historial</td></tr>";
+            tbody.innerHTML = "<tr><td colspan='4' class='text-center dim'>Sin historial</td></tr>";
             return;
         }
 
@@ -46,6 +46,6 @@ async function abrirHistorial(url, modalId, tbodySelector, getCambios) {
             <td>${getCambios(h)}</td>
         </tr>`).join("");
     } catch {
-        tbody.innerHTML = "<tr><td colspan='4' class="text-center dim">Error al cargar historial.</td></tr>";
+        tbody.innerHTML = "<tr><td colspan='4' class='text-center dim'>Error al cargar historial.</td></tr>";
     }
 }

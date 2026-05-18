@@ -32,11 +32,11 @@ Sistema web interno para la gestión de ventas, clientes, servicios y usuarios d
 | Capa | Tecnología |
 |---|---|
 | Backend | Python 3.12 + Flask |
-| Base de datos | MySQL |
+| Base de datos | MySQL 8+ |
 | Frontend | Jinja2 + CSS modular + JavaScript vanilla |
 | Gráficas | Chart.js |
 | Autenticación | Sesiones Flask + PIN numérico |
-| Seguridad | Flask-WTF (CSRF) + bcrypt |
+| Seguridad | Flask-WTF (CSRF) + Flask-Talisman + bcrypt |
 
 ---
 
@@ -44,17 +44,7 @@ Sistema web interno para la gestión de ventas, clientes, servicios y usuarios d
 
 - Python 3.12
 - MySQL 8+
-- Las dependencias listadas en `requirements.txt`:
-
-```
-Flask
-gunicorn
-mysql-connector-python
-python-dotenv
-Flask-WTF
-bcrypt
-openpyxl
-```
+- Las dependencias listadas en `requirements.txt`
 
 ---
 
@@ -74,11 +64,11 @@ source venv/bin/activate     # Mac/Linux
 pip install -r requirements.txt
 
 # 4. Configurar variables de entorno
-# Copiar .env.example a .env y llenar los valores
 cp scripts/.env.example .env
+# Editar .env con los valores reales
 
 # 5. Crear las tablas en MySQL
-# Ejecutar los scripts SQL en el orden indicado en la sección de base de datos
+mysql -u usuario -p freshstepsproduccion < migrations/001_schema_completo.sql
 
 # 6. Correr la aplicación
 python app.py
@@ -88,7 +78,7 @@ python app.py
 
 ## Variables de entorno
 
-Crear un archivo `.env` en la raíz con las siguientes variables:
+Crear un archivo `.env` en la raíz:
 
 ```env
 DB_HOST=localhost
@@ -105,19 +95,12 @@ WTF_CSRF_SECRET_KEY=clave-secreta-csrf
 
 ```
 fresh-steps/
-├── app.py                  # Punto de entrada, registro de blueprints
-├── db.py                   # Conexión a MySQL
-├── ventas.py               # Lógica de ventas y historial
-├── clientes.py             # Lógica de clientes
-├── servicios.py            # Lógica de servicios
-├── usuario.py              # Lógica de usuarios y PIN
-├── login.py                # Autenticación
-├── gastos.py               # Lógica de gastos
-├── estadisticas.py         # Consultas estadísticas
-├── pagos.py                # Lógica de pagos y prepagos
-├── negocio.py              # Catálogo de negocios
+├── app.py                  # Punto de entrada y registro de blueprints
+├── db.py                   # Pool de conexiones MySQL
+├── config.py               # Constantes de configuración
+├── extensions.py           # Extensiones Flask (rate limiter)
 │
-├── routes/                 # Blueprints de Flask
+├── routes/                 # Blueprints de Flask (solo HTTP, sin lógica)
 │   ├── auth_routes.py
 │   ├── ventas_routes.py
 │   ├── clientes_routes.py
@@ -126,34 +109,52 @@ fresh-steps/
 │   ├── estadisticas_routes.py
 │   └── gastos_routes.py
 │
-├── services/               # Capa de servicio (lógica de negocio)
+├── services/               # Lógica de negocio
 │   ├── ventas_service.py
 │   ├── clientes_service.py
 │   ├── usuarios_service.py
 │   ├── servicios_service.py
 │   ├── estadisticas_service.py
 │   ├── gastos_service.py
-│   ├── auth_service.py
-│   └── excel_helpers.py
+│   └── auth_service.py
+│
+├── models/                 # Acceso a datos (queries SQL)
+│   ├── ventas.py           # Re-exports de ventas_*
+│   ├── ventas_crear.py
+│   ├── ventas_detalles.py
+│   ├── ventas_historial.py
+│   ├── estadisticas.py     # Re-exports de estadisticas_*
+│   ├── estadisticas_ventas.py
+│   ├── estadisticas_clientes.py
+│   ├── estadisticas_gastos.py
+│   ├── clientes.py
+│   ├── servicios.py
+│   ├── usuarios.py
+│   ├── gastos.py
+│   ├── negocio.py
+│   └── pagos.py
 │
 ├── middleware/
 │   └── auth_middleware.py  # Protección de rutas y timeout de sesión
 │
+├── migrations/
+│   └── 001_schema_completo.sql  # Esquema completo: tablas, datos e índices
+│
 ├── templates/              # Jinja2
 │   ├── base.html
-│   ├── components/         
+│   ├── components/
 │   ├── macros/
-│   └── *.html
+│   └── pages/
 │
 ├── static/
 │   ├── css/
 │   │   ├── main.css        # Import de todos los módulos
 │   │   ├── base/           # Variables, reset, navbar, footer
-│   │   ├── components/     # Botones, badges, modales, formularios...
+│   │   ├── components/     # Botones, badges, modales, formularios
 │   │   └── pages/          # CSS específico por página
 │   ├── js/
-│   │   ├── base/           # CSRF, helpers globales, navbar
-│   │   └── *.js            # JS específico por módulo
+│   │   ├── base/           # CSRF, navbar, inicialización de Lucide
+│   │   └── pages/          # JS específico por página
 │   └── images/
 │
 └── requirements.txt
@@ -174,15 +175,17 @@ fresh-steps/
 |---|---|
 | `usuario` | Cajeros y administradores con PIN hasheado |
 | `cliente` | Clientes registrados |
-| `negocio` | Negocios (Fresh Steps, Confección, Maquila) |
+| `negocio` | Negocios: Fresh Steps, Confección, Maquila |
 | `servicio` | Catálogo de servicios por negocio |
 | `venta` | Recibos de venta |
 | `articulo` | Artículos dentro de cada venta |
+| `articulo_calzado` | Datos específicos de artículos de calzado |
+| `articulo_confeccion` | Datos específicos de artículos de confección |
+| `articulo_maquila` | Datos específicos de artículos de maquila |
 | `articulo_servicio` | Servicios aplicados a cada artículo |
-| `pago` | Pagos y prepagos asociados a ventas |
-| `gasto` | Gastos operativos |
-| `venta_historial` | Auditoría de cambios en ventas |
-
+| `pago_venta` | Pagos y prepagos asociados a ventas |
+| `gastos` | Gastos operativos por negocio |
+| `historial_venta` | Auditoría de cambios en ventas |
 
 ---
 
@@ -193,15 +196,14 @@ El sistema tiene dos niveles de acceso:
 - **Cajero** — accede vía PIN numérico desde la pantalla principal
 - **Administrador** — accede vía `/login?admin=1` con usuario y contraseña
 
-Las sesiones expiran automáticamente por inactividad. El middleware redirige al PIN en caso de sesión vencida.
+Las sesiones expiran automáticamente por inactividad (15 min admin, 20 min cajero). El middleware redirige al login en caso de sesión vencida.
 
 ---
 
-
 ## Notas de desarrollo
 
+- Arquitectura en tres capas: `routes/` → `services/` → `models/`
+- Las rutas importan exclusivamente desde `services/`, nunca de `models/` directamente
 - El CSS sigue arquitectura modular: `base/` → `components/` → `pages/`
-- Los macros de Jinja2 están en `templates/components/` y `templates/macros/`
+- Los macros de Jinja2 están en `templates/macros/`
 - El token CSRF se inyecta automáticamente vía meta tag en `base.html`
-- `helpers.js` expone `window.mostrarFeedback()` y `window.confirmarEliminarVenta()` de forma global
-- Los toggles de filtro usan las clases `.filtro-toggle` y `.toggle-text` del sistema de diseño
